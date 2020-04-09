@@ -13,7 +13,7 @@ namespace megastructure
 		~Client();
 		
 		void send( const std::string& str );
-		std::string recv();
+		bool recv( std::string& str );
 		
 	private:
 		void* m_pContext;

@@ -6,6 +6,7 @@
 
 #include <iostream>
 #include <thread>
+#include <chrono>
 
 #include <signal.h>
 
@@ -82,9 +83,18 @@ int main( int argc, const char* argv[] )
 		std::thread readThread(
 			[ &client ]()
 			{
+				std::string str;
 				while( true )
 				{
-					std::cout << client.recv() << std::endl;
+					if( client.recv( str ) )
+					{
+						std::cout << str << std::endl;
+					}
+					else
+					{
+						using namespace std::chrono_literals;
+						std::this_thread::sleep_for( 0.1s );
+					}
 				}
 			});
 			
