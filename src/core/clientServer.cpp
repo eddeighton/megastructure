@@ -2,6 +2,7 @@
 
 #include "megastructure/clientServer.hpp"
 
+#include "common/assert_verify.hpp"
 
 #include "zmq.h"
 
@@ -29,10 +30,7 @@ namespace megastructure
 		}
 		
 		int result = zmq_connect( m_pSocket, strMasterEndpoint.c_str() );
-		if( result != 0 )
-		{
-			throw std::runtime_error( "Failed to connect to " + strMasterEndpoint );
-		}
+		VERIFY_RTE_MSG( result == 0, "Failed to connect to: " << strMasterEndpoint );
 	}
 	
 	Client::~Client()

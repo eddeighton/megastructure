@@ -7,6 +7,9 @@ include( ${MS_ROOT_DIR}/cmake/boost_include.cmake )
 #zeromq
 include( ${MS_ROOT_DIR}/cmake/zmq_include.cmake )
 
+#common
+include( ${MS_ROOT_DIR}/cmake/common_include.cmake )
+
 set( MS_LIBRARY
 	${MS_API_DIR}/megastructure/coordinator.hpp
 	${MS_API_DIR}/megastructure/clientServer.hpp
@@ -30,6 +33,7 @@ link_boost( megastructurelib filesystem )
 link_boost( megastructurelib iostreams )
 link_boost( megastructurelib serialization )
 link_zmq( megastructurelib )
+link_common( megastructurelib )
 
 install( FILES ${MS_LIBRARY} DESTINATION include/megastructure )
 install( TARGETS megastructurelib DESTINATION lib)

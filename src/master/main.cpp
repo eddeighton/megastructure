@@ -3,6 +3,8 @@
 //#include "megastructure/coordinator.hpp"
 #include "megastructure/clientServer.hpp"
 
+#include "common/processID.hpp"
+
 #include <boost/program_options.hpp>
 
 #include <iostream>
@@ -71,7 +73,7 @@ int main( int argc, const char* argv[] )
 				
 	try
 	{
-		//std::cout << "Master: " << megastructure::version() << std::endl;
+		std::cout << "Master: " << Common::getProcessID() << std::endl;
 		
 		megastructure::Server server( args.port );
 		std::string str;
