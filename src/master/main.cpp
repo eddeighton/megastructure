@@ -1,6 +1,7 @@
 
 
-#include "megastructure/coordinator.hpp"
+//#include "megastructure/coordinator.hpp"
+#include "megastructure/clientServer.hpp"
 
 #include <boost/program_options.hpp>
 
@@ -12,7 +13,6 @@
 
 struct Args
 {
-	std::string ip;
 	std::string port;
 };
 
@@ -26,7 +26,6 @@ bool parse_args( int argc, const char* argv[], Args& args )
 		
 		options.add_options()
 			("help", "produce help message")
-			("ip",    po::value< std::string >( &args.ip ), "IP Address" )
 			("port",  po::value< std::string >( &args.port ), "Port" )
 		;
 
@@ -42,12 +41,6 @@ bool parse_args( int argc, const char* argv[], Args& args )
 		if( variables.count("help") )
 		{
 			std::cout << options << "\n";
-			return false;
-		}
-		
-		if( args.ip.empty() )
-		{
-			std::cout << "Missing IP address" << std::endl;
 			return false;
 		}
 		
@@ -76,20 +69,19 @@ int main( int argc, const char* argv[] )
 	
 	try
 	{
-		std::cout << "Master: " << megastructure::version() << std::endl;
+		//std::cout << "Master: " << megastructure::version() << std::endl;
 		
-		/*signal( SIGINT, [](int)
-			{ 
-				std::cout << "interupted" << std::endl;
-				std::abort(); 
-			} );*/
-			
-		
-		megastructure::Master master( args.ip, args.port );
+		megastructure::Server server( args.port );
 		std::string str;
 		while( true )
 		{
-			if( master.poll( str ) )
+			std::uint32_t uiClient = 0;
+			str = server.recv( uiClient );
+			if( !str.empty() )
+			{
+				server.send( "Got it!", uiClient );
+			}
+			
 			{
 				std::cout << str << std::endl;
 				using namespace std::chrono_literals;

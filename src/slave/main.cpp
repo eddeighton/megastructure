@@ -1,5 +1,6 @@
 
-#include "megastructure/coordinator.hpp"
+//#include "megastructure/coordinator.hpp"
+#include "megastructure/clientServer.hpp"
 
 #include <boost/program_options.hpp>
 
@@ -73,28 +74,17 @@ int main( int argc, const char* argv[] )
 	
 	try
 	{
-		std::cout << "Slave: " << megastructure::version() << std::endl;
+		//std::cout << "Slave: " << megastructure::version() << std::endl;
 		
-		/*signal( SIGINT, [](int)
-			{ 
-				std::cout << "interupted" << std::endl;
-				std::abort(); 
-			} );*/
-			
-		megastructure::Slave slave( args.ip, args.port );
+		megastructure::Client client( args.ip, args.port );
 			
 		std::string str, strResponse;
 		while( true )
 		{
 			std::cin >> str;
-			if( slave.send( str, strResponse ) )
-			{
-				std::cout << strResponse << std::endl;
-			}
-			else
-			{
-				std::cout << "Message failed" << std::endl;
-			}
+			client.send( str );
+			strResponse = client.recv();
+			std::cout << strResponse << std::endl;
 		}
 	}
 	catch( std::exception& ex )

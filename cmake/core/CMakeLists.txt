@@ -9,10 +9,12 @@ include( ${MS_ROOT_DIR}/cmake/zmq_include.cmake )
 
 set( MS_LIBRARY
 	${MS_API_DIR}/megastructure/coordinator.hpp
+	${MS_API_DIR}/megastructure/clientServer.hpp
 	)
 
 set( MS_SOURCES
 	${MS_SRC_DIR}/core/coordinator.cpp
+	${MS_SRC_DIR}/core/clientServer.cpp
     )
     
 add_library( megastructurelib 
