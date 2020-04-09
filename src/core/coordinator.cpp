@@ -141,7 +141,7 @@ bool recv( void* pSocket, std::string& str )
 }
 
 
-Master::Master()
+Master::Master( const std::string& strIP, const std::string& strPort )
 {
 	m_pContext 		= zmq_ctx_new();
 	m_pSocket 		= zmq_socket( m_pContext, ZMQ_REP );
@@ -151,10 +151,24 @@ Master::Master()
 		zmq_setsockopt( m_pSocket, ZMQ_LINGER, &zmqLinger, sizeof( zmqLinger ) );
 	}
 	
-	int result = zmq_bind( m_pSocket, "tcp://*:5555" );
+	{
+		std::ostringstream os;
+		os << "tcp://" << strIP << ':' << strPort;
+		m_strAddress = os.str();
+	}
+	
+	std::string localAddress;
+	{
+		std::ostringstream os; //"tcp://*:5555"
+		os << "tcp://*" << ':' << strPort;
+		localAddress = os.str();
+	}
+	
+	//int result = zmq_bind( m_pSocket, localAddress.c_str() );
+	int result = zmq_bind( m_pSocket, m_strAddress.c_str() );
 	if( result != 0 )
 	{
-		throw std::runtime_error( "Failed to bind to tcp://*:5555" );
+		throw std::runtime_error( "Failed to bind to " + m_strAddress );
 	}
 }
 
@@ -177,7 +191,7 @@ bool Master::poll( std::string& str )
 
 
 
-Slave::Slave()
+Slave::Slave( const std::string& strIP, const std::string& strPort )
 {
 	m_pContext 		= zmq_ctx_new();
 	m_pSocket 		= zmq_socket( m_pContext, ZMQ_REQ );
@@ -187,10 +201,16 @@ Slave::Slave()
 		zmq_setsockopt( m_pSocket, ZMQ_LINGER, &zmqLinger, sizeof( zmqLinger ) );
 	}
 	
-	int result = zmq_connect( m_pSocket, "tcp://localhost:5555" );
+	{
+		std::ostringstream os; //"tcp://localhost:5555" 
+		os << "tcp://" << strIP << ':' << strPort;
+		m_strAddress = os.str();
+	}
+	
+	int result = zmq_connect( m_pSocket, m_strAddress.c_str() );
 	if( result != 0 )
 	{
-		throw std::runtime_error( "Failed to bind to tcp://localhost:5555" );
+		throw std::runtime_error( "Failed to bind to " + m_strAddress );
 	}
 	
 }

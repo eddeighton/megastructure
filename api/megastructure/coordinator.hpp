@@ -11,12 +11,13 @@ namespace megastructure
 	class Master
 	{
 	public:
-		Master();
+		Master( const std::string& strIP, const std::string& strPort );
 		~Master();
 		
 		bool poll( std::string& str );
 		
 	private:
+		std::string m_strAddress;
 		void* m_pContext;
 		void* m_pSocket;
 	};
@@ -24,12 +25,13 @@ namespace megastructure
 	class Slave
 	{
 	public:
-		Slave();
+		Slave( const std::string& strIP, const std::string& strPort );
 		~Slave();
 		
 		bool send( const std::string& str, std::string& strResponse );
 		
 	private:
+		std::string m_strAddress;
 		void* m_pContext;
 		void* m_pSocket;
 	};
