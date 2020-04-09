@@ -5,6 +5,7 @@
 #include <boost/program_options.hpp>
 
 #include <iostream>
+#include <thread>
 
 #include <signal.h>
 
@@ -77,14 +78,21 @@ int main( int argc, const char* argv[] )
 		//std::cout << "Slave: " << megastructure::version() << std::endl;
 		
 		megastructure::Client client( args.ip, args.port );
+		
+		std::thread readThread(
+			[ &client ]()
+			{
+				while( true )
+				{
+					std::cout << client.recv() << std::endl;
+				}
+			});
 			
 		std::string str, strResponse;
 		while( true )
 		{
 			std::cin >> str;
 			client.send( str );
-			strResponse = client.recv();
-			std::cout << strResponse << std::endl;
 		}
 	}
 	catch( std::exception& ex )

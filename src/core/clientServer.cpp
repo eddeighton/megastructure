@@ -114,31 +114,49 @@ namespace megastructure
 		char* pData = reinterpret_cast< char* >( zmq_msg_data( &msg ));
 		std::copy( str.begin(), str.end(), pData );
 		
-		rc = zmq_msg_set_routing_id( &msg, m_uiRoutingID );
+		rc = zmq_msg_set_routing_id( &msg, uiClient );
 		
 		rc = zmq_msg_send( &msg, m_pSocket, 0); 
 		//assert(rc == 6);
 	}
 	
-	std::string Server::recv( std::uint32_t& uiClient )
+	void Server::broadcast( const std::string& str )
 	{
+		for( std::uint32_t ui : m_clients )
+		{
+			send( str, ui );
+		}
+	}
+	
+	bool Server::recv( std::string& strMsg, std::uint32_t& uiClient )
+	{
+		bool bResult = false;
+		
 		/* Create an empty ØMQ message */
 		zmq_msg_t msg;
 		int rc = zmq_msg_init( &msg );
 		//assert (rc == 0);
 		/* Block until a message is available to be received from socket */
-		rc = zmq_msg_recv( &msg, m_pSocket, 0 );
+		rc = zmq_msg_recv( &msg, m_pSocket, ZMQ_DONTWAIT );
 		//assert (rc != -1);
 		
-		m_uiRoutingID = zmq_msg_routing_id( &msg );
+		if( rc > 0 )
+		{
+			uiClient = zmq_msg_routing_id( &msg );
+			
+			m_clients.insert( uiClient );
+			
+			const std::size_t szSize = zmq_msg_size( &msg );
+			const char* pData = reinterpret_cast< char* >( zmq_msg_data( &msg ) );
+			strMsg = std::string( pData, pData + szSize );
+			
+			/* Release message */ 
+			
+			bResult = true;
+		}
 		
-		const std::size_t szSize = zmq_msg_size( &msg );
-		const char* pData = reinterpret_cast< char* >( zmq_msg_data( &msg ) );
-		const std::string result( pData, pData + szSize );
-		
-		/* Release message */ 
 		zmq_msg_close( &msg );
 		
-		return result;
+		return bResult;
 	}
 }

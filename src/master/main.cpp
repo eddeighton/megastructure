@@ -67,6 +67,8 @@ int main( int argc, const char* argv[] )
 		return 0;
 	}
 	
+	using namespace std::chrono_literals;
+				
 	try
 	{
 		//std::cout << "Master: " << megastructure::version() << std::endl;
@@ -76,17 +78,26 @@ int main( int argc, const char* argv[] )
 		while( true )
 		{
 			std::uint32_t uiClient = 0;
-			str = server.recv( uiClient );
-			if( !str.empty() )
+			if( server.recv( str, uiClient ) )
 			{
-				server.send( "Got it!", uiClient );
+				std::cout << "\n" << str << std::endl;
+				
+				{
+					server.send( "Got it!", uiClient );
+					std::this_thread::sleep_for( 0.1s );
+				}
+				
+				{
+					std::ostringstream os;
+					os << "Got: " << str << " from: " << uiClient;
+					server.broadcast( os.str() );
+					std::this_thread::sleep_for( 0.1s );
+				}
 			}
 			
-			{
-				std::cout << str << std::endl;
-				using namespace std::chrono_literals;
-				std::this_thread::sleep_for( 0.5s );
-			}
+			std::this_thread::sleep_for( 1s );
+			std::cout << ".";
+			std::cout.flush();
 		}
 	}
 	catch( std::exception& ex )
