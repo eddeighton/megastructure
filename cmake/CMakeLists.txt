@@ -58,5 +58,7 @@ include (InstallRequiredSystemLibraries)
 #now simply add all the actual targets
 
 add_subdirectory(core)
+add_subdirectory(component)
 add_subdirectory(master)
 add_subdirectory(slave)
+add_subdirectory(tests)
