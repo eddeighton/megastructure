@@ -119,10 +119,9 @@ namespace megastructure
 			{
 				std::string str;
 				std::uint32_t uiClient = 0;
-				if( readSocket.recv_sync( str, uiClient ) )
+				megastructure::Message message;
+				if( readSocket.recv_sync( message, uiClient ) )
 				{
-					megastructure::Message message;
-					message.ParseFromString( str );
 					queue.clientMessage( uiClient, message );
 				}
 				else
@@ -149,11 +148,9 @@ namespace megastructure
 		{
 			while( true )
 			{
-				std::string str;
-				if( readSocket.recv_sync( str ) )
+				megastructure::Message message;
+				if( readSocket.recv_sync( message ) )
 				{
-					megastructure::Message message;
-					message.ParseFromString( str );
 					queue.serverMessage( message );
 				}
 				else

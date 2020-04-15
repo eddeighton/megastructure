@@ -1,7 +1,7 @@
 
 #pragma once
 
-
+#include "protocol/megastructure.pb.h"
 
 #include <string>
 #include <cstdint>
@@ -16,12 +16,13 @@ namespace megastructure
 		Client( const std::string& strMasterIP, const std::string& strMasterPort );
 		~Client();
 		
-		void send( const std::string& str );
-		bool recv_sync( std::string& strMsg );
+		bool send( Message& message );
+		bool recv_sync( Message& message );
 		
 	private:
 		void* m_pContext;
 		void* m_pSocket;
+		std::int32_t m_messageID;
 	};
 
 	class Server
@@ -30,11 +31,12 @@ namespace megastructure
 		Server( const std::string& strPort );
 		~Server();
 		
-		void send( const std::string& str, std::uint32_t uiClient );
-		bool recv_sync( std::string& strMsg, std::uint32_t& uiClient );
+		bool send( Message& message, std::uint32_t uiClient );
+		bool recv_sync( Message& message, std::uint32_t& uiClient );
 	private:
 		void* m_pContext;
 		void* m_pSocket;
+		std::int32_t m_messageID;
 	};
 
 	

@@ -5,6 +5,9 @@ package megastructure;
 
 message Message
 {
+	int32 id = 1;
+
+
 	message SlaveHostRequest_Enroll
 	{
 		string slavename = 1;
@@ -26,11 +29,11 @@ message Message
 	
 	oneof foobar
 	{
-		SlaveHostRequest_Enroll slavehostrequest_enroll = 1;
-		HostSlaveResponse_Enroll hostslaveresponse_enroll = 2;
+		SlaveHostRequest_Enroll slavehostrequest_enroll = 2;
+		HostSlaveResponse_Enroll hostslaveresponse_enroll = 3;
 		
-		HostSlaveRequest_Alive hostslaverequest_alive = 3;
-		SlaveHostResponse_Alive slavehostresponse_alive = 4;
+		HostSlaveRequest_Alive hostslaverequest_alive = 4;
+		SlaveHostResponse_Alive slavehostresponse_alive = 5;
 	}
 	
 }

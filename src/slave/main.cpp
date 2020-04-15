@@ -95,15 +95,13 @@ public:
 	{
 		std::cout << "EnrollActivity started" << std::endl;
 		
-		std::string str;
+		megastructure::Message message;
 		{
-			megastructure::Message message;
 			megastructure::Message::SlaveHostRequest_Enroll* pEnroll =
 				message.mutable_slavehostrequest_enroll();
 			pEnroll->set_slavename( m_name );
-			message.SerializeToString( &str );
 		}
-		m_client.send( str );
+		m_client.send( message );
 	}
 	
 	virtual bool serverMessage( const megastructure::Message& message )
@@ -147,28 +145,24 @@ public:
 				
 			if( alive.slavename() == m_name )
 			{
-				std::string str;
+				megastructure::Message response;
 				{
-					megastructure::Message response;
 					megastructure::Message::SlaveHostResponse_Alive* pAlive =
 						response.mutable_slavehostresponse_alive();
 					pAlive->set_success( true );
-					response.SerializeToString( &str );
 				}
-				m_client.send( str );
+				m_client.send( response );
 				std::cout << "Got alive test request. Responded true."  << std::endl;
 			}
 			else
 			{
-				std::string str;
+				megastructure::Message response;
 				{
-					megastructure::Message response;
 					megastructure::Message::SlaveHostResponse_Alive* pAlive =
 						response.mutable_slavehostresponse_alive();
 					pAlive->set_success( false );
-					response.SerializeToString( &str );
 				}
-				m_client.send( str );
+				m_client.send( response );
 				std::cout << "Got alive test request. Responded false."  << std::endl;
 			}
 				
@@ -218,11 +212,6 @@ int main( int argc, const char* argv[] )
 			
 			if( str == "quit" )
 				break;
-			
-			/*megastructure::Message message;
-			message.set_msg( str );
-			message.SerializeToString( &str );
-			client.send( str );*/
 		}
 	}
 	catch( std::exception& ex )

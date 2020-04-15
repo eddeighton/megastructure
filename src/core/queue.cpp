@@ -3,8 +3,10 @@
 #include "megastructure/queue.hpp"
 
 #include "common/assert_verify.hpp"
+#include "common/requireSemicolon.hpp"
 
 #include <boost/system/error_code.hpp>
+#include "boost/current_function.hpp"
 
 #include <iostream>
 
@@ -31,6 +33,24 @@ namespace megastructure
 	
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
+
+#define PRINTEXCEPTION_AND_ABORT( code )                                                  \
+	DO_STUFF_AND_REQUIRE_SEMI_COLON(                                                      \
+		try                                                                               \
+		{                                                                                 \
+			code                                                                          \
+		}                                                                                 \
+		catch( std::exception& ex )                                                       \
+		{                                                                                 \
+			std::cout << BOOST_CURRENT_FUNCTION " exception: " << ex.what() << std::endl; \
+			std::abort();                                                                 \
+		}                                                                                 \
+		catch( ... )                                                                      \
+		{                                                                                 \
+			std::cout << BOOST_CURRENT_FUNCTION " Unknown exception" << std::endl;        \
+		}                                                                                 \
+	)
+
 	Queue::Queue()
 		:	m_stop( false ),
 			m_keepAliveTimer( m_queue, 1s )
@@ -49,10 +69,13 @@ namespace megastructure
 
 	void Queue::OnKeepAlive( const boost::system::error_code& ec )
 	{
-		for( Activity::Ptr pActivity : m_active )
-		{
-			pActivity->keepAlive();
-		}
+		PRINTEXCEPTION_AND_ABORT
+		(
+			for( Activity::Ptr pActivity : m_active )
+			{
+				pActivity->keepAlive();
+			}
+		);
 		
 		if( !m_stop && ec.value() == boost::system::errc::success )
 		{
@@ -73,7 +96,7 @@ namespace megastructure
 		if( m_pending.empty() && pActivity->precondition( m_active ) )
 		{
 			m_active.push_back( pActivity );
-			pActivity->start();
+			PRINTEXCEPTION_AND_ABORT( pActivity->start(); );
 		}
 		else
 		{
@@ -89,8 +112,11 @@ namespace megastructure
 	{
 		for( Activity::Ptr pActivity : m_active )
 		{
-			if( pActivity->serverMessage( message ) )
-				break;
+			PRINTEXCEPTION_AND_ABORT
+			(
+				if( pActivity->serverMessage( message ) )
+					break;
+			);
 		}
 	}
 	
@@ -102,8 +128,11 @@ namespace megastructure
 	{
 		for( Activity::Ptr pActivity : m_active )
 		{
-			if( pActivity->clientMessage( uiClient, message ) )
-				break;
+			PRINTEXCEPTION_AND_ABORT
+			(
+				if( pActivity->clientMessage( uiClient, message ) )
+					break;
+			);
 		}
 	}
 	
@@ -116,8 +145,11 @@ namespace megastructure
 	{
 		for( Activity::Ptr pActivity : m_active )
 		{
-			if( pActivity->jobComplete( pJob ) )
-				break;
+			PRINTEXCEPTION_AND_ABORT
+			(
+				if( pActivity->jobComplete( pJob ) )
+					break;
+			);
 		}
 	}
 	
@@ -139,10 +171,13 @@ namespace megastructure
 			}
 			else
 			{
-				if( (*i)->activityComplete( pActivity ) && bFound )
-				{
-					break;
-				}
+				PRINTEXCEPTION_AND_ABORT
+				(
+					if( (*i)->activityComplete( pActivity ) && bFound )
+					{
+						break;
+					}
+				);
 				++i;
 			}
 		}
@@ -156,7 +191,7 @@ namespace megastructure
 			{
 				m_pending.pop_front();
 				m_active.push_back( pFirstPending );
-				pFirstPending->start();
+				PRINTEXCEPTION_AND_ABORT( pFirstPending->start(); );
 			}
 		}
 		

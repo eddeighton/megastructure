@@ -699,10 +699,10 @@ class Message PROTOBUF_FINAL :
   static const Message& default_instance();
 
   enum FoobarCase {
-    kSlavehostrequestEnroll = 1,
-    kHostslaveresponseEnroll = 2,
-    kHostslaverequestAlive = 3,
-    kSlavehostresponseAlive = 4,
+    kSlavehostrequestEnroll = 2,
+    kHostslaveresponseEnroll = 3,
+    kHostslaverequestAlive = 4,
+    kSlavehostresponseAlive = 5,
     FOOBAR_NOT_SET = 0,
   };
 
@@ -788,12 +788,22 @@ class Message PROTOBUF_FINAL :
   // accessors -------------------------------------------------------
 
   enum : int {
-    kSlavehostrequestEnrollFieldNumber = 1,
-    kHostslaveresponseEnrollFieldNumber = 2,
-    kHostslaverequestAliveFieldNumber = 3,
-    kSlavehostresponseAliveFieldNumber = 4,
+    kIdFieldNumber = 1,
+    kSlavehostrequestEnrollFieldNumber = 2,
+    kHostslaveresponseEnrollFieldNumber = 3,
+    kHostslaverequestAliveFieldNumber = 4,
+    kSlavehostresponseAliveFieldNumber = 5,
   };
-  // .megastructure.Message.SlaveHostRequest_Enroll slavehostrequest_enroll = 1;
+  // int32 id = 1;
+  void clear_id();
+  ::PROTOBUF_NAMESPACE_ID::int32 id() const;
+  void set_id(::PROTOBUF_NAMESPACE_ID::int32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int32 _internal_id() const;
+  void _internal_set_id(::PROTOBUF_NAMESPACE_ID::int32 value);
+  public:
+
+  // .megastructure.Message.SlaveHostRequest_Enroll slavehostrequest_enroll = 2;
   bool has_slavehostrequest_enroll() const;
   private:
   bool _internal_has_slavehostrequest_enroll() const;
@@ -811,7 +821,7 @@ class Message PROTOBUF_FINAL :
       ::megastructure::Message_SlaveHostRequest_Enroll* slavehostrequest_enroll);
   ::megastructure::Message_SlaveHostRequest_Enroll* unsafe_arena_release_slavehostrequest_enroll();
 
-  // .megastructure.Message.HostSlaveResponse_Enroll hostslaveresponse_enroll = 2;
+  // .megastructure.Message.HostSlaveResponse_Enroll hostslaveresponse_enroll = 3;
   bool has_hostslaveresponse_enroll() const;
   private:
   bool _internal_has_hostslaveresponse_enroll() const;
@@ -829,7 +839,7 @@ class Message PROTOBUF_FINAL :
       ::megastructure::Message_HostSlaveResponse_Enroll* hostslaveresponse_enroll);
   ::megastructure::Message_HostSlaveResponse_Enroll* unsafe_arena_release_hostslaveresponse_enroll();
 
-  // .megastructure.Message.HostSlaveRequest_Alive hostslaverequest_alive = 3;
+  // .megastructure.Message.HostSlaveRequest_Alive hostslaverequest_alive = 4;
   bool has_hostslaverequest_alive() const;
   private:
   bool _internal_has_hostslaverequest_alive() const;
@@ -847,7 +857,7 @@ class Message PROTOBUF_FINAL :
       ::megastructure::Message_HostSlaveRequest_Alive* hostslaverequest_alive);
   ::megastructure::Message_HostSlaveRequest_Alive* unsafe_arena_release_hostslaverequest_alive();
 
-  // .megastructure.Message.SlaveHostResponse_Alive slavehostresponse_alive = 4;
+  // .megastructure.Message.SlaveHostResponse_Alive slavehostresponse_alive = 5;
   bool has_slavehostresponse_alive() const;
   private:
   bool _internal_has_slavehostresponse_alive() const;
@@ -881,6 +891,7 @@ class Message PROTOBUF_FINAL :
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
+  ::PROTOBUF_NAMESPACE_ID::int32 id_;
   union FoobarUnion {
     FoobarUnion() {}
     ::megastructure::Message_SlaveHostRequest_Enroll* slavehostrequest_enroll_;
@@ -1122,7 +1133,27 @@ inline void Message_SlaveHostResponse_Alive::set_success(bool value) {
 
 // Message
 
-// .megastructure.Message.SlaveHostRequest_Enroll slavehostrequest_enroll = 1;
+// int32 id = 1;
+inline void Message::clear_id() {
+  id_ = 0;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 Message::_internal_id() const {
+  return id_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 Message::id() const {
+  // @@protoc_insertion_point(field_get:megastructure.Message.id)
+  return _internal_id();
+}
+inline void Message::_internal_set_id(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  
+  id_ = value;
+}
+inline void Message::set_id(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  _internal_set_id(value);
+  // @@protoc_insertion_point(field_set:megastructure.Message.id)
+}
+
+// .megastructure.Message.SlaveHostRequest_Enroll slavehostrequest_enroll = 2;
 inline bool Message::_internal_has_slavehostrequest_enroll() const {
   return foobar_case() == kSlavehostrequestEnroll;
 }
@@ -1195,7 +1226,7 @@ inline ::megastructure::Message_SlaveHostRequest_Enroll* Message::mutable_slaveh
   return _internal_mutable_slavehostrequest_enroll();
 }
 
-// .megastructure.Message.HostSlaveResponse_Enroll hostslaveresponse_enroll = 2;
+// .megastructure.Message.HostSlaveResponse_Enroll hostslaveresponse_enroll = 3;
 inline bool Message::_internal_has_hostslaveresponse_enroll() const {
   return foobar_case() == kHostslaveresponseEnroll;
 }
@@ -1268,7 +1299,7 @@ inline ::megastructure::Message_HostSlaveResponse_Enroll* Message::mutable_hosts
   return _internal_mutable_hostslaveresponse_enroll();
 }
 
-// .megastructure.Message.HostSlaveRequest_Alive hostslaverequest_alive = 3;
+// .megastructure.Message.HostSlaveRequest_Alive hostslaverequest_alive = 4;
 inline bool Message::_internal_has_hostslaverequest_alive() const {
   return foobar_case() == kHostslaverequestAlive;
 }
@@ -1341,7 +1372,7 @@ inline ::megastructure::Message_HostSlaveRequest_Alive* Message::mutable_hostsla
   return _internal_mutable_hostslaverequest_alive();
 }
 
-// .megastructure.Message.SlaveHostResponse_Alive slavehostresponse_alive = 4;
+// .megastructure.Message.SlaveHostResponse_Alive slavehostresponse_alive = 5;
 inline bool Message::_internal_has_slavehostresponse_alive() const {
   return foobar_case() == kSlavehostresponseAlive;
 }
