@@ -13,11 +13,13 @@ include( ${MS_ROOT_DIR}/cmake/common_include.cmake )
 set( MS_LIBRARY
 	${MS_API_DIR}/megastructure/coordinator.hpp
 	${MS_API_DIR}/megastructure/clientServer.hpp
+	${MS_API_DIR}/megastructure/queue.hpp
 	)
 
 set( MS_SOURCES
 	${MS_SRC_DIR}/core/coordinator.cpp
 	${MS_SRC_DIR}/core/clientServer.cpp
+	${MS_SRC_DIR}/core/queue.cpp
     )
     
 add_library( megastructurelib 
@@ -34,6 +36,8 @@ link_boost( megastructurelib iostreams )
 link_boost( megastructurelib serialization )
 link_zmq( megastructurelib )
 link_common( megastructurelib )
+
+target_link_libraries( megastructurelib megastructureprotocollib )
 
 install( FILES ${MS_LIBRARY} DESTINATION include/megastructure )
 install( TARGETS megastructurelib DESTINATION lib)

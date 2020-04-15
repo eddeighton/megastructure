@@ -7,18 +7,13 @@ include( ${MS_ROOT_DIR}/cmake/boost_include.cmake )
 #get common
 include( ${MS_ROOT_DIR}/cmake/common_include.cmake )
 
-#get megastructure
-include( ${MS_ROOT_DIR}/cmake/core/megastructure_include.cmake )
-
 #get the sources
-set( TEST_EG_CMD_SOURCE_DIR ${MS_ROOT_DIR}/tests/host )
-file( GLOB TEST_EG_CMD_SOURCE_DIR_HEADERS ${TEST_EG_CMD_SOURCE_DIR}/*.hpp )
-file( GLOB TEST_EG_CMD_SOURCE_DIR_SOURCES ${TEST_EG_CMD_SOURCE_DIR}/*.cpp )
-set( TEST_EG_CMD_SOURCES ${TEST_EG_CMD_SOURCE_DIR_HEADERS} ${TEST_EG_CMD_SOURCE_DIR_SOURCES} )
-source_group( src FILES ${TEST_EG_CMD_SOURCES} )
-
+set( MS_TEST_EG_SOURCES
+	${MS_ROOT_DIR}/tests/eg/test_eg.cpp
+    )
+	
 add_library( test_eg SHARED
-					${TEST_EG_CMD_SOURCES}
+					${MS_TEST_EG_SOURCES}
 				)
 		
 set_target_properties( test_eg PROPERTIES FOLDER log )
@@ -32,7 +27,8 @@ link_boost( test_eg filesystem )
 link_boost( test_eg system )
 link_boost( test_eg date_time )
 link_common( test_eg )
-#link_eventlog( master )
-link_megastructure( test_eg )
+
+target_link_libraries( test_eg megastructurelib )
+target_link_libraries( test_eg megastructureprotocollib )
 
 install( TARGETS test_eg DESTINATION bin)

@@ -1,0 +1,36 @@
+
+syntax = "proto3";
+
+package megastructure;
+
+message Message
+{
+	message SlaveHostRequest_Enroll
+	{
+		string slavename = 1;
+	}
+	message HostSlaveResponse_Enroll
+	{
+		bool success = 1;
+	}
+	
+	message HostSlaveRequest_Alive
+	{
+		string slavename = 1;
+	}
+	message SlaveHostResponse_Alive
+	{
+		bool success = 1;
+	}
+	
+	
+	oneof foobar
+	{
+		SlaveHostRequest_Enroll slavehostrequest_enroll = 1;
+		HostSlaveResponse_Enroll hostslaveresponse_enroll = 2;
+		
+		HostSlaveRequest_Alive hostslaverequest_alive = 3;
+		SlaveHostResponse_Alive slavehostresponse_alive = 4;
+	}
+	
+}

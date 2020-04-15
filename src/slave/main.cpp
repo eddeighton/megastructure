@@ -1,6 +1,10 @@
 
 //#include "megastructure/coordinator.hpp"
 #include "megastructure/clientServer.hpp"
+#include "protocol/megastructure.pb.h"
+#include "megastructure/queue.hpp"
+
+#include "zmq.h"
 
 #include <boost/program_options.hpp>
 
@@ -8,12 +12,11 @@
 #include <thread>
 #include <chrono>
 
-#include <signal.h>
-
 struct Args
 {
 	std::string ip;
 	std::string port;
+	std::string name;
 };
 
 bool parse_args( int argc, const char* argv[], Args& args )
@@ -28,6 +31,7 @@ bool parse_args( int argc, const char* argv[], Args& args )
 			("help", "produce help message")
 			("ip",    po::value< std::string >( &args.ip ), "IP Address" )
 			("port",  po::value< std::string >( &args.port ), "Port" )
+			("name",  po::value< std::string >( &args.name ), "Slave Name" )
 		;
 
 		po::positional_options_description p;
@@ -47,13 +51,19 @@ bool parse_args( int argc, const char* argv[], Args& args )
 		
 		if( args.ip.empty() )
 		{
-			std::cout << "Missing IP address" << std::endl;
+			std::cout << "IP address not specified" << std::endl;
 			return false;
 		}
 		
 		if( args.port.empty() )
 		{
-			std::cout << "Port" << std::endl;
+			std::cout << "Port not specified" << std::endl;
+			return false;
+		}
+		
+		if( args.name.empty() )
+		{
+			std::cout << "Slave Name not specified" << std::endl;
 			return false;
 		}
 
@@ -66,6 +76,112 @@ bool parse_args( int argc, const char* argv[], Args& args )
 	return true;
 }
 
+
+class EnrollActivity : public megastructure::Activity
+{
+public:
+	EnrollActivity( 
+				megastructure::Queue& queue, 
+				megastructure::Client& client,
+				const std::string& name ) 
+		:	Activity( queue ),
+			m_client( client ),
+			m_name( name )
+	{
+		
+	}
+	
+	virtual void start()
+	{
+		std::cout << "EnrollActivity started" << std::endl;
+		
+		std::string str;
+		{
+			megastructure::Message message;
+			megastructure::Message::SlaveHostRequest_Enroll* pEnroll =
+				message.mutable_slavehostrequest_enroll();
+			pEnroll->set_slavename( m_name );
+			message.SerializeToString( &str );
+		}
+		m_client.send( str );
+	}
+	
+	virtual bool serverMessage( const megastructure::Message& message )
+	{
+		if( message.has_hostslaveresponse_enroll() )
+		{
+			std::cout << "EnrollActivity Got response: " << 
+				message.hostslaveresponse_enroll().success() << std::endl;
+			m_queue.activityComplete( shared_from_this() );
+			return true;
+		}
+		return false;
+	}
+	
+private:
+	megastructure::Client& m_client;
+	std::string m_name;
+};
+
+
+class AliveTestActivity : public megastructure::Activity
+{
+public:
+	AliveTestActivity( 
+				megastructure::Queue& queue, 
+				megastructure::Client& client,
+				const std::string& name ) 
+		:	Activity( queue ),
+			m_client( client ),
+			m_name( name )
+	{
+		
+	}
+	
+	virtual bool serverMessage( const megastructure::Message& message )
+	{
+		if( message.has_hostslaverequest_alive() )
+		{
+			const megastructure::Message::HostSlaveRequest_Alive& alive = 
+				message.hostslaverequest_alive();
+				
+			if( alive.slavename() == m_name )
+			{
+				std::string str;
+				{
+					megastructure::Message response;
+					megastructure::Message::SlaveHostResponse_Alive* pAlive =
+						response.mutable_slavehostresponse_alive();
+					pAlive->set_success( true );
+					response.SerializeToString( &str );
+				}
+				m_client.send( str );
+				std::cout << "Got alive test request. Responded true."  << std::endl;
+			}
+			else
+			{
+				std::string str;
+				{
+					megastructure::Message response;
+					megastructure::Message::SlaveHostResponse_Alive* pAlive =
+						response.mutable_slavehostresponse_alive();
+					pAlive->set_success( false );
+					response.SerializeToString( &str );
+				}
+				m_client.send( str );
+				std::cout << "Got alive test request. Responded false."  << std::endl;
+			}
+				
+			return true;
+		}
+		return false;
+	}
+	
+private:
+	megastructure::Client& m_client;
+	std::string m_name;
+};
+
 int main( int argc, const char* argv[] )
 {
 	Args args;
@@ -76,33 +192,37 @@ int main( int argc, const char* argv[] )
 	
 	try
 	{
-		//std::cout << "Slave: " << megastructure::version() << std::endl;
-		
+		megastructure::Queue queue;
 		megastructure::Client client( args.ip, args.port );
 		
-		std::thread readThread(
-			[ &client ]()
-			{
-				std::string str;
-				while( true )
-				{
-					if( client.recv( str ) )
-					{
-						std::cout << str << std::endl;
-					}
-					else
-					{
-						using namespace std::chrono_literals;
-						std::this_thread::sleep_for( 0.1s );
-					}
-				}
-			});
+		std::thread zeromqserver( [ &client, &queue ]()
+		{
+			megastructure::readClient( client, queue );
+		});
+		
+		{
+			megastructure::Activity::Ptr pActivity( 
+				new AliveTestActivity( queue, client, args.name ) );
+			queue.startActivity( pActivity );
+		}
+		{
+			megastructure::Activity::Ptr pActivity( 
+				new EnrollActivity( queue, client, args.name ) );
+			queue.startActivity( pActivity );
+		}
 			
 		std::string str, strResponse;
 		while( true )
 		{
 			std::cin >> str;
-			client.send( str );
+			
+			if( str == "quit" )
+				break;
+			
+			/*megastructure::Message message;
+			message.set_msg( str );
+			message.SerializeToString( &str );
+			client.send( str );*/
 		}
 	}
 	catch( std::exception& ex )

@@ -66,10 +66,10 @@ namespace megastructure
 		m_pContext 		= zmq_ctx_new();
 		m_pSocket 		= zmq_socket( m_pContext, ZMQ_CLIENT );
 		
-		{
-			int64_t zmqLinger = 0;
-			zmq_setsockopt( m_pSocket, ZMQ_LINGER, &zmqLinger, sizeof( zmqLinger ) );
-		}
+		//{
+		//	int64_t zmqLinger = 0;
+		//	zmq_setsockopt( m_pSocket, ZMQ_LINGER, &zmqLinger, sizeof( zmqLinger ) );
+		//}
 		
 		std::string strMasterEndpoint;
 		{
@@ -104,16 +104,16 @@ namespace megastructure
 		VERIFY_RTE_MSG( rc == str.size(), "zmq_msg_send retuned incorrect size" );
 	}
 	
-	bool Client::recv( std::string& str )
+	/*bool Client::recv( std::string& str )
 	{
 		bool bReceived = false;
 		
-		/* Create an empty ØMQ message */
+		// Create an empty ØMQ message 
 		zmq_msg_t msg;
 		int rc = zmq_msg_init( &msg );
 		VERIFY_RTE_MSG( rc == 0, "zmq_msg_init failed" );
 		
-		/* Block until a message is available to be received from socket */
+		// Block until a message is available to be received from socket 
 		rc = zmq_msg_recv( &msg, m_pSocket, ZMQ_DONTWAIT );
 		if( rc >= 0 )
 		{
@@ -123,6 +123,34 @@ namespace megastructure
 			str.assign( pData, szSize );
 		}
 		else if( errno != EAGAIN )
+		{
+			throwReceiveError();
+		}
+		
+		// Release message  
+		zmq_msg_close( &msg );
+		
+		return bReceived;
+	}*/
+	bool Client::recv_sync( std::string& str )
+	{
+		bool bReceived = false;
+		
+		/* Create an empty ØMQ message */
+		zmq_msg_t msg;
+		int rc = zmq_msg_init( &msg );
+		VERIFY_RTE_MSG( rc == 0, "zmq_msg_init failed" );
+		
+		/* Block until a message is available to be received from socket */
+		rc = zmq_msg_recv( &msg, m_pSocket, 0 );
+		if( rc >= 0 )
+		{
+			bReceived = true;
+			const std::size_t szSize = zmq_msg_size( &msg );
+			const char* pData = reinterpret_cast< char* >( zmq_msg_data( &msg ) );
+			str.assign( pData, szSize );
+		}
+		else //if( errno != EAGAIN )
 		{
 			throwReceiveError();
 		}
@@ -182,35 +210,23 @@ namespace megastructure
 		VERIFY_RTE_MSG( rc == str.size(), "zmq_msg_send retuned incorrect size" );
 	}
 	
-	void Server::broadcast( const std::string& str )
-	{
-		for( std::uint32_t ui : m_clients )
-		{
-			send( str, ui );
-		}
-	}
-	
-	bool Server::recv( std::string& strMsg, std::uint32_t& uiClient )
+	/*bool Server::recv( std::string& strMsg, std::uint32_t& uiClient )
 	{
 		bool bResult = false;
 		
-		/* Create an empty ØMQ message */
+		// Create an empty ØMQ message 
 		zmq_msg_t msg;
 		int rc = zmq_msg_init( &msg );
 		VERIFY_RTE_MSG( rc == 0, "zmq_msg_init failed" );
 		
-		/* Block until a message is available to be received from socket */
+		// Block until a message is available to be received from socket 
 		rc = zmq_msg_recv( &msg, m_pSocket, ZMQ_DONTWAIT );
 		if( rc >= 0 )
 		{
 			uiClient = zmq_msg_routing_id( &msg );
-			
-			m_clients.insert( uiClient );
-			
 			const std::size_t szSize = zmq_msg_size( &msg );
 			const char* pData = reinterpret_cast< char* >( zmq_msg_data( &msg ) );
 			strMsg.assign( pData, pData + szSize );
-			
 			bResult = true;
 		}
 		else if( errno != EAGAIN )
@@ -218,7 +234,37 @@ namespace megastructure
 			throwReceiveError();
 		}
 		
-		/* Release message */ 
+		// Release message  
+		zmq_msg_close( &msg );
+		
+		return bResult;
+	}*/
+	
+	bool Server::recv_sync( std::string& strMsg, std::uint32_t& uiClient )
+	{
+		bool bResult = false;
+		
+		// Create an empty ØMQ message 
+		zmq_msg_t msg;
+		int rc = zmq_msg_init( &msg );
+		VERIFY_RTE_MSG( rc == 0, "zmq_msg_init failed" );
+		
+		// Block until a message is available to be received from socket 
+		rc = zmq_msg_recv( &msg, m_pSocket, 0 );
+		if( rc >= 0 )
+		{
+			uiClient = zmq_msg_routing_id( &msg );
+			const std::size_t szSize = zmq_msg_size( &msg );
+			const char* pData = reinterpret_cast< char* >( zmq_msg_data( &msg ) );
+			strMsg.assign( pData, pData + szSize );
+			bResult = true;
+		}
+		else //if( errno != EAGAIN )
+		{
+			throwReceiveError();
+		}
+		
+		// Release message  
 		zmq_msg_close( &msg );
 		
 		return bResult;

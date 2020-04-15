@@ -8,14 +8,12 @@ include( ${MS_ROOT_DIR}/cmake/boost_include.cmake )
 include( ${MS_ROOT_DIR}/cmake/core/megastructure_include.cmake )
 
 #get the sources
-set( SLAVE_CMD_SOURCE_DIR ${MS_ROOT_DIR}/src/slave )
-file( GLOB SLAVE_CMD_SOURCE_DIR_HEADERS ${SLAVE_CMD_SOURCE_DIR}/*.hpp )
-file( GLOB SLAVE_CMD_SOURCE_DIR_SOURCES ${SLAVE_CMD_SOURCE_DIR}/*.cpp )
-set( SLAVE_CMD_SOURCES ${SLAVE_CMD_SOURCE_DIR_HEADERS} ${SLAVE_CMD_SOURCE_DIR_SOURCES} )
-source_group( src FILES ${SLAVE_CMD_SOURCES} )
-
+set( MS_SLAVE_SOURCES
+	${MS_SRC_DIR}/slave/main.cpp
+    )
+	
 add_executable( slave 
-					${SLAVE_CMD_SOURCES}
+					${MS_SLAVE_SOURCES}
 				)
 		
 set_target_properties( slave PROPERTIES FOLDER log )

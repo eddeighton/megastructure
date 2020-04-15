@@ -8,14 +8,17 @@ include( ${MS_ROOT_DIR}/cmake/boost_include.cmake )
 include( ${MS_ROOT_DIR}/cmake/core/megastructure_include.cmake )
 
 #get the sources
-set( COMPONENT_CMD_SOURCE_DIR ${MS_ROOT_DIR}/src/component )
-file( GLOB COMPONENT_CMD_SOURCE_DIR_HEADERS ${COMPONENT_CMD_SOURCE_DIR}/*.hpp )
-file( GLOB COMPONENT_CMD_SOURCE_DIR_SOURCES ${COMPONENT_CMD_SOURCE_DIR}/*.cpp )
-set( COMPONENT_CMD_SOURCES ${COMPONENT_CMD_SOURCE_DIR_HEADERS} ${COMPONENT_CMD_SOURCE_DIR_SOURCES} )
-source_group( src FILES ${COMPONENT_CMD_SOURCES} )
+set( MS_COMPONENT_API
+	${MS_API_DIR}/megastructure/component.hpp
+	)
+
+set( MS_COMPONENT_SOURCES
+	${MS_SRC_DIR}/component/component.cpp
+    )
 
 add_library( component STATIC
-					${COMPONENT_CMD_SOURCES}
+					${MS_COMPONENT_API}
+					${MS_COMPONENT_SOURCES}
 				)
 		
 set_target_properties( component PROPERTIES FOLDER log )

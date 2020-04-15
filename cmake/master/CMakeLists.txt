@@ -8,14 +8,12 @@ include( ${MS_ROOT_DIR}/cmake/boost_include.cmake )
 include( ${MS_ROOT_DIR}/cmake/core/megastructure_include.cmake )
 
 #get the sources
-set( MASTER_CMD_SOURCE_DIR ${MS_ROOT_DIR}/src/master )
-file( GLOB MASTER_CMD_SOURCE_DIR_HEADERS ${MASTER_CMD_SOURCE_DIR}/*.hpp )
-file( GLOB MASTER_CMD_SOURCE_DIR_SOURCES ${MASTER_CMD_SOURCE_DIR}/*.cpp )
-set( MASTER_CMD_SOURCES ${MASTER_CMD_SOURCE_DIR_HEADERS} ${MASTER_CMD_SOURCE_DIR_SOURCES} )
-source_group( src FILES ${MASTER_CMD_SOURCES} )
-
+set( MS_MASTER_SOURCES
+	${MS_SRC_DIR}/master/main.cpp
+    )
+	
 add_executable( master 
-					${MASTER_CMD_SOURCES}
+					${MS_MASTER_SOURCES}
 				)
 		
 set_target_properties( master PROPERTIES FOLDER log )

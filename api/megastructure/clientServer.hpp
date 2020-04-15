@@ -1,6 +1,8 @@
 
 #pragma once
 
+
+
 #include <string>
 #include <cstdint>
 #include <set>
@@ -15,7 +17,7 @@ namespace megastructure
 		~Client();
 		
 		void send( const std::string& str );
-		bool recv( std::string& str );
+		bool recv_sync( std::string& strMsg );
 		
 	private:
 		void* m_pContext;
@@ -29,14 +31,11 @@ namespace megastructure
 		~Server();
 		
 		void send( const std::string& str, std::uint32_t uiClient );
-		void broadcast( const std::string& str );
-		bool recv( std::string& strMsg, std::uint32_t& uiClient );
-		
+		bool recv_sync( std::string& strMsg, std::uint32_t& uiClient );
 	private:
 		void* m_pContext;
 		void* m_pSocket;
-		
-		std::set< uint32_t> m_clients;
 	};
 
+	
 }

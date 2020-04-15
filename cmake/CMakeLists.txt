@@ -11,27 +11,10 @@ set( CMAKE_CXX_STANDARD 17 )
 #win32 specific settings
 IF( ${WIN32} )
 
-# /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MP
-#set( CMAKE_CXX_FLAGS "/DWIN32 /D_WINDOWS /W3 /GR /EHsc /MP")
-
-#add_compile_options(/std:c++17)
-
-#add_compile_options(/Zc:__cplusplus)
-#add_compile_options(/DWIN32)
-#add_compile_options(/D_WINDOWS)
-#add_compile_options(/MP)
-#add_compile_options(/W3)
-
 add_definitions(-D_WIN32_WINNT=0x0601)
 add_definitions(-DNOMINMAX -D_NOMINMAX)
 
-#add_definitions(-DUNICODE -D_UNICODE)
-
-##specify the character set to use for all projects
-#add_definitions(-DSBCS -D_SBCS)
-
 ENDIF( ${WIN32} )
-
 
 #setup some common directories from the root of the project
 set( CMAKE_PARENT_PATH ${CMAKE_CURRENT_LIST_DIR}/.. )
@@ -62,3 +45,4 @@ add_subdirectory(component)
 add_subdirectory(master)
 add_subdirectory(slave)
 add_subdirectory(tests)
+add_subdirectory(protocol)
