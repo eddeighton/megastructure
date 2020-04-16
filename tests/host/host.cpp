@@ -54,6 +54,38 @@ bool parse_args( int argc, const char* argv[], Args& args )
 	return true;
 }
 
+
+class AliveTestActivity : public megastructure::Activity
+{
+public:
+	AliveTestActivity( megastructure::Component& component ) 
+		:	m_component( component )
+	{
+		
+	}
+	
+	virtual bool serverMessage( const megastructure::Message& message )
+	{
+		if( message.has_chq_alive() )
+		{
+			using namespace megastructure;
+			Message response;
+			{
+				Message::HCS_Alive* pAlive = response.mutable_hcs_alive();
+				pAlive->set_success( true );
+			}
+			m_component.send( response );
+			return true;
+		}
+		return false;
+	}
+	
+private:
+	megastructure::Component& m_component;
+	std::string m_name;
+};
+
+
 int main( int argc, const char* argv[] )
 {
 	Args args;
@@ -66,7 +98,11 @@ int main( int argc, const char* argv[] )
 	{
 		std::cout << "Host: " << megastructure::getHostProgramName() << " : " << Common::getProcessID() << std::endl;
 		
-		megastructure::Component component( megastructure::getGlobalCoordinatorPort() );
+		megastructure::Component component( 
+			megastructure::getGlobalCoordinatorPort(),
+			megastructure::getHostProgramName() );
+		
+		component.startActivity( new AliveTestActivity( component ) );
 		
 		while( true )
 		{

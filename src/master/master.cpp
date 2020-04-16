@@ -75,7 +75,7 @@ public:
 	TestClientActivity( megastructure::ClientMap& master,
 				megastructure::Queue& queue, 
 				megastructure::Server& server, std::uint32_t clientID, const std::string& strSlaveName ) 
-		:	Activity( queue ),
+		:	m_queue( queue ),
 			m_master( master ),
 			m_server( server ),
 			m_clientID( clientID ),
@@ -88,14 +88,11 @@ public:
 	virtual void start()
 	{
 		using namespace megastructure;
-		
 		Message message;
 		{
-			Message::MSQ_Alive* pAlive =
-				message.mutable_msq_alive();
+			Message::MSQ_Alive* pAlive = message.mutable_msq_alive();
 			pAlive->set_slavename( m_strSlaveName );
 		}
-		
 		if( !m_server.send( message, m_clientID ) )
 		{
 			m_master.removeClient( m_clientID );
@@ -143,6 +140,7 @@ public:
 		return m_clientID;
 	}
 private:
+	megastructure::Queue& m_queue;
 	megastructure::ClientMap& m_master;
 	megastructure::Server& m_server;
 	std::uint32_t m_clientID;
@@ -156,7 +154,7 @@ public:
 	TestClientsActivity( megastructure::ClientMap& master,
 				megastructure::Queue& queue, 
 				megastructure::Server& server ) 
-		:	Activity( queue ),
+		:	m_queue( queue ),
 			m_master( master ),
 			m_server( server )
 	{
@@ -197,6 +195,7 @@ public:
 	}
 	
 private:
+	megastructure::Queue& m_queue;
 	megastructure::ClientMap& m_master;
 	megastructure::Server& m_server;
 	megastructure::Activity::PtrList m_activities;
@@ -208,7 +207,7 @@ public:
 	ListClientsActivity( megastructure::ClientMap& master,
 				megastructure::Queue& queue, 
 				megastructure::Server& server ) 
-		:	Activity( queue ),
+		:	m_queue( queue ),
 			m_master( master ),
 			m_server( server )
 	{
@@ -228,6 +227,7 @@ public:
 	}
 	
 private:
+	megastructure::Queue& m_queue;
 	megastructure::ClientMap& m_master;
 	megastructure::Server& m_server;
 };
@@ -238,7 +238,7 @@ public:
 	EnrollActivity( megastructure::ClientMap& master,
 				megastructure::Queue& queue, 
 				megastructure::Server& server ) 
-		:	Activity( queue ),
+		:	m_queue( queue ),
 			m_master( master ),
 			m_server( server )
 	{
@@ -272,8 +272,8 @@ public:
 					std::cout << "Enroll attempting for: " << enroll.slavename() << " which has existing client of: " << uiExisting << std::endl;
 					std::shared_ptr< TestClientActivity > pTest = 
 						std::make_shared< TestClientActivity >( m_master, m_queue, m_server, uiExisting, enroll.slavename() );
-					m_queue.startActivity( pTest );
 					m_testsMap.insert( std::make_pair( pTest, uiClient ) );
+					m_queue.startActivity( pTest );
 					return true;
 				}
 				else
@@ -299,7 +299,6 @@ public:
 		{
 			std::map< std::shared_ptr< TestClientActivity >, std::uint32_t >::iterator 
 				iFind = m_testsMap.find( pTest );
-			VERIFY_RTE( iFind != m_testsMap.end() );
 			if( iFind != m_testsMap.end() )
 			{
 				const std::uint32_t testedID = pTest->getClientID();
@@ -341,6 +340,7 @@ public:
 		return false;
 	}
 private:
+	megastructure::Queue& m_queue;
 	megastructure::ClientMap& m_master;
 	megastructure::Server& m_server;
 	std::map< std::shared_ptr< TestClientActivity >, std::uint32_t > m_testsMap;
@@ -386,7 +386,7 @@ int main( int argc, const char* argv[] )
 					new ListClientsActivity( master, queue, server ) );
 				queue.startActivity( pActivity );
 			}
-			else
+			else if( inputString == "quit" )
 			{
 				break;
 			}

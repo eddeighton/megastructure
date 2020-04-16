@@ -26,17 +26,12 @@ namespace megastructure
 		
 	};
 	
-	
-	class Queue;
-	
 	class Activity : public std::enable_shared_from_this< Activity >
 	{
 	public:
 		using Ptr = std::shared_ptr< Activity >;
 		using PtrVector = std::vector< Ptr >;
 		using PtrList = std::list< Ptr >;
-		
-		Activity( Queue& queue );
 		
 		virtual ~Activity();
 		
@@ -68,9 +63,6 @@ namespace megastructure
 		{
 			return false;
 		}
-		
-	protected:
-		Queue& m_queue;
 	};
 	
 	

@@ -46,6 +46,15 @@ message Message
 		string program = 3;
 	}
 	
+	message CHQ_Alive
+	{
+		string processname = 1;
+	}
+	message HCS_Alive
+	{
+		bool success = 1;
+	}
+	
 	
 	oneof foobar
 	{
@@ -57,6 +66,9 @@ message Message
 		
 		HCQ_Enroll hcq_enroll = 6;
 		CHS_Enroll chs_enroll = 7;
+		
+		CHQ_Alive chq_alive = 8;
+		HCS_Alive hcs_alive = 9;
 	}
 	
 }

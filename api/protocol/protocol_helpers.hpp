@@ -20,6 +20,30 @@ namespace megastructure
 	}
 	
 	
+	inline Message chs_enroll( bool bSuccess )
+	{
+		Message message;
+		{
+			Message::CHS_Enroll* pEnroll = message.mutable_chs_enroll();
+			pEnroll->set_success( bSuccess );
+			pEnroll->set_hostpath( "" );
+			pEnroll->set_program( "" );
+		}
+		return message;
+	}
+	inline Message chs_enroll( bool bSuccess, const std::string& strHostPath, const std::string& strProgram )
+	{
+		Message message;
+		{
+			Message::CHS_Enroll* pEnroll = message.mutable_chs_enroll();
+			pEnroll->set_success( bSuccess );
+			pEnroll->set_hostpath( strHostPath );
+			pEnroll->set_program( strProgram );
+		}
+		return message;
+	}
+	
+	
 }
 
 #endif //PROTOCOL_HELPERS_16_APRIL_2020

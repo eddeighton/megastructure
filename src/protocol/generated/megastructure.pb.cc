@@ -14,8 +14,10 @@
 #include <google/protobuf/wire_format.h>
 // @@protoc_insertion_point(includes)
 #include <google/protobuf/port_def.inc>
+extern PROTOBUF_INTERNAL_EXPORT_megastructure_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Message_CHQ_Alive_megastructure_2eproto;
 extern PROTOBUF_INTERNAL_EXPORT_megastructure_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Message_CHS_Enroll_megastructure_2eproto;
 extern PROTOBUF_INTERNAL_EXPORT_megastructure_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Message_HCQ_Enroll_megastructure_2eproto;
+extern PROTOBUF_INTERNAL_EXPORT_megastructure_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Message_HCS_Alive_megastructure_2eproto;
 extern PROTOBUF_INTERNAL_EXPORT_megastructure_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Message_MSQ_Alive_megastructure_2eproto;
 extern PROTOBUF_INTERNAL_EXPORT_megastructure_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Message_MSS_Enroll_megastructure_2eproto;
 extern PROTOBUF_INTERNAL_EXPORT_megastructure_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Message_SMQ_Enroll_megastructure_2eproto;
@@ -45,6 +47,14 @@ class Message_CHS_EnrollDefaultTypeInternal {
  public:
   ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<Message_CHS_Enroll> _instance;
 } _Message_CHS_Enroll_default_instance_;
+class Message_CHQ_AliveDefaultTypeInternal {
+ public:
+  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<Message_CHQ_Alive> _instance;
+} _Message_CHQ_Alive_default_instance_;
+class Message_HCS_AliveDefaultTypeInternal {
+ public:
+  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<Message_HCS_Alive> _instance;
+} _Message_HCS_Alive_default_instance_;
 class MessageDefaultTypeInternal {
  public:
   ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<Message> _instance;
@@ -54,6 +64,8 @@ class MessageDefaultTypeInternal {
   const ::megastructure::Message_SMS_Alive* sms_alive_;
   const ::megastructure::Message_HCQ_Enroll* hcq_enroll_;
   const ::megastructure::Message_CHS_Enroll* chs_enroll_;
+  const ::megastructure::Message_CHQ_Alive* chq_alive_;
+  const ::megastructure::Message_HCS_Alive* hcs_alive_;
 } _Message_default_instance_;
 }  // namespace megastructure
 static void InitDefaultsscc_info_Message_megastructure_2eproto() {
@@ -67,14 +79,30 @@ static void InitDefaultsscc_info_Message_megastructure_2eproto() {
   ::megastructure::Message::InitAsDefaultInstance();
 }
 
-::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<6> scc_info_Message_megastructure_2eproto =
-    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 6, 0, InitDefaultsscc_info_Message_megastructure_2eproto}, {
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<8> scc_info_Message_megastructure_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 8, 0, InitDefaultsscc_info_Message_megastructure_2eproto}, {
       &scc_info_Message_SMQ_Enroll_megastructure_2eproto.base,
       &scc_info_Message_MSS_Enroll_megastructure_2eproto.base,
       &scc_info_Message_MSQ_Alive_megastructure_2eproto.base,
       &scc_info_Message_SMS_Alive_megastructure_2eproto.base,
       &scc_info_Message_HCQ_Enroll_megastructure_2eproto.base,
-      &scc_info_Message_CHS_Enroll_megastructure_2eproto.base,}};
+      &scc_info_Message_CHS_Enroll_megastructure_2eproto.base,
+      &scc_info_Message_CHQ_Alive_megastructure_2eproto.base,
+      &scc_info_Message_HCS_Alive_megastructure_2eproto.base,}};
+
+static void InitDefaultsscc_info_Message_CHQ_Alive_megastructure_2eproto() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::megastructure::_Message_CHQ_Alive_default_instance_;
+    new (ptr) ::megastructure::Message_CHQ_Alive();
+    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
+  }
+  ::megastructure::Message_CHQ_Alive::InitAsDefaultInstance();
+}
+
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Message_CHQ_Alive_megastructure_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_Message_CHQ_Alive_megastructure_2eproto}, {}};
 
 static void InitDefaultsscc_info_Message_CHS_Enroll_megastructure_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -103,6 +131,20 @@ static void InitDefaultsscc_info_Message_HCQ_Enroll_megastructure_2eproto() {
 
 ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Message_HCQ_Enroll_megastructure_2eproto =
     {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_Message_HCQ_Enroll_megastructure_2eproto}, {}};
+
+static void InitDefaultsscc_info_Message_HCS_Alive_megastructure_2eproto() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::megastructure::_Message_HCS_Alive_default_instance_;
+    new (ptr) ::megastructure::Message_HCS_Alive();
+    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
+  }
+  ::megastructure::Message_HCS_Alive::InitAsDefaultInstance();
+}
+
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Message_HCS_Alive_megastructure_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_Message_HCS_Alive_megastructure_2eproto}, {}};
 
 static void InitDefaultsscc_info_Message_MSQ_Alive_megastructure_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -160,7 +202,7 @@ static void InitDefaultsscc_info_Message_SMS_Alive_megastructure_2eproto() {
 ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Message_SMS_Alive_megastructure_2eproto =
     {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_Message_SMS_Alive_megastructure_2eproto}, {}};
 
-static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_megastructure_2eproto[7];
+static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_megastructure_2eproto[9];
 static constexpr ::PROTOBUF_NAMESPACE_ID::EnumDescriptor const** file_level_enum_descriptors_megastructure_2eproto = nullptr;
 static constexpr ::PROTOBUF_NAMESPACE_ID::ServiceDescriptor const** file_level_service_descriptors_megastructure_2eproto = nullptr;
 
@@ -204,6 +246,18 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_megastructure_2eproto::offsets
   PROTOBUF_FIELD_OFFSET(::megastructure::Message_CHS_Enroll, hostpath_),
   PROTOBUF_FIELD_OFFSET(::megastructure::Message_CHS_Enroll, program_),
   ~0u,  // no _has_bits_
+  PROTOBUF_FIELD_OFFSET(::megastructure::Message_CHQ_Alive, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  PROTOBUF_FIELD_OFFSET(::megastructure::Message_CHQ_Alive, processname_),
+  ~0u,  // no _has_bits_
+  PROTOBUF_FIELD_OFFSET(::megastructure::Message_HCS_Alive, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  PROTOBUF_FIELD_OFFSET(::megastructure::Message_HCS_Alive, success_),
+  ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::megastructure::Message, _internal_metadata_),
   ~0u,  // no _extensions_
   PROTOBUF_FIELD_OFFSET(::megastructure::Message, _oneof_case_[0]),
@@ -215,6 +269,8 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_megastructure_2eproto::offsets
   offsetof(::megastructure::MessageDefaultTypeInternal, sms_alive_),
   offsetof(::megastructure::MessageDefaultTypeInternal, hcq_enroll_),
   offsetof(::megastructure::MessageDefaultTypeInternal, chs_enroll_),
+  offsetof(::megastructure::MessageDefaultTypeInternal, chq_alive_),
+  offsetof(::megastructure::MessageDefaultTypeInternal, hcs_alive_),
   PROTOBUF_FIELD_OFFSET(::megastructure::Message, foobar_),
 };
 static const ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
@@ -224,7 +280,9 @@ static const ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema schemas[] PROTOB
   { 18, -1, sizeof(::megastructure::Message_SMS_Alive)},
   { 24, -1, sizeof(::megastructure::Message_HCQ_Enroll)},
   { 30, -1, sizeof(::megastructure::Message_CHS_Enroll)},
-  { 38, -1, sizeof(::megastructure::Message)},
+  { 38, -1, sizeof(::megastructure::Message_CHQ_Alive)},
+  { 44, -1, sizeof(::megastructure::Message_HCS_Alive)},
+  { 50, -1, sizeof(::megastructure::Message)},
 };
 
 static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] = {
@@ -234,11 +292,13 @@ static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] =
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::megastructure::_Message_SMS_Alive_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::megastructure::_Message_HCQ_Enroll_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::megastructure::_Message_CHS_Enroll_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::megastructure::_Message_CHQ_Alive_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::megastructure::_Message_HCS_Alive_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::megastructure::_Message_default_instance_),
 };
 
 const char descriptor_table_protodef_megastructure_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
-  "\n\023megastructure.proto\022\rmegastructure\"\324\004\n"
+  "\n\023megastructure.proto\022\rmegastructure\"\202\006\n"
   "\007Message\022\n\n\002id\030\001 \001(\005\0227\n\nsmq_enroll\030\002 \001(\013"
   "2!.megastructure.Message.SMQ_EnrollH\000\0227\n"
   "\nmss_enroll\030\003 \001(\0132!.megastructure.Messag"
@@ -247,21 +307,27 @@ const char descriptor_table_protodef_megastructure_2eproto[] PROTOBUF_SECTION_VA
   "ve\030\005 \001(\0132 .megastructure.Message.SMS_Ali"
   "veH\000\0227\n\nhcq_enroll\030\006 \001(\0132!.megastructure"
   ".Message.HCQ_EnrollH\000\0227\n\nchs_enroll\030\007 \001("
-  "\0132!.megastructure.Message.CHS_EnrollH\000\032\037"
-  "\n\nSMQ_Enroll\022\021\n\tslavename\030\001 \001(\t\032\035\n\nMSS_E"
-  "nroll\022\017\n\007success\030\001 \001(\010\032\036\n\tMSQ_Alive\022\021\n\ts"
-  "lavename\030\001 \001(\t\032\034\n\tSMS_Alive\022\017\n\007success\030\001"
-  " \001(\010\032!\n\nHCQ_Enroll\022\023\n\013processname\030\001 \001(\t\032"
-  "@\n\nCHS_Enroll\022\017\n\007success\030\001 \001(\010\022\020\n\010hostpa"
-  "th\030\002 \001(\t\022\017\n\007program\030\003 \001(\tB\010\n\006foobarb\006pro"
-  "to3"
+  "\0132!.megastructure.Message.CHS_EnrollH\000\0225"
+  "\n\tchq_alive\030\010 \001(\0132 .megastructure.Messag"
+  "e.CHQ_AliveH\000\0225\n\thcs_alive\030\t \001(\0132 .megas"
+  "tructure.Message.HCS_AliveH\000\032\037\n\nSMQ_Enro"
+  "ll\022\021\n\tslavename\030\001 \001(\t\032\035\n\nMSS_Enroll\022\017\n\007s"
+  "uccess\030\001 \001(\010\032\036\n\tMSQ_Alive\022\021\n\tslavename\030\001"
+  " \001(\t\032\034\n\tSMS_Alive\022\017\n\007success\030\001 \001(\010\032!\n\nHC"
+  "Q_Enroll\022\023\n\013processname\030\001 \001(\t\032@\n\nCHS_Enr"
+  "oll\022\017\n\007success\030\001 \001(\010\022\020\n\010hostpath\030\002 \001(\t\022\017"
+  "\n\007program\030\003 \001(\t\032 \n\tCHQ_Alive\022\023\n\013processn"
+  "ame\030\001 \001(\t\032\034\n\tHCS_Alive\022\017\n\007success\030\001 \001(\010B"
+  "\010\n\006foobarb\006proto3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_megastructure_2eproto_deps[1] = {
 };
-static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_megastructure_2eproto_sccs[7] = {
+static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_megastructure_2eproto_sccs[9] = {
   &scc_info_Message_megastructure_2eproto.base,
+  &scc_info_Message_CHQ_Alive_megastructure_2eproto.base,
   &scc_info_Message_CHS_Enroll_megastructure_2eproto.base,
   &scc_info_Message_HCQ_Enroll_megastructure_2eproto.base,
+  &scc_info_Message_HCS_Alive_megastructure_2eproto.base,
   &scc_info_Message_MSQ_Alive_megastructure_2eproto.base,
   &scc_info_Message_MSS_Enroll_megastructure_2eproto.base,
   &scc_info_Message_SMQ_Enroll_megastructure_2eproto.base,
@@ -269,10 +335,10 @@ static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_meg
 };
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_megastructure_2eproto_once;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_megastructure_2eproto = {
-  false, false, descriptor_table_protodef_megastructure_2eproto, "megastructure.proto", 643,
-  &descriptor_table_megastructure_2eproto_once, descriptor_table_megastructure_2eproto_sccs, descriptor_table_megastructure_2eproto_deps, 7, 0,
+  false, false, descriptor_table_protodef_megastructure_2eproto, "megastructure.proto", 817,
+  &descriptor_table_megastructure_2eproto_once, descriptor_table_megastructure_2eproto_sccs, descriptor_table_megastructure_2eproto_deps, 9, 0,
   schemas, file_default_instances, TableStruct_megastructure_2eproto::offsets,
-  file_level_metadata_megastructure_2eproto, 7, file_level_enum_descriptors_megastructure_2eproto, file_level_service_descriptors_megastructure_2eproto,
+  file_level_metadata_megastructure_2eproto, 9, file_level_enum_descriptors_megastructure_2eproto, file_level_service_descriptors_megastructure_2eproto,
 };
 
 // Force running AddDescriptors() at dynamic initialization time.
@@ -1570,6 +1636,410 @@ void Message_CHS_Enroll::InternalSwap(Message_CHS_Enroll* other) {
 
 // ===================================================================
 
+void Message_CHQ_Alive::InitAsDefaultInstance() {
+}
+class Message_CHQ_Alive::_Internal {
+ public:
+};
+
+Message_CHQ_Alive::Message_CHQ_Alive(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor();
+  RegisterArenaDtor(arena);
+  // @@protoc_insertion_point(arena_constructor:megastructure.Message.CHQ_Alive)
+}
+Message_CHQ_Alive::Message_CHQ_Alive(const Message_CHQ_Alive& from)
+  : ::PROTOBUF_NAMESPACE_ID::Message() {
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  processname_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  if (!from._internal_processname().empty()) {
+    processname_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from._internal_processname(),
+      GetArena());
+  }
+  // @@protoc_insertion_point(copy_constructor:megastructure.Message.CHQ_Alive)
+}
+
+void Message_CHQ_Alive::SharedCtor() {
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_Message_CHQ_Alive_megastructure_2eproto.base);
+  processname_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+
+Message_CHQ_Alive::~Message_CHQ_Alive() {
+  // @@protoc_insertion_point(destructor:megastructure.Message.CHQ_Alive)
+  SharedDtor();
+  _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+void Message_CHQ_Alive::SharedDtor() {
+  GOOGLE_DCHECK(GetArena() == nullptr);
+  processname_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+
+void Message_CHQ_Alive::ArenaDtor(void* object) {
+  Message_CHQ_Alive* _this = reinterpret_cast< Message_CHQ_Alive* >(object);
+  (void)_this;
+}
+void Message_CHQ_Alive::RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena*) {
+}
+void Message_CHQ_Alive::SetCachedSize(int size) const {
+  _cached_size_.Set(size);
+}
+const Message_CHQ_Alive& Message_CHQ_Alive::default_instance() {
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_Message_CHQ_Alive_megastructure_2eproto.base);
+  return *internal_default_instance();
+}
+
+
+void Message_CHQ_Alive::Clear() {
+// @@protoc_insertion_point(message_clear_start:megastructure.Message.CHQ_Alive)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  processname_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+const char* Message_CHQ_Alive::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  ::PROTOBUF_NAMESPACE_ID::Arena* arena = GetArena(); (void)arena;
+  while (!ctx->Done(&ptr)) {
+    ::PROTOBUF_NAMESPACE_ID::uint32 tag;
+    ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
+    CHK_(ptr);
+    switch (tag >> 3) {
+      // string processname = 1;
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
+          auto str = _internal_mutable_processname();
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
+          CHK_(::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, "megastructure.Message.CHQ_Alive.processname"));
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      default: {
+      handle_unusual:
+        if ((tag & 7) == 4 || tag == 0) {
+          ctx->SetLastTag(tag);
+          goto success;
+        }
+        ptr = UnknownFieldParse(tag,
+            _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(),
+            ptr, ctx);
+        CHK_(ptr != nullptr);
+        continue;
+      }
+    }  // switch
+  }  // while
+success:
+  return ptr;
+failure:
+  ptr = nullptr;
+  goto success;
+#undef CHK_
+}
+
+::PROTOBUF_NAMESPACE_ID::uint8* Message_CHQ_Alive::_InternalSerialize(
+    ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+  // @@protoc_insertion_point(serialize_to_array_start:megastructure.Message.CHQ_Alive)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  // string processname = 1;
+  if (this->processname().size() > 0) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      this->_internal_processname().data(), static_cast<int>(this->_internal_processname().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
+      "megastructure.Message.CHQ_Alive.processname");
+    target = stream->WriteStringMaybeAliased(
+        1, this->_internal_processname(), target);
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:megastructure.Message.CHQ_Alive)
+  return target;
+}
+
+size_t Message_CHQ_Alive::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:megastructure.Message.CHQ_Alive)
+  size_t total_size = 0;
+
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  // string processname = 1;
+  if (this->processname().size() > 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+        this->_internal_processname());
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    return ::PROTOBUF_NAMESPACE_ID::internal::ComputeUnknownFieldsSize(
+        _internal_metadata_, total_size, &_cached_size_);
+  }
+  int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
+  SetCachedSize(cached_size);
+  return total_size;
+}
+
+void Message_CHQ_Alive::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:megastructure.Message.CHQ_Alive)
+  GOOGLE_DCHECK_NE(&from, this);
+  const Message_CHQ_Alive* source =
+      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<Message_CHQ_Alive>(
+          &from);
+  if (source == nullptr) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:megastructure.Message.CHQ_Alive)
+    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:megastructure.Message.CHQ_Alive)
+    MergeFrom(*source);
+  }
+}
+
+void Message_CHQ_Alive::MergeFrom(const Message_CHQ_Alive& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:megastructure.Message.CHQ_Alive)
+  GOOGLE_DCHECK_NE(&from, this);
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  if (from.processname().size() > 0) {
+    _internal_set_processname(from._internal_processname());
+  }
+}
+
+void Message_CHQ_Alive::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:megastructure.Message.CHQ_Alive)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void Message_CHQ_Alive::CopyFrom(const Message_CHQ_Alive& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:megastructure.Message.CHQ_Alive)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool Message_CHQ_Alive::IsInitialized() const {
+  return true;
+}
+
+void Message_CHQ_Alive::InternalSwap(Message_CHQ_Alive* other) {
+  using std::swap;
+  _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
+  processname_.Swap(&other->processname_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+
+::PROTOBUF_NAMESPACE_ID::Metadata Message_CHQ_Alive::GetMetadata() const {
+  return GetMetadataStatic();
+}
+
+
+// ===================================================================
+
+void Message_HCS_Alive::InitAsDefaultInstance() {
+}
+class Message_HCS_Alive::_Internal {
+ public:
+};
+
+Message_HCS_Alive::Message_HCS_Alive(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor();
+  RegisterArenaDtor(arena);
+  // @@protoc_insertion_point(arena_constructor:megastructure.Message.HCS_Alive)
+}
+Message_HCS_Alive::Message_HCS_Alive(const Message_HCS_Alive& from)
+  : ::PROTOBUF_NAMESPACE_ID::Message() {
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  success_ = from.success_;
+  // @@protoc_insertion_point(copy_constructor:megastructure.Message.HCS_Alive)
+}
+
+void Message_HCS_Alive::SharedCtor() {
+  success_ = false;
+}
+
+Message_HCS_Alive::~Message_HCS_Alive() {
+  // @@protoc_insertion_point(destructor:megastructure.Message.HCS_Alive)
+  SharedDtor();
+  _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+void Message_HCS_Alive::SharedDtor() {
+  GOOGLE_DCHECK(GetArena() == nullptr);
+}
+
+void Message_HCS_Alive::ArenaDtor(void* object) {
+  Message_HCS_Alive* _this = reinterpret_cast< Message_HCS_Alive* >(object);
+  (void)_this;
+}
+void Message_HCS_Alive::RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena*) {
+}
+void Message_HCS_Alive::SetCachedSize(int size) const {
+  _cached_size_.Set(size);
+}
+const Message_HCS_Alive& Message_HCS_Alive::default_instance() {
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_Message_HCS_Alive_megastructure_2eproto.base);
+  return *internal_default_instance();
+}
+
+
+void Message_HCS_Alive::Clear() {
+// @@protoc_insertion_point(message_clear_start:megastructure.Message.HCS_Alive)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  success_ = false;
+  _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+const char* Message_HCS_Alive::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  ::PROTOBUF_NAMESPACE_ID::Arena* arena = GetArena(); (void)arena;
+  while (!ctx->Done(&ptr)) {
+    ::PROTOBUF_NAMESPACE_ID::uint32 tag;
+    ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
+    CHK_(ptr);
+    switch (tag >> 3) {
+      // bool success = 1;
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 8)) {
+          success_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      default: {
+      handle_unusual:
+        if ((tag & 7) == 4 || tag == 0) {
+          ctx->SetLastTag(tag);
+          goto success;
+        }
+        ptr = UnknownFieldParse(tag,
+            _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(),
+            ptr, ctx);
+        CHK_(ptr != nullptr);
+        continue;
+      }
+    }  // switch
+  }  // while
+success:
+  return ptr;
+failure:
+  ptr = nullptr;
+  goto success;
+#undef CHK_
+}
+
+::PROTOBUF_NAMESPACE_ID::uint8* Message_HCS_Alive::_InternalSerialize(
+    ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+  // @@protoc_insertion_point(serialize_to_array_start:megastructure.Message.HCS_Alive)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  // bool success = 1;
+  if (this->success() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteBoolToArray(1, this->_internal_success(), target);
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:megastructure.Message.HCS_Alive)
+  return target;
+}
+
+size_t Message_HCS_Alive::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:megastructure.Message.HCS_Alive)
+  size_t total_size = 0;
+
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  // bool success = 1;
+  if (this->success() != 0) {
+    total_size += 1 + 1;
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    return ::PROTOBUF_NAMESPACE_ID::internal::ComputeUnknownFieldsSize(
+        _internal_metadata_, total_size, &_cached_size_);
+  }
+  int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
+  SetCachedSize(cached_size);
+  return total_size;
+}
+
+void Message_HCS_Alive::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:megastructure.Message.HCS_Alive)
+  GOOGLE_DCHECK_NE(&from, this);
+  const Message_HCS_Alive* source =
+      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<Message_HCS_Alive>(
+          &from);
+  if (source == nullptr) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:megastructure.Message.HCS_Alive)
+    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:megastructure.Message.HCS_Alive)
+    MergeFrom(*source);
+  }
+}
+
+void Message_HCS_Alive::MergeFrom(const Message_HCS_Alive& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:megastructure.Message.HCS_Alive)
+  GOOGLE_DCHECK_NE(&from, this);
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  if (from.success() != 0) {
+    _internal_set_success(from._internal_success());
+  }
+}
+
+void Message_HCS_Alive::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:megastructure.Message.HCS_Alive)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void Message_HCS_Alive::CopyFrom(const Message_HCS_Alive& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:megastructure.Message.HCS_Alive)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool Message_HCS_Alive::IsInitialized() const {
+  return true;
+}
+
+void Message_HCS_Alive::InternalSwap(Message_HCS_Alive* other) {
+  using std::swap;
+  _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
+  swap(success_, other->success_);
+}
+
+::PROTOBUF_NAMESPACE_ID::Metadata Message_HCS_Alive::GetMetadata() const {
+  return GetMetadataStatic();
+}
+
+
+// ===================================================================
+
 void Message::InitAsDefaultInstance() {
   ::megastructure::_Message_default_instance_.smq_enroll_ = const_cast< ::megastructure::Message_SMQ_Enroll*>(
       ::megastructure::Message_SMQ_Enroll::internal_default_instance());
@@ -1583,6 +2053,10 @@ void Message::InitAsDefaultInstance() {
       ::megastructure::Message_HCQ_Enroll::internal_default_instance());
   ::megastructure::_Message_default_instance_.chs_enroll_ = const_cast< ::megastructure::Message_CHS_Enroll*>(
       ::megastructure::Message_CHS_Enroll::internal_default_instance());
+  ::megastructure::_Message_default_instance_.chq_alive_ = const_cast< ::megastructure::Message_CHQ_Alive*>(
+      ::megastructure::Message_CHQ_Alive::internal_default_instance());
+  ::megastructure::_Message_default_instance_.hcs_alive_ = const_cast< ::megastructure::Message_HCS_Alive*>(
+      ::megastructure::Message_HCS_Alive::internal_default_instance());
 }
 class Message::_Internal {
  public:
@@ -1592,6 +2066,8 @@ class Message::_Internal {
   static const ::megastructure::Message_SMS_Alive& sms_alive(const Message* msg);
   static const ::megastructure::Message_HCQ_Enroll& hcq_enroll(const Message* msg);
   static const ::megastructure::Message_CHS_Enroll& chs_enroll(const Message* msg);
+  static const ::megastructure::Message_CHQ_Alive& chq_alive(const Message* msg);
+  static const ::megastructure::Message_HCS_Alive& hcs_alive(const Message* msg);
 };
 
 const ::megastructure::Message_SMQ_Enroll&
@@ -1617,6 +2093,14 @@ Message::_Internal::hcq_enroll(const Message* msg) {
 const ::megastructure::Message_CHS_Enroll&
 Message::_Internal::chs_enroll(const Message* msg) {
   return *msg->foobar_.chs_enroll_;
+}
+const ::megastructure::Message_CHQ_Alive&
+Message::_Internal::chq_alive(const Message* msg) {
+  return *msg->foobar_.chq_alive_;
+}
+const ::megastructure::Message_HCS_Alive&
+Message::_Internal::hcs_alive(const Message* msg) {
+  return *msg->foobar_.hcs_alive_;
 }
 void Message::set_allocated_smq_enroll(::megastructure::Message_SMQ_Enroll* smq_enroll) {
   ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArena();
@@ -1708,6 +2192,36 @@ void Message::set_allocated_chs_enroll(::megastructure::Message_CHS_Enroll* chs_
   }
   // @@protoc_insertion_point(field_set_allocated:megastructure.Message.chs_enroll)
 }
+void Message::set_allocated_chq_alive(::megastructure::Message_CHQ_Alive* chq_alive) {
+  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArena();
+  clear_foobar();
+  if (chq_alive) {
+    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena =
+      ::PROTOBUF_NAMESPACE_ID::Arena::GetArena(chq_alive);
+    if (message_arena != submessage_arena) {
+      chq_alive = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
+          message_arena, chq_alive, submessage_arena);
+    }
+    set_has_chq_alive();
+    foobar_.chq_alive_ = chq_alive;
+  }
+  // @@protoc_insertion_point(field_set_allocated:megastructure.Message.chq_alive)
+}
+void Message::set_allocated_hcs_alive(::megastructure::Message_HCS_Alive* hcs_alive) {
+  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArena();
+  clear_foobar();
+  if (hcs_alive) {
+    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena =
+      ::PROTOBUF_NAMESPACE_ID::Arena::GetArena(hcs_alive);
+    if (message_arena != submessage_arena) {
+      hcs_alive = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
+          message_arena, hcs_alive, submessage_arena);
+    }
+    set_has_hcs_alive();
+    foobar_.hcs_alive_ = hcs_alive;
+  }
+  // @@protoc_insertion_point(field_set_allocated:megastructure.Message.hcs_alive)
+}
 Message::Message(::PROTOBUF_NAMESPACE_ID::Arena* arena)
   : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
   SharedCtor();
@@ -1742,6 +2256,14 @@ Message::Message(const Message& from)
     }
     case kChsEnroll: {
       _internal_mutable_chs_enroll()->::megastructure::Message_CHS_Enroll::MergeFrom(from._internal_chs_enroll());
+      break;
+    }
+    case kChqAlive: {
+      _internal_mutable_chq_alive()->::megastructure::Message_CHQ_Alive::MergeFrom(from._internal_chq_alive());
+      break;
+    }
+    case kHcsAlive: {
+      _internal_mutable_hcs_alive()->::megastructure::Message_HCS_Alive::MergeFrom(from._internal_hcs_alive());
       break;
     }
     case FOOBAR_NOT_SET: {
@@ -1824,6 +2346,18 @@ void Message::clear_foobar() {
       }
       break;
     }
+    case kChqAlive: {
+      if (GetArena() == nullptr) {
+        delete foobar_.chq_alive_;
+      }
+      break;
+    }
+    case kHcsAlive: {
+      if (GetArena() == nullptr) {
+        delete foobar_.hcs_alive_;
+      }
+      break;
+    }
     case FOOBAR_NOT_SET: {
       break;
     }
@@ -1897,6 +2431,20 @@ const char* Message::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::in
       case 7:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 58)) {
           ptr = ctx->ParseMessage(_internal_mutable_chs_enroll(), ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // .megastructure.Message.CHQ_Alive chq_alive = 8;
+      case 8:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 66)) {
+          ptr = ctx->ParseMessage(_internal_mutable_chq_alive(), ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // .megastructure.Message.HCS_Alive hcs_alive = 9;
+      case 9:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 74)) {
+          ptr = ctx->ParseMessage(_internal_mutable_hcs_alive(), ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -1982,6 +2530,22 @@ failure:
         7, _Internal::chs_enroll(this), target, stream);
   }
 
+  // .megastructure.Message.CHQ_Alive chq_alive = 8;
+  if (_internal_has_chq_alive()) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
+      InternalWriteMessage(
+        8, _Internal::chq_alive(this), target, stream);
+  }
+
+  // .megastructure.Message.HCS_Alive hcs_alive = 9;
+  if (_internal_has_hcs_alive()) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
+      InternalWriteMessage(
+        9, _Internal::hcs_alive(this), target, stream);
+  }
+
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
@@ -2048,6 +2612,20 @@ size_t Message::ByteSizeLong() const {
           *foobar_.chs_enroll_);
       break;
     }
+    // .megastructure.Message.CHQ_Alive chq_alive = 8;
+    case kChqAlive: {
+      total_size += 1 +
+        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
+          *foobar_.chq_alive_);
+      break;
+    }
+    // .megastructure.Message.HCS_Alive hcs_alive = 9;
+    case kHcsAlive: {
+      total_size += 1 +
+        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
+          *foobar_.hcs_alive_);
+      break;
+    }
     case FOOBAR_NOT_SET: {
       break;
     }
@@ -2111,6 +2689,14 @@ void Message::MergeFrom(const Message& from) {
       _internal_mutable_chs_enroll()->::megastructure::Message_CHS_Enroll::MergeFrom(from._internal_chs_enroll());
       break;
     }
+    case kChqAlive: {
+      _internal_mutable_chq_alive()->::megastructure::Message_CHQ_Alive::MergeFrom(from._internal_chq_alive());
+      break;
+    }
+    case kHcsAlive: {
+      _internal_mutable_hcs_alive()->::megastructure::Message_HCS_Alive::MergeFrom(from._internal_hcs_alive());
+      break;
+    }
     case FOOBAR_NOT_SET: {
       break;
     }
@@ -2168,6 +2754,12 @@ template<> PROTOBUF_NOINLINE ::megastructure::Message_HCQ_Enroll* Arena::CreateM
 }
 template<> PROTOBUF_NOINLINE ::megastructure::Message_CHS_Enroll* Arena::CreateMaybeMessage< ::megastructure::Message_CHS_Enroll >(Arena* arena) {
   return Arena::CreateMessageInternal< ::megastructure::Message_CHS_Enroll >(arena);
+}
+template<> PROTOBUF_NOINLINE ::megastructure::Message_CHQ_Alive* Arena::CreateMaybeMessage< ::megastructure::Message_CHQ_Alive >(Arena* arena) {
+  return Arena::CreateMessageInternal< ::megastructure::Message_CHQ_Alive >(arena);
+}
+template<> PROTOBUF_NOINLINE ::megastructure::Message_HCS_Alive* Arena::CreateMaybeMessage< ::megastructure::Message_HCS_Alive >(Arena* arena) {
+  return Arena::CreateMessageInternal< ::megastructure::Message_HCS_Alive >(arena);
 }
 template<> PROTOBUF_NOINLINE ::megastructure::Message* Arena::CreateMaybeMessage< ::megastructure::Message >(Arena* arena) {
   return Arena::CreateMessageInternal< ::megastructure::Message >(arena);

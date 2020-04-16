@@ -11,11 +11,6 @@ namespace megastructure
 {
 	std::string getHostProgramName();
 	
-	
-	
-	
-	
-	
 	class Component;
 	
 	class EnrollHostActivity : public Activity
@@ -26,7 +21,7 @@ namespace megastructure
 					Queue& queue, 
 					Client& client,
 					const std::string& hostprogram ) 
-			:	Activity( queue ),
+			:	m_queue( queue ),
 				m_component( component ),
 				m_client( client ),
 				m_hostprogram( hostprogram )
@@ -61,20 +56,29 @@ namespace megastructure
 		}
 		
 	private:
+		megastructure::Queue& m_queue;
 		Component& m_component;
 		Client& m_client;
 		std::string m_hostprogram;
 	};
 	
-	
 	class Component
 	{
 	public:
-		Component( const std::string& strSlavePort );
+		Component( const std::string& strSlavePort, const std::string& strProgramName );
 		virtual ~Component();
 		
-		
 		const std::string& getHostProgramName() const { return m_strHostProgram; }
+		
+		void startActivity( Activity* pActivity )
+		{
+			m_queue.startActivity( Activity::Ptr( pActivity ) );
+		}
+		
+		bool send( Message& message )
+		{
+			return m_client.send( message );
+		}
 		
 	private:
 		std::string m_strHostProgram;

@@ -6,6 +6,8 @@
 #include "protocol/megastructure.pb.h"
 #include "protocol/protocol_helpers.hpp"
 
+#include "common/assert_verify.hpp"
+
 #include <boost/program_options.hpp>
 
 #include <iostream>
@@ -91,7 +93,7 @@ public:
 				megastructure::Queue& queue, 
 				megastructure::Client& client,
 				const std::string& name ) 
-		:	Activity( queue ),
+		:	m_queue( queue ),
 			m_client( client ),
 			m_name( name )
 	{
@@ -124,6 +126,7 @@ public:
 	}
 	
 private:
+	megastructure::Queue& m_queue;
 	megastructure::Client& m_client;
 	std::string m_name;
 };
@@ -136,7 +139,7 @@ public:
 				megastructure::Queue& queue, 
 				megastructure::Client& client,
 				const std::string& name ) 
-		:	Activity( queue ),
+		:	m_queue( queue ),
 			m_client( client ),
 			m_name( name )
 	{
@@ -177,10 +180,178 @@ public:
 	}
 	
 private:
+	megastructure::Queue& m_queue;
 	megastructure::Client& m_client;
 	std::string m_name;
 };
 
+////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
+
+class TestHostActivity : public megastructure::Activity
+{
+public:
+	TestHostActivity( megastructure::ClientMap& clients,
+						megastructure::Queue& queue, 
+						megastructure::Server& server, 
+						std::uint32_t clientID, 
+						const std::string& strProcessName ) 
+		:	m_queue( queue ),
+			m_clients(clients),
+			m_server( server ),
+			m_clientID( clientID ),
+			m_strProcessName( strProcessName ),
+			m_bSuccess( false )
+	{
+		
+	}
+	
+	virtual void start()
+	{
+		using namespace megastructure;
+		Message message;
+		{
+			Message::CHQ_Alive* pAlive = message.mutable_chq_alive();
+			pAlive->set_processname( m_strProcessName );
+		}
+		if( !m_server.send( message, m_clientID ) )
+		{
+			m_clients.removeClient( m_clientID );
+			m_queue.activityComplete( shared_from_this() );
+		}
+	}
+	
+	virtual bool clientMessage( std::uint32_t uiClient, const megastructure::Message& message )
+	{
+		if( m_clientID == uiClient )
+		{
+			if( message.has_hcs_alive() )
+			{
+				const megastructure::Message::HCS_Alive& alive = message.hcs_alive();
+				if( !alive.success() )
+				{
+					std::cout << "Client: " << uiClient << " with name: " << m_strProcessName << " is not alive" << std::endl;
+					m_clients.removeClient( m_clientID );
+				}
+				else
+				{
+					std::cout << "Client: " << uiClient << " with name: " << m_strProcessName << " is alive" << std::endl;
+					m_bSuccess = true;
+				}
+				m_queue.activityComplete( shared_from_this() );
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	bool isAlive() const
+	{
+		return m_bSuccess;
+	}
+	
+	const std::string& getName() const
+	{
+		return m_strProcessName;
+	}
+	
+	std::uint32_t getClientID() const 
+	{
+		return m_clientID;
+	}
+private:
+	megastructure::Queue& m_queue;
+	megastructure::ClientMap& m_clients;
+	megastructure::Server& m_server;
+	std::uint32_t m_clientID;
+	std::string m_strProcessName;
+	bool m_bSuccess;
+};
+
+class TestHostsActivity : public megastructure::Activity
+{
+public:
+	TestHostsActivity( megastructure::ClientMap& clients,
+				megastructure::Queue& queue, 
+				megastructure::Server& server ) 
+		:	m_queue( queue ),
+			m_clients( clients ),
+			m_server( server )
+	{
+		
+	}
+	
+	virtual void start()
+	{
+		const megastructure::ClientMap::ClientIDMap& clients = m_clients.getClients();
+		for( megastructure::ClientMap::ClientIDMap::const_iterator 
+			i = clients.begin(), iEnd = clients.end();
+			i!=iEnd; ++i )
+		{
+			megastructure::Activity::Ptr pActivity( 
+				new TestHostActivity( m_clients, m_queue, m_server, i->second, i->first ) );
+			m_activities.push_back( pActivity );
+			m_queue.startActivity( pActivity );
+		}
+	}
+	
+	virtual bool activityComplete( Activity::Ptr pActivity )
+	{
+		megastructure::Activity::PtrList::iterator iFind = 
+			std::find( m_activities.begin(), m_activities.end(), pActivity );
+		if( iFind == m_activities.end() )
+		{
+			return false;
+		}
+		else
+		{
+			m_activities.erase( iFind );
+			if( m_activities.empty() )
+			{
+				m_queue.activityComplete( shared_from_this() );
+			}
+			return true;
+		}
+	}
+	
+private:
+	megastructure::Queue& m_queue;
+	megastructure::ClientMap& m_clients;
+	megastructure::Server& m_server;
+	megastructure::Activity::PtrList m_activities;
+};
+
+
+class ListHostsActivity : public megastructure::Activity
+{
+public:
+	ListHostsActivity( megastructure::ClientMap& clients,
+				megastructure::Queue& queue, 
+				megastructure::Server& server ) 
+		:	m_queue( queue ),
+			m_clients( clients ),
+			m_server( server )
+	{
+		
+	}
+	
+	virtual void start()
+	{
+		const megastructure::ClientMap::ClientIDMap& clients = m_clients.getClients();
+		for( megastructure::ClientMap::ClientIDMap::const_iterator 
+			i = clients.begin(), iEnd = clients.end();
+			i!=iEnd; ++i )
+		{
+			std::cout << "Client: " << i->first << " id: " << i->second << std::endl;
+		}
+		m_queue.activityComplete( shared_from_this() );
+	}
+	
+private:
+	megastructure::Queue& m_queue;
+	megastructure::ClientMap& m_clients;
+	megastructure::Server& m_server;
+};
 
 class HostEnrollActivity : public megastructure::Activity
 {
@@ -188,7 +359,7 @@ public:
 	HostEnrollActivity( megastructure::ClientMap& clients,
 				megastructure::Queue& queue, 
 				megastructure::Server& server ) 
-		:	Activity( queue ),
+		:	m_queue( queue ),
 			m_clients( clients ),
 			m_server( server )
 	{
@@ -208,14 +379,7 @@ public:
 				
 			if( m_clients.enroll( enroll.processname(), uiClient ) )
 			{
-				Message message;
-				{
-					Message::CHS_Enroll* pEnroll = message.mutable_chs_enroll();
-					pEnroll->set_success( true );
-					pEnroll->set_hostpath( "/somewhere" );
-					pEnroll->set_program( "theProgram" );
-				}
-				if( !m_server.send( message, uiClient ) )
+				if( !m_server.send( chs_enroll( true, "/someplace", "AProgramFolderName" ), uiClient ) )
 				{
 					m_clients.removeClient( uiClient );
 				}
@@ -223,19 +387,19 @@ public:
 			else 
 			{
 				std::uint32_t uiExisting;
-				/*if( m_master.getClientID( enroll.slavename(), uiExisting ) )
+				if( m_clients.getClientID( enroll.processname(), uiExisting ) )
 				{
-					std::cout << "Enroll attempting for: " << enroll.slavename() << " which has existing client of: " << uiExisting << std::endl;
-					std::shared_ptr< TestClientActivity > pTest = 
-						std::make_shared< TestClientActivity >( m_master, m_queue, m_server, uiExisting, enroll.slavename() );
-					m_queue.startActivity( pTest );
+					std::cout << "Enroll attempting for: " << enroll.processname() << " which has existing client of: " << uiExisting << std::endl;
+					std::shared_ptr< TestHostActivity > pTest = 
+						std::make_shared< TestHostActivity >( m_clients, m_queue, m_server, uiExisting, enroll.processname() );
 					m_testsMap.insert( std::make_pair( pTest, uiClient ) );
+					m_queue.startActivity( pTest );
 					return true;
 				}
-				else*/
+				else
 				{
 					std::cout << "Enroll denied for: " << enroll.processname() << " for client: " << uiClient << std::endl;
-					if( !m_server.send( mss_enroll( false ), uiClient ) )
+					if( !m_server.send( chs_enroll( false ), uiClient ) )
 					{
 						m_clients.removeClient( uiClient );
 					}
@@ -246,16 +410,15 @@ public:
 		}
 		return false;
 	}
-	/*
+	
 	virtual bool activityComplete( Activity::Ptr pActivity )
 	{
 		using namespace megastructure;
-		if( std::shared_ptr< TestClientActivity > pTest = 
-				std::dynamic_pointer_cast< TestClientActivity >( pActivity ) )
+		if( std::shared_ptr< TestHostActivity > pTest = 
+				std::dynamic_pointer_cast< TestHostActivity >( pActivity ) )
 		{
-			std::map< std::shared_ptr< TestClientActivity >, std::uint32_t >::iterator 
+			std::map< std::shared_ptr< TestHostActivity >, std::uint32_t >::iterator 
 				iFind = m_testsMap.find( pTest );
-			VERIFY_RTE( iFind != m_testsMap.end() );
 			if( iFind != m_testsMap.end() )
 			{
 				const std::uint32_t testedID = pTest->getClientID();
@@ -265,9 +428,9 @@ public:
 				{
 					std::cout << "Existing client: " << clientID << " is alive as: " << pTest->getName() << std::endl;
 					//existing client is alive so nothing we can do...
-					if( !m_server.send( mss_enroll( false ), clientID ) )
+					if( !m_server.send( chs_enroll( true ), clientID ) )
 					{
-						m_master.removeClient( clientID );
+						m_clients.removeClient( clientID );
 					}
 				}
 				else
@@ -275,19 +438,19 @@ public:
 					std::cout << "Existing client: " << testedID << " is not alive so allowing enrollment of new client: " << 
 						clientID << " as: " << pTest->getName() << std::endl;
 					//testing the existing client indicated it was actually dead so can enroll the new one
-					if( m_master.enroll( pTest->getName(), clientID ) )
+					if( m_clients.enroll( pTest->getName(), clientID ) )
 					{
-						if( !m_server.send( mss_enroll( true ), clientID ) )
+						if( !m_server.send( chs_enroll( true ), clientID ) )
 						{
-							m_master.removeClient( clientID );
+							m_clients.removeClient( clientID );
 						}
 					}
 					else
 					{
 						std::cout << "Enroll denied after retry for: " << pTest->getName() << " for client: " << clientID << std::endl;
-						if( !m_server.send( mss_enroll( false ), clientID ) )
+						if( !m_server.send( chs_enroll( false ), clientID ) )
 						{
-							m_master.removeClient( clientID );
+							m_clients.removeClient( clientID );
 						}
 					}
 				}
@@ -295,11 +458,12 @@ public:
 			}
 		}
 		return false;
-	}*/
+	}
 private:
+	megastructure::Queue& m_queue;
 	megastructure::ClientMap& m_clients;
 	megastructure::Server& m_server;
-	//std::map< std::shared_ptr< TestClientActivity >, std::uint32_t > m_testsMap;
+	std::map< std::shared_ptr< TestHostActivity >, std::uint32_t > m_testsMap;
 };
 
 int main( int argc, const char* argv[] )
@@ -327,29 +491,20 @@ int main( int argc, const char* argv[] )
 			megastructure::readServer( server, queue );
 		});
 		
-		{
-			megastructure::Activity::Ptr pActivity( 
-				new AliveTestActivity( queue, client, args.slave_name ) );
-			queue.startActivity( pActivity );
-		}
-		{
-			megastructure::Activity::Ptr pActivity( 
-				new EnrollActivity( queue, client, args.slave_name ) );
-			queue.startActivity( pActivity );
-		}
-		{
-			megastructure::Activity::Ptr pActivity( 
-				new HostEnrollActivity( clients, queue, server ) );
-			queue.startActivity( pActivity );
-		}
+		queue.startActivity( new AliveTestActivity( queue, client, args.slave_name ) );
+		queue.startActivity( new EnrollActivity( queue, client, args.slave_name ) );
+		queue.startActivity( new HostEnrollActivity( clients, queue, server ) );
 		
-			
 		std::string str, strResponse;
 		while( true )
 		{
 			std::cin >> str;
 			
-			if( str == "quit" )
+			if( str == "test" )
+				queue.startActivity( new TestHostsActivity( clients, queue, server ) );
+			else if( str == "list" )
+				queue.startActivity( new ListHostsActivity( clients, queue, server ) );
+			else if( str == "quit" )
 				break;
 		}
 	}

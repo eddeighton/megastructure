@@ -10,20 +10,15 @@
 
 namespace megastructure
 {
-	
 	std::string getHostProgramName()
 	{
 		boost::filesystem::path currentProgramPath = boost::dll::program_location();
-		//boost::filesystem::path folderPath = currentProgramPath.parent_path();
-		//boost::filesystem::path folderName = folderPath.stem();
-		
 		boost::filesystem::path filename = currentProgramPath.filename();
-		
 		return filename.string();
 	}
 	
-	Component::Component( const std::string& strSlavePort )
-		:	m_strHostProgram( getHostProgramName() ),
+	Component::Component( const std::string& strSlavePort, const std::string& strProgramName )
+		:	m_strHostProgram( strProgramName ),
 			m_queue(),
 			m_client( "localhost", strSlavePort )
 	{
