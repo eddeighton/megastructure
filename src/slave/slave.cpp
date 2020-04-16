@@ -86,10 +86,10 @@ bool parse_args( int argc, const char* argv[], Args& args )
 	return true;
 }
 
-class EnrollActivity : public megastructure::Activity
+class MasterEnrollActivity : public megastructure::Activity
 {
 public:
-	EnrollActivity( 
+	MasterEnrollActivity( 
 				megastructure::Queue& queue, 
 				megastructure::Client& client,
 				const std::string& name ) 
@@ -102,7 +102,7 @@ public:
 	
 	virtual void start()
 	{
-		std::cout << "EnrollActivity started" << std::endl;
+		std::cout << "MasterEnrollActivity started" << std::endl;
 		using namespace megastructure;
 		Message message;
 		{
@@ -117,7 +117,7 @@ public:
 	{
 		if( message.has_mss_enroll() )
 		{
-			std::cout << "EnrollActivity Got response: " << 
+			std::cout << "MasterEnrollActivity Got response: " << 
 				message.mss_enroll().success() << std::endl;
 			m_queue.activityComplete( shared_from_this() );
 			return true;
@@ -492,7 +492,7 @@ int main( int argc, const char* argv[] )
 		});
 		
 		queue.startActivity( new AliveTestActivity( queue, client, args.slave_name ) );
-		queue.startActivity( new EnrollActivity( queue, client, args.slave_name ) );
+		queue.startActivity( new MasterEnrollActivity( queue, client, args.slave_name ) );
 		queue.startActivity( new HostEnrollActivity( clients, queue, server ) );
 		
 		std::string str, strResponse;

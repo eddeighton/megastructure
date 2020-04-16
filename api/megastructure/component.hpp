@@ -11,7 +11,30 @@ namespace megastructure
 {
 	std::string getHostProgramName();
 	
-	class Component;
+	class Component
+	{
+	public:
+		Component( const std::string& strSlavePort, const std::string& strProgramName );
+		virtual ~Component();
+		
+		const std::string& getHostProgramName() const { return m_strHostProgram; }
+		
+		void startActivity( Activity* pActivity )
+		{
+			m_queue.startActivity( Activity::Ptr( pActivity ) );
+		}
+		
+		bool send( Message& message )
+		{
+			return m_client.send( message );
+		}
+		
+	private:
+		std::string m_strHostProgram;
+		megastructure::Queue m_queue;
+		megastructure::Client m_client;
+		std::thread m_zeromq;
+	};
 	
 	class EnrollHostActivity : public Activity
 	{
@@ -62,30 +85,33 @@ namespace megastructure
 		std::string m_hostprogram;
 	};
 	
-	class Component
+	class AliveTestActivity : public Activity
 	{
 	public:
-		Component( const std::string& strSlavePort, const std::string& strProgramName );
-		virtual ~Component();
-		
-		const std::string& getHostProgramName() const { return m_strHostProgram; }
-		
-		void startActivity( Activity* pActivity )
+		AliveTestActivity( Component& component ) 
+			:	m_component( component )
 		{
-			m_queue.startActivity( Activity::Ptr( pActivity ) );
+			
 		}
 		
-		bool send( Message& message )
+		virtual bool serverMessage( const Message& message )
 		{
-			return m_client.send( message );
+			if( message.has_chq_alive() )
+			{
+				Message response;
+				{
+					Message::HCS_Alive* pAlive = response.mutable_hcs_alive();
+					pAlive->set_success( true );
+				}
+				m_component.send( response );
+				return true;
+			}
+			return false;
 		}
 		
 	private:
-		std::string m_strHostProgram;
-		megastructure::Queue m_queue;
-		megastructure::Client m_client;
-		std::thread m_zeromq;
+		Component& m_component;
+		std::string m_name;
 	};
-
 
 }

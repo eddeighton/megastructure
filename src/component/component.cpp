@@ -27,6 +27,8 @@ namespace megastructure
 				std::ref( m_client ), std::ref( m_queue ) ) );
 				
 		m_queue.startActivity( new EnrollHostActivity( *this, m_queue, m_client, m_strHostProgram ) );
+		
+		m_queue.startActivity( new AliveTestActivity( *this ) );
 	}
 	
 	Component::~Component()
