@@ -28,5 +28,6 @@ link_common( test_host )
 
 target_link_libraries( test_host megastructurelib )
 target_link_libraries( test_host megastructureprotocollib )
+target_link_libraries( test_host componentlib )
 
 install( TARGETS test_host DESTINATION bin)

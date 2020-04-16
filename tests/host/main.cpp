@@ -1,5 +1,7 @@
 
 
+#include "megastructure/component.hpp"
+
 #include "common/processID.hpp"
 
 #include <boost/program_options.hpp>
@@ -12,7 +14,9 @@
 
 struct Args
 {
+	std::string ip;
 	std::string port;
+	std::string name;
 };
 
 bool parse_args( int argc, const char* argv[], Args& args )
@@ -25,7 +29,9 @@ bool parse_args( int argc, const char* argv[], Args& args )
 		
 		options.add_options()
 			("help", "produce help message")
-			("port",  po::value< std::string >( &args.port ), "Port" )
+			("ip",  po::value< std::string >( &args.ip ), "IP Address of Slave" )
+			("port",  po::value< std::string >( &args.port ), "Port of Slave" )
+			("name",  po::value< std::string >( &args.name ), "Name of Host" )
 		;
 
 		po::positional_options_description p;
@@ -66,13 +72,24 @@ int main( int argc, const char* argv[] )
 		return 0;
 	}
 	
-	using namespace std::chrono_literals;
+	//using namespace std::chrono_literals;
+	//std::this_thread::sleep_for( 0.1s );
 				
 	try
 	{
 		std::cout << "Host: " << Common::getProcessID() << std::endl;
 		
-		std::this_thread::sleep_for( 0.1s );
+		megastructure::Component component( args.ip, args.port );
+		
+		while( true )
+		{
+			std::string strInput;
+			std::cin >> strInput;
+			
+			if( strInput == "quit" )
+				break;
+		}
+		
 	}
 	catch( std::exception& ex )
 	{

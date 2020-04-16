@@ -170,10 +170,10 @@ namespace megastructure
 		m_pContext 		= zmq_ctx_new();
 		m_pSocket 		= zmq_socket( m_pContext, ZMQ_SERVER );
 		
-		{
+		/*{
 			int64_t zmqLinger = 0;
 			zmq_setsockopt( m_pSocket, ZMQ_LINGER, &zmqLinger, sizeof( zmqLinger ) );
-		}
+		}*/
 		
 		std::string localAddress;
 		{

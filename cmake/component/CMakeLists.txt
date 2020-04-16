@@ -16,21 +16,21 @@ set( MS_COMPONENT_SOURCES
 	${MS_SRC_DIR}/component/component.cpp
     )
 
-add_library( component STATIC
+add_library( componentlib STATIC
 					${MS_COMPONENT_API}
 					${MS_COMPONENT_SOURCES}
 				)
 		
-set_target_properties( component PROPERTIES FOLDER log )
+set_target_properties( componentlib PROPERTIES FOLDER log )
 
-set_target_properties( component PROPERTIES DEBUG_POSTFIX d )
+set_target_properties( componentlib PROPERTIES DEBUG_POSTFIX d )
 
-link_boost( component program_options )
-link_boost( component filesystem )
-link_boost( component system )
-link_boost( component date_time )
-#link_common( component )
-#link_eventlog( component )
-link_megastructure( component )
+link_boost( componentlib program_options )
+link_boost( componentlib filesystem )
+link_boost( componentlib system )
+link_boost( componentlib date_time )
+#link_common( componentlib )
+#link_eventlog( componentlib )
+link_megastructure( componentlib )
 
-install( TARGETS component DESTINATION lib)
+install( TARGETS componentlib DESTINATION lib)

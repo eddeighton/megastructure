@@ -1,10 +1,9 @@
 
-//#include "megastructure/coordinator.hpp"
 #include "megastructure/clientServer.hpp"
 #include "protocol/megastructure.pb.h"
 #include "megastructure/queue.hpp"
 
-#include "zmq.h"
+//#include "zmq.h"
 
 #include <boost/program_options.hpp>
 
@@ -14,9 +13,10 @@
 
 struct Args
 {
-	std::string ip;
-	std::string port;
-	std::string name;
+	std::string master_ip;
+	std::string master_port;
+	std::string slave_port;
+	std::string slave_name;
 };
 
 bool parse_args( int argc, const char* argv[], Args& args )
@@ -29,9 +29,10 @@ bool parse_args( int argc, const char* argv[], Args& args )
 		
 		options.add_options()
 			("help", "produce help message")
-			("ip",    po::value< std::string >( &args.ip ), "IP Address" )
-			("port",  po::value< std::string >( &args.port ), "Port" )
-			("name",  po::value< std::string >( &args.name ), "Slave Name" )
+			("mip",    po::value< std::string >( &args.master_ip ), "Master IP Address" )
+			("mport",  po::value< std::string >( &args.master_port ), "Master Port" )
+			("sport",  po::value< std::string >( &args.slave_port ), "Slave Port" )
+			("sname",  po::value< std::string >( &args.slave_name ), "Slave Name" )
 		;
 
 		po::positional_options_description p;
@@ -49,19 +50,25 @@ bool parse_args( int argc, const char* argv[], Args& args )
 			return false;
 		}
 		
-		if( args.ip.empty() )
+		if( args.master_ip.empty() )
 		{
-			std::cout << "IP address not specified" << std::endl;
+			std::cout << "Master IP address not specified" << std::endl;
 			return false;
 		}
 		
-		if( args.port.empty() )
+		if( args.master_port.empty() )
 		{
-			std::cout << "Port not specified" << std::endl;
+			std::cout << "Master Port not specified" << std::endl;
 			return false;
 		}
 		
-		if( args.name.empty() )
+		if( args.slave_port.empty() )
+		{
+			std::cout << "Slave Port not specified" << std::endl;
+			return false;
+		}
+		
+		if( args.slave_name.empty() )
 		{
 			std::cout << "Slave Name not specified" << std::endl;
 			return false;
@@ -187,21 +194,27 @@ int main( int argc, const char* argv[] )
 	try
 	{
 		megastructure::Queue queue;
-		megastructure::Client client( args.ip, args.port );
+		megastructure::Client client( args.master_ip, args.master_port );
+		megastructure::Server server( args.slave_port );
 		
-		std::thread zeromqserver( [ &client, &queue ]()
+		std::thread zeromqclient( [ &client, &queue ]()
 		{
 			megastructure::readClient( client, queue );
 		});
 		
+		std::thread zeromqserver( [ &server, &queue ]()
+		{
+			megastructure::readServer( server, queue );
+		});
+		
 		{
 			megastructure::Activity::Ptr pActivity( 
-				new AliveTestActivity( queue, client, args.name ) );
+				new AliveTestActivity( queue, client, args.slave_name ) );
 			queue.startActivity( pActivity );
 		}
 		{
 			megastructure::Activity::Ptr pActivity( 
-				new EnrollActivity( queue, client, args.name ) );
+				new EnrollActivity( queue, client, args.slave_name ) );
 			queue.startActivity( pActivity );
 		}
 			
