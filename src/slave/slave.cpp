@@ -428,7 +428,7 @@ public:
 				{
 					std::cout << "Existing client: " << clientID << " is alive as: " << pTest->getName() << std::endl;
 					//existing client is alive so nothing we can do...
-					if( !m_server.send( chs_enroll( true ), clientID ) )
+					if( !m_server.send( chs_enroll( false ), clientID ) )
 					{
 						m_clients.removeClient( clientID );
 					}
@@ -440,7 +440,7 @@ public:
 					//testing the existing client indicated it was actually dead so can enroll the new one
 					if( m_clients.enroll( pTest->getName(), clientID ) )
 					{
-						if( !m_server.send( chs_enroll( true ), clientID ) )
+						if( !m_server.send( chs_enroll( true, "/someplace", "AProgramFolderName" ), clientID ) )
 						{
 							m_clients.removeClient( clientID );
 						}
