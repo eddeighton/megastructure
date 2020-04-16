@@ -2,6 +2,8 @@
 
 #include "megastructure/component.hpp"
 
+#include "protocol/protocol_helpers.hpp"
+
 #include "common/processID.hpp"
 
 #include <boost/program_options.hpp>
@@ -14,9 +16,6 @@
 
 struct Args
 {
-	std::string ip;
-	std::string port;
-	std::string name;
 };
 
 bool parse_args( int argc, const char* argv[], Args& args )
@@ -29,9 +28,6 @@ bool parse_args( int argc, const char* argv[], Args& args )
 		
 		options.add_options()
 			("help", "produce help message")
-			("ip",  po::value< std::string >( &args.ip ), "IP Address of Slave" )
-			("port",  po::value< std::string >( &args.port ), "Port of Slave" )
-			("name",  po::value< std::string >( &args.name ), "Name of Host" )
 		;
 
 		po::positional_options_description p;
@@ -46,12 +42,6 @@ bool parse_args( int argc, const char* argv[], Args& args )
 		if( variables.count("help") )
 		{
 			std::cout << options << "\n";
-			return false;
-		}
-		
-		if( args.port.empty() )
-		{
-			std::cout << "Port" << std::endl;
 			return false;
 		}
 
@@ -71,15 +61,12 @@ int main( int argc, const char* argv[] )
 	{
 		return 0;
 	}
-	
-	//using namespace std::chrono_literals;
-	//std::this_thread::sleep_for( 0.1s );
 				
 	try
 	{
-		std::cout << "Host: " << Common::getProcessID() << std::endl;
+		std::cout << "Host: " << megastructure::getHostProgramName() << " : " << Common::getProcessID() << std::endl;
 		
-		megastructure::Component component( args.ip, args.port );
+		megastructure::Component component( megastructure::getGlobalCoordinatorPort() );
 		
 		while( true )
 		{

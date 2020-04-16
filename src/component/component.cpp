@@ -1,17 +1,37 @@
 
 
 #include "megastructure/component.hpp"
+#include "megastructure/clientServer.hpp"
+
+#include <boost/dll/runtime_symbol_info.hpp>
+#include <boost/filesystem.hpp>
 
 #include <functional>
 
 namespace megastructure
 {
-	Component::Component( const std::string& strSlaveIP, const std::string& strSlavePort )
-		:	m_queue(),
-			m_client( strSlaveIP, strSlavePort )
+	
+	std::string getHostProgramName()
+	{
+		boost::filesystem::path currentProgramPath = boost::dll::program_location();
+		//boost::filesystem::path folderPath = currentProgramPath.parent_path();
+		//boost::filesystem::path folderName = folderPath.stem();
+		
+		boost::filesystem::path filename = currentProgramPath.filename();
+		
+		return filename.string();
+	}
+	
+	Component::Component( const std::string& strSlavePort )
+		:	m_strHostProgram( getHostProgramName() ),
+			m_queue(),
+			m_client( "localhost", strSlavePort )
 	{
 		m_zeromq = std::thread( 
-			std::bind( &megastructure::readClient< megastructure::Client >, std::ref( m_client ), std::ref( m_queue ) ) );
+			std::bind( &megastructure::readClient< megastructure::Client >, 
+				std::ref( m_client ), std::ref( m_queue ) ) );
+				
+		m_queue.startActivity( new EnrollHostActivity( *this, m_queue, m_client, m_strHostProgram ) );
 	}
 	
 	Component::~Component()

@@ -8,6 +8,7 @@
 
 #include <string>
 #include <sstream>
+#include <cstdlib>
 
 namespace
 {
@@ -60,6 +61,18 @@ namespace
 
 namespace megastructure
 {
+	
+	std::string getGlobalCoordinatorPort()
+	{
+		
+#pragma warning( push )
+#pragma warning( disable:4996 )
+		const char* pszEnvValue = std::getenv( "MEGAPORT" );
+#pragma warning( pop )
+		VERIFY_RTE_MSG( pszEnvValue, "MEGAPORT environment variable not defined" );
+		return pszEnvValue;
+	}
+	
 
 	Client::Client( const std::string& strMasterIP, const std::string& strMasterPort )
 		:	m_messageID( 1 )
@@ -72,15 +85,16 @@ namespace megastructure
 		//	zmq_setsockopt( m_pSocket, ZMQ_LINGER, &zmqLinger, sizeof( zmqLinger ) );
 		//}
 		
-		std::string strMasterEndpoint;
+		std::string strSlaveEndpoint;
 		{
 			std::ostringstream os; //"tcp://localhost:5555" 
 			os << "tcp://" << strMasterIP << ':' << strMasterPort;
-			strMasterEndpoint = os.str();
+			strSlaveEndpoint = os.str();
 		}
 		
-		int result = zmq_connect( m_pSocket, strMasterEndpoint.c_str() );
-		VERIFY_RTE_MSG( result == 0, "Failed to connect to: " << strMasterEndpoint );
+		std::cout << "Connecting to: " << strSlaveEndpoint << std::endl;
+		int result = zmq_connect( m_pSocket, strSlaveEndpoint.c_str() );
+		VERIFY_RTE_MSG( result == 0, "Failed to connect to: " << strSlaveEndpoint );
 	}
 	
 	Client::~Client()

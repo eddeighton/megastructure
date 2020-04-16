@@ -9,6 +9,8 @@
 
 namespace megastructure
 {
+	
+	std::string getGlobalCoordinatorPort();
 
 	class Client
 	{

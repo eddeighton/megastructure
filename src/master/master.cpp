@@ -3,6 +3,9 @@
 #include "megastructure/coordinator.hpp"
 #include "megastructure/clientServer.hpp"
 #include "megastructure/queue.hpp"
+#include "megastructure/clientMap.hpp"
+
+#include "protocol/protocol_helpers.hpp"
 
 #include "common/processID.hpp"
 #include "common/assert_verify.hpp"
@@ -66,68 +69,10 @@ bool parse_args( int argc, const char* argv[], Args& args )
 	return true;
 }
 
-
-class Master
-{
-public:
-	using ClientIDMap = std::map< std::string, std::uint32_t >;
-
-	bool getClientID( const std::string& strName, std::uint32_t& clientID ) const
-	{
-		ClientIDMap::const_iterator iFind = m_clients.find( strName );
-		if( iFind != m_clients.end() )
-		{
-			clientID = iFind->second;
-			return true;
-		}
-		else
-		{
-			return false;
-		}
-	}
-	
-	bool enrole( const std::string& strName, std::uint32_t clientID )
-	{
-		std::uint32_t existingClientID;
-		if( !getClientID( strName, existingClientID ) )
-		{
-			m_clients.insert( std::make_pair( strName, clientID ) );
-			return true;
-		}
-		else
-		{
-			return false;
-		}
-	}
-	
-	
-	void slaveDied( std::uint32_t clientID )
-	{
-		for( Master::ClientIDMap::iterator 
-			i = m_clients.begin(), iEnd = m_clients.end();
-			i!=iEnd; )
-		{
-			if( i->second == clientID )
-			{
-				i = m_clients.erase( i );
-			}
-			else
-			{
-				++i;
-			}
-		}
-	}
-	
-	const ClientIDMap& getClients() const { return m_clients; }
-	
-private:
-	ClientIDMap m_clients;
-};
-
 class TestClientActivity : public megastructure::Activity
 {
 public:
-	TestClientActivity( Master& master,
+	TestClientActivity( megastructure::ClientMap& master,
 				megastructure::Queue& queue, 
 				megastructure::Server& server, std::uint32_t clientID, const std::string& strSlaveName ) 
 		:	Activity( queue ),
@@ -142,16 +87,18 @@ public:
 	
 	virtual void start()
 	{
-		megastructure::Message message;
+		using namespace megastructure;
+		
+		Message message;
 		{
-			megastructure::Message::HostSlaveRequest_Alive* pAlive =
-				message.mutable_hostslaverequest_alive();
+			Message::MSQ_Alive* pAlive =
+				message.mutable_msq_alive();
 			pAlive->set_slavename( m_strSlaveName );
 		}
 		
 		if( !m_server.send( message, m_clientID ) )
 		{
-			m_master.slaveDied( m_clientID );
+			m_master.removeClient( m_clientID );
 			m_queue.activityComplete( shared_from_this() );
 		}
 	}
@@ -160,14 +107,14 @@ public:
 	{
 		if( m_clientID == uiClient )
 		{
-			if( message.has_slavehostresponse_alive() )
+			if( message.has_sms_alive() )
 			{
-				const megastructure::Message::SlaveHostResponse_Alive& alive =
-					message.slavehostresponse_alive();
+				const megastructure::Message::SMS_Alive& alive =
+					message.sms_alive();
 				if( !alive.success() )
 				{
 					std::cout << "Client: " << uiClient << " with name: " << m_strSlaveName << " is not alive" << std::endl;
-					m_master.slaveDied( m_clientID );
+					m_master.removeClient( m_clientID );
 				}
 				else
 				{
@@ -196,7 +143,7 @@ public:
 		return m_clientID;
 	}
 private:
-	Master& m_master;
+	megastructure::ClientMap& m_master;
 	megastructure::Server& m_server;
 	std::uint32_t m_clientID;
 	std::string m_strSlaveName;
@@ -206,7 +153,7 @@ private:
 class TestClientsActivity : public megastructure::Activity
 {
 public:
-	TestClientsActivity( Master& master,
+	TestClientsActivity( megastructure::ClientMap& master,
 				megastructure::Queue& queue, 
 				megastructure::Server& server ) 
 		:	Activity( queue ),
@@ -218,8 +165,8 @@ public:
 	
 	virtual void start()
 	{
-		const Master::ClientIDMap& clients = m_master.getClients();
-		for( Master::ClientIDMap::const_iterator 
+		const megastructure::ClientMap::ClientIDMap& clients = m_master.getClients();
+		for( megastructure::ClientMap::ClientIDMap::const_iterator 
 			i = clients.begin(), iEnd = clients.end();
 			i!=iEnd; ++i )
 		{
@@ -250,7 +197,7 @@ public:
 	}
 	
 private:
-	Master& m_master;
+	megastructure::ClientMap& m_master;
 	megastructure::Server& m_server;
 	megastructure::Activity::PtrList m_activities;
 };
@@ -258,7 +205,7 @@ private:
 class ListClientsActivity : public megastructure::Activity
 {
 public:
-	ListClientsActivity( Master& master,
+	ListClientsActivity( megastructure::ClientMap& master,
 				megastructure::Queue& queue, 
 				megastructure::Server& server ) 
 		:	Activity( queue ),
@@ -270,8 +217,8 @@ public:
 	
 	virtual void start()
 	{
-		const Master::ClientIDMap& clients = m_master.getClients();
-		for( Master::ClientIDMap::const_iterator 
+		const megastructure::ClientMap::ClientIDMap& clients = m_master.getClients();
+		for( megastructure::ClientMap::ClientIDMap::const_iterator 
 			i = clients.begin(), iEnd = clients.end();
 			i!=iEnd; ++i )
 		{
@@ -281,14 +228,14 @@ public:
 	}
 	
 private:
-	Master& m_master;
+	megastructure::ClientMap& m_master;
 	megastructure::Server& m_server;
 };
 
 class EnrollActivity : public megastructure::Activity
 {
 public:
-	EnrollActivity( Master& master,
+	EnrollActivity( megastructure::ClientMap& master,
 				megastructure::Queue& queue, 
 				megastructure::Server& server ) 
 		:	Activity( queue ),
@@ -300,25 +247,21 @@ public:
 	
 	virtual bool clientMessage( std::uint32_t uiClient, const megastructure::Message& message )
 	{
-		if( message.has_slavehostrequest_enroll() )
+		using namespace megastructure;
+		
+		if( message.has_smq_enroll() )
 		{
-			const megastructure::Message::SlaveHostRequest_Enroll& enroll =
-				message.slavehostrequest_enroll();
+			const Message::SMQ_Enroll& enroll =
+				message.smq_enroll();
 			
-			std::cout << "Enrole request from: " << uiClient << 
+			std::cout << "Enroll request from: " << uiClient << 
 				" for role: " << enroll.slavename() << std::endl;
 				
-			if( m_master.enrole( enroll.slavename(), uiClient ) )
+			if( m_master.enroll( enroll.slavename(), uiClient ) )
 			{
-				megastructure::Message message;
+				if( !m_server.send( mss_enroll( true ), uiClient ) )
 				{
-					megastructure::Message::HostSlaveResponse_Enroll* pEnroll =
-						message.mutable_hostslaveresponse_enroll();
-					pEnroll->set_success( true );
-				}
-				if( !m_server.send( message, uiClient ) )
-				{
-					m_master.slaveDied( uiClient );
+					m_master.removeClient( uiClient );
 				}
 			}
 			else 
@@ -326,7 +269,7 @@ public:
 				std::uint32_t uiExisting;
 				if( m_master.getClientID( enroll.slavename(), uiExisting ) )
 				{
-					std::cout << "Enrole attempting for: " << enroll.slavename() << " which has existing client of: " << uiExisting << std::endl;
+					std::cout << "Enroll attempting for: " << enroll.slavename() << " which has existing client of: " << uiExisting << std::endl;
 					std::shared_ptr< TestClientActivity > pTest = 
 						std::make_shared< TestClientActivity >( m_master, m_queue, m_server, uiExisting, enroll.slavename() );
 					m_queue.startActivity( pTest );
@@ -335,16 +278,10 @@ public:
 				}
 				else
 				{
-					std::cout << "Enrole denied for: " << enroll.slavename() << " for client: " << uiClient << std::endl;
-					megastructure::Message message;
+					std::cout << "Enroll denied for: " << enroll.slavename() << " for client: " << uiClient << std::endl;
+					if( !m_server.send( mss_enroll( false ), uiClient ) )
 					{
-						megastructure::Message::HostSlaveResponse_Enroll* pEnroll =
-							message.mutable_hostslaveresponse_enroll();
-						pEnroll->set_success( false );
-					}
-					if( !m_server.send( message, uiClient ) )
-					{
-						m_master.slaveDied( uiClient );
+						m_master.removeClient( uiClient );
 					}
 				}
 			}
@@ -356,14 +293,15 @@ public:
 	
 	virtual bool activityComplete( Activity::Ptr pActivity )
 	{
+		using namespace megastructure;
 		if( std::shared_ptr< TestClientActivity > pTest = 
 				std::dynamic_pointer_cast< TestClientActivity >( pActivity ) )
 		{
 			std::map< std::shared_ptr< TestClientActivity >, std::uint32_t >::iterator 
 				iFind = m_testsMap.find( pTest );
+			VERIFY_RTE( iFind != m_testsMap.end() );
 			if( iFind != m_testsMap.end() )
 			{
-				VERIFY_RTE( pTest );
 				const std::uint32_t testedID = pTest->getClientID();
 				const std::uint32_t clientID = iFind->second;
 				m_testsMap.erase( iFind );
@@ -371,48 +309,29 @@ public:
 				{
 					std::cout << "Existing client: " << clientID << " is alive as: " << pTest->getName() << std::endl;
 					//existing client is alive so nothing we can do...
-					megastructure::Message message;
+					if( !m_server.send( mss_enroll( false ), clientID ) )
 					{
-						megastructure::Message::HostSlaveResponse_Enroll* pEnroll =
-							message.mutable_hostslaveresponse_enroll();
-						pEnroll->set_success( false );
-					}
-					if( !m_server.send( message, clientID ) )
-					{
-						m_master.slaveDied( clientID );
+						m_master.removeClient( clientID );
 					}
 				}
 				else
 				{
-					std::cout << "Existing client: " << testedID << " is not alive so allowing enrolement of new client: " << 
+					std::cout << "Existing client: " << testedID << " is not alive so allowing enrollment of new client: " << 
 						clientID << " as: " << pTest->getName() << std::endl;
-					//testing the existing client indicated it was actually dead so can enrole the new one
-					
-					if( m_master.enrole( pTest->getName(), clientID ) )
+					//testing the existing client indicated it was actually dead so can enroll the new one
+					if( m_master.enroll( pTest->getName(), clientID ) )
 					{
-						megastructure::Message message;
+						if( !m_server.send( mss_enroll( true ), clientID ) )
 						{
-							megastructure::Message::HostSlaveResponse_Enroll* pEnroll =
-								message.mutable_hostslaveresponse_enroll();
-							pEnroll->set_success( true );
-						}
-						if( !m_server.send( message, clientID ) )
-						{
-							m_master.slaveDied( clientID );
+							m_master.removeClient( clientID );
 						}
 					}
 					else
 					{
-						std::cout << "Enrole denied after retry for: " << pTest->getName() << " for client: " << clientID << std::endl;
-						megastructure::Message message;
+						std::cout << "Enroll denied after retry for: " << pTest->getName() << " for client: " << clientID << std::endl;
+						if( !m_server.send( mss_enroll( false ), clientID ) )
 						{
-							megastructure::Message::HostSlaveResponse_Enroll* pEnroll =
-								message.mutable_hostslaveresponse_enroll();
-							pEnroll->set_success( false );
-						}
-						if( !m_server.send( message, clientID ) )
-						{
-							m_master.slaveDied( clientID );
+							m_master.removeClient( clientID );
 						}
 					}
 				}
@@ -422,7 +341,7 @@ public:
 		return false;
 	}
 private:
-	Master& m_master;
+	megastructure::ClientMap& m_master;
 	megastructure::Server& m_server;
 	std::map< std::shared_ptr< TestClientActivity >, std::uint32_t > m_testsMap;
 };
@@ -436,7 +355,7 @@ int main( int argc, const char* argv[] )
 	}
 	
 	{
-		Master master;
+		megastructure::ClientMap master;
 		megastructure::Queue queue;
 		megastructure::Server server( args.port );
 		

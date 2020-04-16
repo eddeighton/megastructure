@@ -9,7 +9,7 @@ include( ${MS_ROOT_DIR}/cmake/core/megastructure_include.cmake )
 
 #get the sources
 set( MS_MASTER_SOURCES
-	${MS_SRC_DIR}/master/main.cpp
+	${MS_SRC_DIR}/master/master.cpp
     )
 	
 add_executable( master 

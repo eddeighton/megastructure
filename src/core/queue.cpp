@@ -11,6 +11,10 @@
 #include <iostream>
 
 using namespace std::chrono_literals;
+namespace
+{
+	static const auto KEEP_ALIVE_RATE = 250ms;
+}
 	
 namespace megastructure
 {
@@ -53,9 +57,12 @@ namespace megastructure
 
 	Queue::Queue()
 		:	m_stop( false ),
-			m_keepAliveTimer( m_queue, 1s )
+			m_keepAliveTimer( m_queue, KEEP_ALIVE_RATE )
 	{
-		OnKeepAlive( make_error_code( boost::system::errc::success ) );
+		{
+			using namespace std::placeholders;
+			m_keepAliveTimer.async_wait( std::bind( &Queue::OnKeepAlive, this, _1 ) );
+		}
 		
 		boost::asio::io_context* queue = &m_queue;
 		m_queueThread = std::thread( [ queue ](){ queue->run();} );
@@ -79,7 +86,7 @@ namespace megastructure
 		
 		if( !m_stop && ec.value() == boost::system::errc::success )
 		{
-			m_keepAliveTimer.expires_at( m_keepAliveTimer.expiry() + 1s );
+			m_keepAliveTimer.expires_at( m_keepAliveTimer.expiry() + KEEP_ALIVE_RATE );
 			using namespace std::placeholders;
 			m_keepAliveTimer.async_wait( std::bind( &Queue::OnKeepAlive, this, _1 ) );
 		}

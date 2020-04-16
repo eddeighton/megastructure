@@ -9,7 +9,7 @@ include( ${MS_ROOT_DIR}/cmake/core/megastructure_include.cmake )
 
 #get the sources
 set( MS_SLAVE_SOURCES
-	${MS_SRC_DIR}/slave/main.cpp
+	${MS_SRC_DIR}/slave/slave.cpp
     )
 	
 add_executable( slave 

@@ -86,6 +86,10 @@ namespace megastructure
 		}
 		
 		void startActivity( Activity::Ptr pActivity );
+		void startActivity( Activity* pActivity )
+		{
+			startActivity( Activity::Ptr( pActivity ) );
+		}
 		
 		void serverMessage( const Message& message );
 		void clientMessage( std::uint32_t uiClient, const Message& message );

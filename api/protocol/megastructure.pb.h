@@ -47,7 +47,7 @@ struct TableStruct_megastructure_2eproto {
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::AuxillaryParseTableField aux[]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
-  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[5]
+  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[7]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::FieldMetadata field_metadata[];
   static const ::PROTOBUF_NAMESPACE_ID::internal::SerializationTable serialization_table[];
@@ -58,47 +58,55 @@ namespace megastructure {
 class Message;
 class MessageDefaultTypeInternal;
 extern MessageDefaultTypeInternal _Message_default_instance_;
-class Message_HostSlaveRequest_Alive;
-class Message_HostSlaveRequest_AliveDefaultTypeInternal;
-extern Message_HostSlaveRequest_AliveDefaultTypeInternal _Message_HostSlaveRequest_Alive_default_instance_;
-class Message_HostSlaveResponse_Enroll;
-class Message_HostSlaveResponse_EnrollDefaultTypeInternal;
-extern Message_HostSlaveResponse_EnrollDefaultTypeInternal _Message_HostSlaveResponse_Enroll_default_instance_;
-class Message_SlaveHostRequest_Enroll;
-class Message_SlaveHostRequest_EnrollDefaultTypeInternal;
-extern Message_SlaveHostRequest_EnrollDefaultTypeInternal _Message_SlaveHostRequest_Enroll_default_instance_;
-class Message_SlaveHostResponse_Alive;
-class Message_SlaveHostResponse_AliveDefaultTypeInternal;
-extern Message_SlaveHostResponse_AliveDefaultTypeInternal _Message_SlaveHostResponse_Alive_default_instance_;
+class Message_CHS_Enroll;
+class Message_CHS_EnrollDefaultTypeInternal;
+extern Message_CHS_EnrollDefaultTypeInternal _Message_CHS_Enroll_default_instance_;
+class Message_HCQ_Enroll;
+class Message_HCQ_EnrollDefaultTypeInternal;
+extern Message_HCQ_EnrollDefaultTypeInternal _Message_HCQ_Enroll_default_instance_;
+class Message_MSQ_Alive;
+class Message_MSQ_AliveDefaultTypeInternal;
+extern Message_MSQ_AliveDefaultTypeInternal _Message_MSQ_Alive_default_instance_;
+class Message_MSS_Enroll;
+class Message_MSS_EnrollDefaultTypeInternal;
+extern Message_MSS_EnrollDefaultTypeInternal _Message_MSS_Enroll_default_instance_;
+class Message_SMQ_Enroll;
+class Message_SMQ_EnrollDefaultTypeInternal;
+extern Message_SMQ_EnrollDefaultTypeInternal _Message_SMQ_Enroll_default_instance_;
+class Message_SMS_Alive;
+class Message_SMS_AliveDefaultTypeInternal;
+extern Message_SMS_AliveDefaultTypeInternal _Message_SMS_Alive_default_instance_;
 }  // namespace megastructure
 PROTOBUF_NAMESPACE_OPEN
 template<> ::megastructure::Message* Arena::CreateMaybeMessage<::megastructure::Message>(Arena*);
-template<> ::megastructure::Message_HostSlaveRequest_Alive* Arena::CreateMaybeMessage<::megastructure::Message_HostSlaveRequest_Alive>(Arena*);
-template<> ::megastructure::Message_HostSlaveResponse_Enroll* Arena::CreateMaybeMessage<::megastructure::Message_HostSlaveResponse_Enroll>(Arena*);
-template<> ::megastructure::Message_SlaveHostRequest_Enroll* Arena::CreateMaybeMessage<::megastructure::Message_SlaveHostRequest_Enroll>(Arena*);
-template<> ::megastructure::Message_SlaveHostResponse_Alive* Arena::CreateMaybeMessage<::megastructure::Message_SlaveHostResponse_Alive>(Arena*);
+template<> ::megastructure::Message_CHS_Enroll* Arena::CreateMaybeMessage<::megastructure::Message_CHS_Enroll>(Arena*);
+template<> ::megastructure::Message_HCQ_Enroll* Arena::CreateMaybeMessage<::megastructure::Message_HCQ_Enroll>(Arena*);
+template<> ::megastructure::Message_MSQ_Alive* Arena::CreateMaybeMessage<::megastructure::Message_MSQ_Alive>(Arena*);
+template<> ::megastructure::Message_MSS_Enroll* Arena::CreateMaybeMessage<::megastructure::Message_MSS_Enroll>(Arena*);
+template<> ::megastructure::Message_SMQ_Enroll* Arena::CreateMaybeMessage<::megastructure::Message_SMQ_Enroll>(Arena*);
+template<> ::megastructure::Message_SMS_Alive* Arena::CreateMaybeMessage<::megastructure::Message_SMS_Alive>(Arena*);
 PROTOBUF_NAMESPACE_CLOSE
 namespace megastructure {
 
 // ===================================================================
 
-class Message_SlaveHostRequest_Enroll PROTOBUF_FINAL :
-    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:megastructure.Message.SlaveHostRequest_Enroll) */ {
+class Message_SMQ_Enroll PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:megastructure.Message.SMQ_Enroll) */ {
  public:
-  inline Message_SlaveHostRequest_Enroll() : Message_SlaveHostRequest_Enroll(nullptr) {};
-  virtual ~Message_SlaveHostRequest_Enroll();
+  inline Message_SMQ_Enroll() : Message_SMQ_Enroll(nullptr) {};
+  virtual ~Message_SMQ_Enroll();
 
-  Message_SlaveHostRequest_Enroll(const Message_SlaveHostRequest_Enroll& from);
-  Message_SlaveHostRequest_Enroll(Message_SlaveHostRequest_Enroll&& from) noexcept
-    : Message_SlaveHostRequest_Enroll() {
+  Message_SMQ_Enroll(const Message_SMQ_Enroll& from);
+  Message_SMQ_Enroll(Message_SMQ_Enroll&& from) noexcept
+    : Message_SMQ_Enroll() {
     *this = ::std::move(from);
   }
 
-  inline Message_SlaveHostRequest_Enroll& operator=(const Message_SlaveHostRequest_Enroll& from) {
+  inline Message_SMQ_Enroll& operator=(const Message_SMQ_Enroll& from) {
     CopyFrom(from);
     return *this;
   }
-  inline Message_SlaveHostRequest_Enroll& operator=(Message_SlaveHostRequest_Enroll&& from) noexcept {
+  inline Message_SMQ_Enroll& operator=(Message_SMQ_Enroll&& from) noexcept {
     if (GetArena() == from.GetArena()) {
       if (this != &from) InternalSwap(&from);
     } else {
@@ -116,20 +124,20 @@ class Message_SlaveHostRequest_Enroll PROTOBUF_FINAL :
   static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
     return GetMetadataStatic().reflection;
   }
-  static const Message_SlaveHostRequest_Enroll& default_instance();
+  static const Message_SMQ_Enroll& default_instance();
 
   static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
-  static inline const Message_SlaveHostRequest_Enroll* internal_default_instance() {
-    return reinterpret_cast<const Message_SlaveHostRequest_Enroll*>(
-               &_Message_SlaveHostRequest_Enroll_default_instance_);
+  static inline const Message_SMQ_Enroll* internal_default_instance() {
+    return reinterpret_cast<const Message_SMQ_Enroll*>(
+               &_Message_SMQ_Enroll_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
     0;
 
-  friend void swap(Message_SlaveHostRequest_Enroll& a, Message_SlaveHostRequest_Enroll& b) {
+  friend void swap(Message_SMQ_Enroll& a, Message_SMQ_Enroll& b) {
     a.Swap(&b);
   }
-  inline void Swap(Message_SlaveHostRequest_Enroll* other) {
+  inline void Swap(Message_SMQ_Enroll* other) {
     if (other == this) return;
     if (GetArena() == other->GetArena()) {
       InternalSwap(other);
@@ -137,7 +145,7 @@ class Message_SlaveHostRequest_Enroll PROTOBUF_FINAL :
       ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
     }
   }
-  void UnsafeArenaSwap(Message_SlaveHostRequest_Enroll* other) {
+  void UnsafeArenaSwap(Message_SMQ_Enroll* other) {
     if (other == this) return;
     GOOGLE_DCHECK(GetArena() == other->GetArena());
     InternalSwap(other);
@@ -145,17 +153,17 @@ class Message_SlaveHostRequest_Enroll PROTOBUF_FINAL :
 
   // implements Message ----------------------------------------------
 
-  inline Message_SlaveHostRequest_Enroll* New() const final {
-    return CreateMaybeMessage<Message_SlaveHostRequest_Enroll>(nullptr);
+  inline Message_SMQ_Enroll* New() const final {
+    return CreateMaybeMessage<Message_SMQ_Enroll>(nullptr);
   }
 
-  Message_SlaveHostRequest_Enroll* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
-    return CreateMaybeMessage<Message_SlaveHostRequest_Enroll>(arena);
+  Message_SMQ_Enroll* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<Message_SMQ_Enroll>(arena);
   }
   void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
   void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void CopyFrom(const Message_SlaveHostRequest_Enroll& from);
-  void MergeFrom(const Message_SlaveHostRequest_Enroll& from);
+  void CopyFrom(const Message_SMQ_Enroll& from);
+  void MergeFrom(const Message_SMQ_Enroll& from);
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
@@ -169,13 +177,13 @@ class Message_SlaveHostRequest_Enroll PROTOBUF_FINAL :
   inline void SharedCtor();
   inline void SharedDtor();
   void SetCachedSize(int size) const final;
-  void InternalSwap(Message_SlaveHostRequest_Enroll* other);
+  void InternalSwap(Message_SMQ_Enroll* other);
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
-    return "megastructure.Message.SlaveHostRequest_Enroll";
+    return "megastructure.Message.SMQ_Enroll";
   }
   protected:
-  explicit Message_SlaveHostRequest_Enroll(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  explicit Message_SMQ_Enroll(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   private:
   static void ArenaDtor(void* object);
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
@@ -222,7 +230,7 @@ class Message_SlaveHostRequest_Enroll PROTOBUF_FINAL :
   std::string* _internal_mutable_slavename();
   public:
 
-  // @@protoc_insertion_point(class_scope:megastructure.Message.SlaveHostRequest_Enroll)
+  // @@protoc_insertion_point(class_scope:megastructure.Message.SMQ_Enroll)
  private:
   class _Internal;
 
@@ -235,23 +243,23 @@ class Message_SlaveHostRequest_Enroll PROTOBUF_FINAL :
 };
 // -------------------------------------------------------------------
 
-class Message_HostSlaveResponse_Enroll PROTOBUF_FINAL :
-    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:megastructure.Message.HostSlaveResponse_Enroll) */ {
+class Message_MSS_Enroll PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:megastructure.Message.MSS_Enroll) */ {
  public:
-  inline Message_HostSlaveResponse_Enroll() : Message_HostSlaveResponse_Enroll(nullptr) {};
-  virtual ~Message_HostSlaveResponse_Enroll();
+  inline Message_MSS_Enroll() : Message_MSS_Enroll(nullptr) {};
+  virtual ~Message_MSS_Enroll();
 
-  Message_HostSlaveResponse_Enroll(const Message_HostSlaveResponse_Enroll& from);
-  Message_HostSlaveResponse_Enroll(Message_HostSlaveResponse_Enroll&& from) noexcept
-    : Message_HostSlaveResponse_Enroll() {
+  Message_MSS_Enroll(const Message_MSS_Enroll& from);
+  Message_MSS_Enroll(Message_MSS_Enroll&& from) noexcept
+    : Message_MSS_Enroll() {
     *this = ::std::move(from);
   }
 
-  inline Message_HostSlaveResponse_Enroll& operator=(const Message_HostSlaveResponse_Enroll& from) {
+  inline Message_MSS_Enroll& operator=(const Message_MSS_Enroll& from) {
     CopyFrom(from);
     return *this;
   }
-  inline Message_HostSlaveResponse_Enroll& operator=(Message_HostSlaveResponse_Enroll&& from) noexcept {
+  inline Message_MSS_Enroll& operator=(Message_MSS_Enroll&& from) noexcept {
     if (GetArena() == from.GetArena()) {
       if (this != &from) InternalSwap(&from);
     } else {
@@ -269,20 +277,20 @@ class Message_HostSlaveResponse_Enroll PROTOBUF_FINAL :
   static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
     return GetMetadataStatic().reflection;
   }
-  static const Message_HostSlaveResponse_Enroll& default_instance();
+  static const Message_MSS_Enroll& default_instance();
 
   static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
-  static inline const Message_HostSlaveResponse_Enroll* internal_default_instance() {
-    return reinterpret_cast<const Message_HostSlaveResponse_Enroll*>(
-               &_Message_HostSlaveResponse_Enroll_default_instance_);
+  static inline const Message_MSS_Enroll* internal_default_instance() {
+    return reinterpret_cast<const Message_MSS_Enroll*>(
+               &_Message_MSS_Enroll_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
     1;
 
-  friend void swap(Message_HostSlaveResponse_Enroll& a, Message_HostSlaveResponse_Enroll& b) {
+  friend void swap(Message_MSS_Enroll& a, Message_MSS_Enroll& b) {
     a.Swap(&b);
   }
-  inline void Swap(Message_HostSlaveResponse_Enroll* other) {
+  inline void Swap(Message_MSS_Enroll* other) {
     if (other == this) return;
     if (GetArena() == other->GetArena()) {
       InternalSwap(other);
@@ -290,7 +298,7 @@ class Message_HostSlaveResponse_Enroll PROTOBUF_FINAL :
       ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
     }
   }
-  void UnsafeArenaSwap(Message_HostSlaveResponse_Enroll* other) {
+  void UnsafeArenaSwap(Message_MSS_Enroll* other) {
     if (other == this) return;
     GOOGLE_DCHECK(GetArena() == other->GetArena());
     InternalSwap(other);
@@ -298,17 +306,17 @@ class Message_HostSlaveResponse_Enroll PROTOBUF_FINAL :
 
   // implements Message ----------------------------------------------
 
-  inline Message_HostSlaveResponse_Enroll* New() const final {
-    return CreateMaybeMessage<Message_HostSlaveResponse_Enroll>(nullptr);
+  inline Message_MSS_Enroll* New() const final {
+    return CreateMaybeMessage<Message_MSS_Enroll>(nullptr);
   }
 
-  Message_HostSlaveResponse_Enroll* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
-    return CreateMaybeMessage<Message_HostSlaveResponse_Enroll>(arena);
+  Message_MSS_Enroll* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<Message_MSS_Enroll>(arena);
   }
   void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
   void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void CopyFrom(const Message_HostSlaveResponse_Enroll& from);
-  void MergeFrom(const Message_HostSlaveResponse_Enroll& from);
+  void CopyFrom(const Message_MSS_Enroll& from);
+  void MergeFrom(const Message_MSS_Enroll& from);
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
@@ -322,13 +330,13 @@ class Message_HostSlaveResponse_Enroll PROTOBUF_FINAL :
   inline void SharedCtor();
   inline void SharedDtor();
   void SetCachedSize(int size) const final;
-  void InternalSwap(Message_HostSlaveResponse_Enroll* other);
+  void InternalSwap(Message_MSS_Enroll* other);
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
-    return "megastructure.Message.HostSlaveResponse_Enroll";
+    return "megastructure.Message.MSS_Enroll";
   }
   protected:
-  explicit Message_HostSlaveResponse_Enroll(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  explicit Message_MSS_Enroll(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   private:
   static void ArenaDtor(void* object);
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
@@ -359,7 +367,7 @@ class Message_HostSlaveResponse_Enroll PROTOBUF_FINAL :
   void _internal_set_success(bool value);
   public:
 
-  // @@protoc_insertion_point(class_scope:megastructure.Message.HostSlaveResponse_Enroll)
+  // @@protoc_insertion_point(class_scope:megastructure.Message.MSS_Enroll)
  private:
   class _Internal;
 
@@ -372,23 +380,23 @@ class Message_HostSlaveResponse_Enroll PROTOBUF_FINAL :
 };
 // -------------------------------------------------------------------
 
-class Message_HostSlaveRequest_Alive PROTOBUF_FINAL :
-    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:megastructure.Message.HostSlaveRequest_Alive) */ {
+class Message_MSQ_Alive PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:megastructure.Message.MSQ_Alive) */ {
  public:
-  inline Message_HostSlaveRequest_Alive() : Message_HostSlaveRequest_Alive(nullptr) {};
-  virtual ~Message_HostSlaveRequest_Alive();
+  inline Message_MSQ_Alive() : Message_MSQ_Alive(nullptr) {};
+  virtual ~Message_MSQ_Alive();
 
-  Message_HostSlaveRequest_Alive(const Message_HostSlaveRequest_Alive& from);
-  Message_HostSlaveRequest_Alive(Message_HostSlaveRequest_Alive&& from) noexcept
-    : Message_HostSlaveRequest_Alive() {
+  Message_MSQ_Alive(const Message_MSQ_Alive& from);
+  Message_MSQ_Alive(Message_MSQ_Alive&& from) noexcept
+    : Message_MSQ_Alive() {
     *this = ::std::move(from);
   }
 
-  inline Message_HostSlaveRequest_Alive& operator=(const Message_HostSlaveRequest_Alive& from) {
+  inline Message_MSQ_Alive& operator=(const Message_MSQ_Alive& from) {
     CopyFrom(from);
     return *this;
   }
-  inline Message_HostSlaveRequest_Alive& operator=(Message_HostSlaveRequest_Alive&& from) noexcept {
+  inline Message_MSQ_Alive& operator=(Message_MSQ_Alive&& from) noexcept {
     if (GetArena() == from.GetArena()) {
       if (this != &from) InternalSwap(&from);
     } else {
@@ -406,20 +414,20 @@ class Message_HostSlaveRequest_Alive PROTOBUF_FINAL :
   static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
     return GetMetadataStatic().reflection;
   }
-  static const Message_HostSlaveRequest_Alive& default_instance();
+  static const Message_MSQ_Alive& default_instance();
 
   static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
-  static inline const Message_HostSlaveRequest_Alive* internal_default_instance() {
-    return reinterpret_cast<const Message_HostSlaveRequest_Alive*>(
-               &_Message_HostSlaveRequest_Alive_default_instance_);
+  static inline const Message_MSQ_Alive* internal_default_instance() {
+    return reinterpret_cast<const Message_MSQ_Alive*>(
+               &_Message_MSQ_Alive_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
     2;
 
-  friend void swap(Message_HostSlaveRequest_Alive& a, Message_HostSlaveRequest_Alive& b) {
+  friend void swap(Message_MSQ_Alive& a, Message_MSQ_Alive& b) {
     a.Swap(&b);
   }
-  inline void Swap(Message_HostSlaveRequest_Alive* other) {
+  inline void Swap(Message_MSQ_Alive* other) {
     if (other == this) return;
     if (GetArena() == other->GetArena()) {
       InternalSwap(other);
@@ -427,7 +435,7 @@ class Message_HostSlaveRequest_Alive PROTOBUF_FINAL :
       ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
     }
   }
-  void UnsafeArenaSwap(Message_HostSlaveRequest_Alive* other) {
+  void UnsafeArenaSwap(Message_MSQ_Alive* other) {
     if (other == this) return;
     GOOGLE_DCHECK(GetArena() == other->GetArena());
     InternalSwap(other);
@@ -435,17 +443,17 @@ class Message_HostSlaveRequest_Alive PROTOBUF_FINAL :
 
   // implements Message ----------------------------------------------
 
-  inline Message_HostSlaveRequest_Alive* New() const final {
-    return CreateMaybeMessage<Message_HostSlaveRequest_Alive>(nullptr);
+  inline Message_MSQ_Alive* New() const final {
+    return CreateMaybeMessage<Message_MSQ_Alive>(nullptr);
   }
 
-  Message_HostSlaveRequest_Alive* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
-    return CreateMaybeMessage<Message_HostSlaveRequest_Alive>(arena);
+  Message_MSQ_Alive* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<Message_MSQ_Alive>(arena);
   }
   void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
   void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void CopyFrom(const Message_HostSlaveRequest_Alive& from);
-  void MergeFrom(const Message_HostSlaveRequest_Alive& from);
+  void CopyFrom(const Message_MSQ_Alive& from);
+  void MergeFrom(const Message_MSQ_Alive& from);
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
@@ -459,13 +467,13 @@ class Message_HostSlaveRequest_Alive PROTOBUF_FINAL :
   inline void SharedCtor();
   inline void SharedDtor();
   void SetCachedSize(int size) const final;
-  void InternalSwap(Message_HostSlaveRequest_Alive* other);
+  void InternalSwap(Message_MSQ_Alive* other);
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
-    return "megastructure.Message.HostSlaveRequest_Alive";
+    return "megastructure.Message.MSQ_Alive";
   }
   protected:
-  explicit Message_HostSlaveRequest_Alive(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  explicit Message_MSQ_Alive(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   private:
   static void ArenaDtor(void* object);
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
@@ -512,7 +520,7 @@ class Message_HostSlaveRequest_Alive PROTOBUF_FINAL :
   std::string* _internal_mutable_slavename();
   public:
 
-  // @@protoc_insertion_point(class_scope:megastructure.Message.HostSlaveRequest_Alive)
+  // @@protoc_insertion_point(class_scope:megastructure.Message.MSQ_Alive)
  private:
   class _Internal;
 
@@ -525,23 +533,23 @@ class Message_HostSlaveRequest_Alive PROTOBUF_FINAL :
 };
 // -------------------------------------------------------------------
 
-class Message_SlaveHostResponse_Alive PROTOBUF_FINAL :
-    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:megastructure.Message.SlaveHostResponse_Alive) */ {
+class Message_SMS_Alive PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:megastructure.Message.SMS_Alive) */ {
  public:
-  inline Message_SlaveHostResponse_Alive() : Message_SlaveHostResponse_Alive(nullptr) {};
-  virtual ~Message_SlaveHostResponse_Alive();
+  inline Message_SMS_Alive() : Message_SMS_Alive(nullptr) {};
+  virtual ~Message_SMS_Alive();
 
-  Message_SlaveHostResponse_Alive(const Message_SlaveHostResponse_Alive& from);
-  Message_SlaveHostResponse_Alive(Message_SlaveHostResponse_Alive&& from) noexcept
-    : Message_SlaveHostResponse_Alive() {
+  Message_SMS_Alive(const Message_SMS_Alive& from);
+  Message_SMS_Alive(Message_SMS_Alive&& from) noexcept
+    : Message_SMS_Alive() {
     *this = ::std::move(from);
   }
 
-  inline Message_SlaveHostResponse_Alive& operator=(const Message_SlaveHostResponse_Alive& from) {
+  inline Message_SMS_Alive& operator=(const Message_SMS_Alive& from) {
     CopyFrom(from);
     return *this;
   }
-  inline Message_SlaveHostResponse_Alive& operator=(Message_SlaveHostResponse_Alive&& from) noexcept {
+  inline Message_SMS_Alive& operator=(Message_SMS_Alive&& from) noexcept {
     if (GetArena() == from.GetArena()) {
       if (this != &from) InternalSwap(&from);
     } else {
@@ -559,20 +567,20 @@ class Message_SlaveHostResponse_Alive PROTOBUF_FINAL :
   static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
     return GetMetadataStatic().reflection;
   }
-  static const Message_SlaveHostResponse_Alive& default_instance();
+  static const Message_SMS_Alive& default_instance();
 
   static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
-  static inline const Message_SlaveHostResponse_Alive* internal_default_instance() {
-    return reinterpret_cast<const Message_SlaveHostResponse_Alive*>(
-               &_Message_SlaveHostResponse_Alive_default_instance_);
+  static inline const Message_SMS_Alive* internal_default_instance() {
+    return reinterpret_cast<const Message_SMS_Alive*>(
+               &_Message_SMS_Alive_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
     3;
 
-  friend void swap(Message_SlaveHostResponse_Alive& a, Message_SlaveHostResponse_Alive& b) {
+  friend void swap(Message_SMS_Alive& a, Message_SMS_Alive& b) {
     a.Swap(&b);
   }
-  inline void Swap(Message_SlaveHostResponse_Alive* other) {
+  inline void Swap(Message_SMS_Alive* other) {
     if (other == this) return;
     if (GetArena() == other->GetArena()) {
       InternalSwap(other);
@@ -580,7 +588,7 @@ class Message_SlaveHostResponse_Alive PROTOBUF_FINAL :
       ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
     }
   }
-  void UnsafeArenaSwap(Message_SlaveHostResponse_Alive* other) {
+  void UnsafeArenaSwap(Message_SMS_Alive* other) {
     if (other == this) return;
     GOOGLE_DCHECK(GetArena() == other->GetArena());
     InternalSwap(other);
@@ -588,17 +596,17 @@ class Message_SlaveHostResponse_Alive PROTOBUF_FINAL :
 
   // implements Message ----------------------------------------------
 
-  inline Message_SlaveHostResponse_Alive* New() const final {
-    return CreateMaybeMessage<Message_SlaveHostResponse_Alive>(nullptr);
+  inline Message_SMS_Alive* New() const final {
+    return CreateMaybeMessage<Message_SMS_Alive>(nullptr);
   }
 
-  Message_SlaveHostResponse_Alive* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
-    return CreateMaybeMessage<Message_SlaveHostResponse_Alive>(arena);
+  Message_SMS_Alive* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<Message_SMS_Alive>(arena);
   }
   void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
   void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void CopyFrom(const Message_SlaveHostResponse_Alive& from);
-  void MergeFrom(const Message_SlaveHostResponse_Alive& from);
+  void CopyFrom(const Message_SMS_Alive& from);
+  void MergeFrom(const Message_SMS_Alive& from);
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
@@ -612,13 +620,13 @@ class Message_SlaveHostResponse_Alive PROTOBUF_FINAL :
   inline void SharedCtor();
   inline void SharedDtor();
   void SetCachedSize(int size) const final;
-  void InternalSwap(Message_SlaveHostResponse_Alive* other);
+  void InternalSwap(Message_SMS_Alive* other);
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
-    return "megastructure.Message.SlaveHostResponse_Alive";
+    return "megastructure.Message.SMS_Alive";
   }
   protected:
-  explicit Message_SlaveHostResponse_Alive(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  explicit Message_SMS_Alive(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   private:
   static void ArenaDtor(void* object);
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
@@ -649,13 +657,357 @@ class Message_SlaveHostResponse_Alive PROTOBUF_FINAL :
   void _internal_set_success(bool value);
   public:
 
-  // @@protoc_insertion_point(class_scope:megastructure.Message.SlaveHostResponse_Alive)
+  // @@protoc_insertion_point(class_scope:megastructure.Message.SMS_Alive)
  private:
   class _Internal;
 
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
+  bool success_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_megastructure_2eproto;
+};
+// -------------------------------------------------------------------
+
+class Message_HCQ_Enroll PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:megastructure.Message.HCQ_Enroll) */ {
+ public:
+  inline Message_HCQ_Enroll() : Message_HCQ_Enroll(nullptr) {};
+  virtual ~Message_HCQ_Enroll();
+
+  Message_HCQ_Enroll(const Message_HCQ_Enroll& from);
+  Message_HCQ_Enroll(Message_HCQ_Enroll&& from) noexcept
+    : Message_HCQ_Enroll() {
+    *this = ::std::move(from);
+  }
+
+  inline Message_HCQ_Enroll& operator=(const Message_HCQ_Enroll& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline Message_HCQ_Enroll& operator=(Message_HCQ_Enroll&& from) noexcept {
+    if (GetArena() == from.GetArena()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const Message_HCQ_Enroll& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const Message_HCQ_Enroll* internal_default_instance() {
+    return reinterpret_cast<const Message_HCQ_Enroll*>(
+               &_Message_HCQ_Enroll_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    4;
+
+  friend void swap(Message_HCQ_Enroll& a, Message_HCQ_Enroll& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(Message_HCQ_Enroll* other) {
+    if (other == this) return;
+    if (GetArena() == other->GetArena()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(Message_HCQ_Enroll* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline Message_HCQ_Enroll* New() const final {
+    return CreateMaybeMessage<Message_HCQ_Enroll>(nullptr);
+  }
+
+  Message_HCQ_Enroll* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<Message_HCQ_Enroll>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const Message_HCQ_Enroll& from);
+  void MergeFrom(const Message_HCQ_Enroll& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(Message_HCQ_Enroll* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "megastructure.Message.HCQ_Enroll";
+  }
+  protected:
+  explicit Message_HCQ_Enroll(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  private:
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_megastructure_2eproto);
+    return ::descriptor_table_megastructure_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kProcessnameFieldNumber = 1,
+  };
+  // string processname = 1;
+  void clear_processname();
+  const std::string& processname() const;
+  void set_processname(const std::string& value);
+  void set_processname(std::string&& value);
+  void set_processname(const char* value);
+  void set_processname(const char* value, size_t size);
+  std::string* mutable_processname();
+  std::string* release_processname();
+  void set_allocated_processname(std::string* processname);
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  std::string* unsafe_arena_release_processname();
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  void unsafe_arena_set_allocated_processname(
+      std::string* processname);
+  private:
+  const std::string& _internal_processname() const;
+  void _internal_set_processname(const std::string& value);
+  std::string* _internal_mutable_processname();
+  public:
+
+  // @@protoc_insertion_point(class_scope:megastructure.Message.HCQ_Enroll)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr processname_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_megastructure_2eproto;
+};
+// -------------------------------------------------------------------
+
+class Message_CHS_Enroll PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:megastructure.Message.CHS_Enroll) */ {
+ public:
+  inline Message_CHS_Enroll() : Message_CHS_Enroll(nullptr) {};
+  virtual ~Message_CHS_Enroll();
+
+  Message_CHS_Enroll(const Message_CHS_Enroll& from);
+  Message_CHS_Enroll(Message_CHS_Enroll&& from) noexcept
+    : Message_CHS_Enroll() {
+    *this = ::std::move(from);
+  }
+
+  inline Message_CHS_Enroll& operator=(const Message_CHS_Enroll& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline Message_CHS_Enroll& operator=(Message_CHS_Enroll&& from) noexcept {
+    if (GetArena() == from.GetArena()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const Message_CHS_Enroll& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const Message_CHS_Enroll* internal_default_instance() {
+    return reinterpret_cast<const Message_CHS_Enroll*>(
+               &_Message_CHS_Enroll_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    5;
+
+  friend void swap(Message_CHS_Enroll& a, Message_CHS_Enroll& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(Message_CHS_Enroll* other) {
+    if (other == this) return;
+    if (GetArena() == other->GetArena()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(Message_CHS_Enroll* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline Message_CHS_Enroll* New() const final {
+    return CreateMaybeMessage<Message_CHS_Enroll>(nullptr);
+  }
+
+  Message_CHS_Enroll* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<Message_CHS_Enroll>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const Message_CHS_Enroll& from);
+  void MergeFrom(const Message_CHS_Enroll& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(Message_CHS_Enroll* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "megastructure.Message.CHS_Enroll";
+  }
+  protected:
+  explicit Message_CHS_Enroll(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  private:
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_megastructure_2eproto);
+    return ::descriptor_table_megastructure_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kHostpathFieldNumber = 2,
+    kProgramFieldNumber = 3,
+    kSuccessFieldNumber = 1,
+  };
+  // string hostpath = 2;
+  void clear_hostpath();
+  const std::string& hostpath() const;
+  void set_hostpath(const std::string& value);
+  void set_hostpath(std::string&& value);
+  void set_hostpath(const char* value);
+  void set_hostpath(const char* value, size_t size);
+  std::string* mutable_hostpath();
+  std::string* release_hostpath();
+  void set_allocated_hostpath(std::string* hostpath);
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  std::string* unsafe_arena_release_hostpath();
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  void unsafe_arena_set_allocated_hostpath(
+      std::string* hostpath);
+  private:
+  const std::string& _internal_hostpath() const;
+  void _internal_set_hostpath(const std::string& value);
+  std::string* _internal_mutable_hostpath();
+  public:
+
+  // string program = 3;
+  void clear_program();
+  const std::string& program() const;
+  void set_program(const std::string& value);
+  void set_program(std::string&& value);
+  void set_program(const char* value);
+  void set_program(const char* value, size_t size);
+  std::string* mutable_program();
+  std::string* release_program();
+  void set_allocated_program(std::string* program);
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  std::string* unsafe_arena_release_program();
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  void unsafe_arena_set_allocated_program(
+      std::string* program);
+  private:
+  const std::string& _internal_program() const;
+  void _internal_set_program(const std::string& value);
+  std::string* _internal_mutable_program();
+  public:
+
+  // bool success = 1;
+  void clear_success();
+  bool success() const;
+  void set_success(bool value);
+  private:
+  bool _internal_success() const;
+  void _internal_set_success(bool value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:megastructure.Message.CHS_Enroll)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr hostpath_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr program_;
   bool success_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_megastructure_2eproto;
@@ -699,10 +1051,12 @@ class Message PROTOBUF_FINAL :
   static const Message& default_instance();
 
   enum FoobarCase {
-    kSlavehostrequestEnroll = 2,
-    kHostslaveresponseEnroll = 3,
-    kHostslaverequestAlive = 4,
-    kSlavehostresponseAlive = 5,
+    kSmqEnroll = 2,
+    kMssEnroll = 3,
+    kMsqAlive = 4,
+    kSmsAlive = 5,
+    kHcqEnroll = 6,
+    kChsEnroll = 7,
     FOOBAR_NOT_SET = 0,
   };
 
@@ -712,7 +1066,7 @@ class Message PROTOBUF_FINAL :
                &_Message_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    4;
+    6;
 
   friend void swap(Message& a, Message& b) {
     a.Swap(&b);
@@ -780,19 +1134,23 @@ class Message PROTOBUF_FINAL :
 
   // nested types ----------------------------------------------------
 
-  typedef Message_SlaveHostRequest_Enroll SlaveHostRequest_Enroll;
-  typedef Message_HostSlaveResponse_Enroll HostSlaveResponse_Enroll;
-  typedef Message_HostSlaveRequest_Alive HostSlaveRequest_Alive;
-  typedef Message_SlaveHostResponse_Alive SlaveHostResponse_Alive;
+  typedef Message_SMQ_Enroll SMQ_Enroll;
+  typedef Message_MSS_Enroll MSS_Enroll;
+  typedef Message_MSQ_Alive MSQ_Alive;
+  typedef Message_SMS_Alive SMS_Alive;
+  typedef Message_HCQ_Enroll HCQ_Enroll;
+  typedef Message_CHS_Enroll CHS_Enroll;
 
   // accessors -------------------------------------------------------
 
   enum : int {
     kIdFieldNumber = 1,
-    kSlavehostrequestEnrollFieldNumber = 2,
-    kHostslaveresponseEnrollFieldNumber = 3,
-    kHostslaverequestAliveFieldNumber = 4,
-    kSlavehostresponseAliveFieldNumber = 5,
+    kSmqEnrollFieldNumber = 2,
+    kMssEnrollFieldNumber = 3,
+    kMsqAliveFieldNumber = 4,
+    kSmsAliveFieldNumber = 5,
+    kHcqEnrollFieldNumber = 6,
+    kChsEnrollFieldNumber = 7,
   };
   // int32 id = 1;
   void clear_id();
@@ -803,87 +1161,125 @@ class Message PROTOBUF_FINAL :
   void _internal_set_id(::PROTOBUF_NAMESPACE_ID::int32 value);
   public:
 
-  // .megastructure.Message.SlaveHostRequest_Enroll slavehostrequest_enroll = 2;
-  bool has_slavehostrequest_enroll() const;
+  // .megastructure.Message.SMQ_Enroll smq_enroll = 2;
+  bool has_smq_enroll() const;
   private:
-  bool _internal_has_slavehostrequest_enroll() const;
+  bool _internal_has_smq_enroll() const;
   public:
-  void clear_slavehostrequest_enroll();
-  const ::megastructure::Message_SlaveHostRequest_Enroll& slavehostrequest_enroll() const;
-  ::megastructure::Message_SlaveHostRequest_Enroll* release_slavehostrequest_enroll();
-  ::megastructure::Message_SlaveHostRequest_Enroll* mutable_slavehostrequest_enroll();
-  void set_allocated_slavehostrequest_enroll(::megastructure::Message_SlaveHostRequest_Enroll* slavehostrequest_enroll);
+  void clear_smq_enroll();
+  const ::megastructure::Message_SMQ_Enroll& smq_enroll() const;
+  ::megastructure::Message_SMQ_Enroll* release_smq_enroll();
+  ::megastructure::Message_SMQ_Enroll* mutable_smq_enroll();
+  void set_allocated_smq_enroll(::megastructure::Message_SMQ_Enroll* smq_enroll);
   private:
-  const ::megastructure::Message_SlaveHostRequest_Enroll& _internal_slavehostrequest_enroll() const;
-  ::megastructure::Message_SlaveHostRequest_Enroll* _internal_mutable_slavehostrequest_enroll();
+  const ::megastructure::Message_SMQ_Enroll& _internal_smq_enroll() const;
+  ::megastructure::Message_SMQ_Enroll* _internal_mutable_smq_enroll();
   public:
-  void unsafe_arena_set_allocated_slavehostrequest_enroll(
-      ::megastructure::Message_SlaveHostRequest_Enroll* slavehostrequest_enroll);
-  ::megastructure::Message_SlaveHostRequest_Enroll* unsafe_arena_release_slavehostrequest_enroll();
+  void unsafe_arena_set_allocated_smq_enroll(
+      ::megastructure::Message_SMQ_Enroll* smq_enroll);
+  ::megastructure::Message_SMQ_Enroll* unsafe_arena_release_smq_enroll();
 
-  // .megastructure.Message.HostSlaveResponse_Enroll hostslaveresponse_enroll = 3;
-  bool has_hostslaveresponse_enroll() const;
+  // .megastructure.Message.MSS_Enroll mss_enroll = 3;
+  bool has_mss_enroll() const;
   private:
-  bool _internal_has_hostslaveresponse_enroll() const;
+  bool _internal_has_mss_enroll() const;
   public:
-  void clear_hostslaveresponse_enroll();
-  const ::megastructure::Message_HostSlaveResponse_Enroll& hostslaveresponse_enroll() const;
-  ::megastructure::Message_HostSlaveResponse_Enroll* release_hostslaveresponse_enroll();
-  ::megastructure::Message_HostSlaveResponse_Enroll* mutable_hostslaveresponse_enroll();
-  void set_allocated_hostslaveresponse_enroll(::megastructure::Message_HostSlaveResponse_Enroll* hostslaveresponse_enroll);
+  void clear_mss_enroll();
+  const ::megastructure::Message_MSS_Enroll& mss_enroll() const;
+  ::megastructure::Message_MSS_Enroll* release_mss_enroll();
+  ::megastructure::Message_MSS_Enroll* mutable_mss_enroll();
+  void set_allocated_mss_enroll(::megastructure::Message_MSS_Enroll* mss_enroll);
   private:
-  const ::megastructure::Message_HostSlaveResponse_Enroll& _internal_hostslaveresponse_enroll() const;
-  ::megastructure::Message_HostSlaveResponse_Enroll* _internal_mutable_hostslaveresponse_enroll();
+  const ::megastructure::Message_MSS_Enroll& _internal_mss_enroll() const;
+  ::megastructure::Message_MSS_Enroll* _internal_mutable_mss_enroll();
   public:
-  void unsafe_arena_set_allocated_hostslaveresponse_enroll(
-      ::megastructure::Message_HostSlaveResponse_Enroll* hostslaveresponse_enroll);
-  ::megastructure::Message_HostSlaveResponse_Enroll* unsafe_arena_release_hostslaveresponse_enroll();
+  void unsafe_arena_set_allocated_mss_enroll(
+      ::megastructure::Message_MSS_Enroll* mss_enroll);
+  ::megastructure::Message_MSS_Enroll* unsafe_arena_release_mss_enroll();
 
-  // .megastructure.Message.HostSlaveRequest_Alive hostslaverequest_alive = 4;
-  bool has_hostslaverequest_alive() const;
+  // .megastructure.Message.MSQ_Alive msq_alive = 4;
+  bool has_msq_alive() const;
   private:
-  bool _internal_has_hostslaverequest_alive() const;
+  bool _internal_has_msq_alive() const;
   public:
-  void clear_hostslaverequest_alive();
-  const ::megastructure::Message_HostSlaveRequest_Alive& hostslaverequest_alive() const;
-  ::megastructure::Message_HostSlaveRequest_Alive* release_hostslaverequest_alive();
-  ::megastructure::Message_HostSlaveRequest_Alive* mutable_hostslaverequest_alive();
-  void set_allocated_hostslaverequest_alive(::megastructure::Message_HostSlaveRequest_Alive* hostslaverequest_alive);
+  void clear_msq_alive();
+  const ::megastructure::Message_MSQ_Alive& msq_alive() const;
+  ::megastructure::Message_MSQ_Alive* release_msq_alive();
+  ::megastructure::Message_MSQ_Alive* mutable_msq_alive();
+  void set_allocated_msq_alive(::megastructure::Message_MSQ_Alive* msq_alive);
   private:
-  const ::megastructure::Message_HostSlaveRequest_Alive& _internal_hostslaverequest_alive() const;
-  ::megastructure::Message_HostSlaveRequest_Alive* _internal_mutable_hostslaverequest_alive();
+  const ::megastructure::Message_MSQ_Alive& _internal_msq_alive() const;
+  ::megastructure::Message_MSQ_Alive* _internal_mutable_msq_alive();
   public:
-  void unsafe_arena_set_allocated_hostslaverequest_alive(
-      ::megastructure::Message_HostSlaveRequest_Alive* hostslaverequest_alive);
-  ::megastructure::Message_HostSlaveRequest_Alive* unsafe_arena_release_hostslaverequest_alive();
+  void unsafe_arena_set_allocated_msq_alive(
+      ::megastructure::Message_MSQ_Alive* msq_alive);
+  ::megastructure::Message_MSQ_Alive* unsafe_arena_release_msq_alive();
 
-  // .megastructure.Message.SlaveHostResponse_Alive slavehostresponse_alive = 5;
-  bool has_slavehostresponse_alive() const;
+  // .megastructure.Message.SMS_Alive sms_alive = 5;
+  bool has_sms_alive() const;
   private:
-  bool _internal_has_slavehostresponse_alive() const;
+  bool _internal_has_sms_alive() const;
   public:
-  void clear_slavehostresponse_alive();
-  const ::megastructure::Message_SlaveHostResponse_Alive& slavehostresponse_alive() const;
-  ::megastructure::Message_SlaveHostResponse_Alive* release_slavehostresponse_alive();
-  ::megastructure::Message_SlaveHostResponse_Alive* mutable_slavehostresponse_alive();
-  void set_allocated_slavehostresponse_alive(::megastructure::Message_SlaveHostResponse_Alive* slavehostresponse_alive);
+  void clear_sms_alive();
+  const ::megastructure::Message_SMS_Alive& sms_alive() const;
+  ::megastructure::Message_SMS_Alive* release_sms_alive();
+  ::megastructure::Message_SMS_Alive* mutable_sms_alive();
+  void set_allocated_sms_alive(::megastructure::Message_SMS_Alive* sms_alive);
   private:
-  const ::megastructure::Message_SlaveHostResponse_Alive& _internal_slavehostresponse_alive() const;
-  ::megastructure::Message_SlaveHostResponse_Alive* _internal_mutable_slavehostresponse_alive();
+  const ::megastructure::Message_SMS_Alive& _internal_sms_alive() const;
+  ::megastructure::Message_SMS_Alive* _internal_mutable_sms_alive();
   public:
-  void unsafe_arena_set_allocated_slavehostresponse_alive(
-      ::megastructure::Message_SlaveHostResponse_Alive* slavehostresponse_alive);
-  ::megastructure::Message_SlaveHostResponse_Alive* unsafe_arena_release_slavehostresponse_alive();
+  void unsafe_arena_set_allocated_sms_alive(
+      ::megastructure::Message_SMS_Alive* sms_alive);
+  ::megastructure::Message_SMS_Alive* unsafe_arena_release_sms_alive();
+
+  // .megastructure.Message.HCQ_Enroll hcq_enroll = 6;
+  bool has_hcq_enroll() const;
+  private:
+  bool _internal_has_hcq_enroll() const;
+  public:
+  void clear_hcq_enroll();
+  const ::megastructure::Message_HCQ_Enroll& hcq_enroll() const;
+  ::megastructure::Message_HCQ_Enroll* release_hcq_enroll();
+  ::megastructure::Message_HCQ_Enroll* mutable_hcq_enroll();
+  void set_allocated_hcq_enroll(::megastructure::Message_HCQ_Enroll* hcq_enroll);
+  private:
+  const ::megastructure::Message_HCQ_Enroll& _internal_hcq_enroll() const;
+  ::megastructure::Message_HCQ_Enroll* _internal_mutable_hcq_enroll();
+  public:
+  void unsafe_arena_set_allocated_hcq_enroll(
+      ::megastructure::Message_HCQ_Enroll* hcq_enroll);
+  ::megastructure::Message_HCQ_Enroll* unsafe_arena_release_hcq_enroll();
+
+  // .megastructure.Message.CHS_Enroll chs_enroll = 7;
+  bool has_chs_enroll() const;
+  private:
+  bool _internal_has_chs_enroll() const;
+  public:
+  void clear_chs_enroll();
+  const ::megastructure::Message_CHS_Enroll& chs_enroll() const;
+  ::megastructure::Message_CHS_Enroll* release_chs_enroll();
+  ::megastructure::Message_CHS_Enroll* mutable_chs_enroll();
+  void set_allocated_chs_enroll(::megastructure::Message_CHS_Enroll* chs_enroll);
+  private:
+  const ::megastructure::Message_CHS_Enroll& _internal_chs_enroll() const;
+  ::megastructure::Message_CHS_Enroll* _internal_mutable_chs_enroll();
+  public:
+  void unsafe_arena_set_allocated_chs_enroll(
+      ::megastructure::Message_CHS_Enroll* chs_enroll);
+  ::megastructure::Message_CHS_Enroll* unsafe_arena_release_chs_enroll();
 
   void clear_foobar();
   FoobarCase foobar_case() const;
   // @@protoc_insertion_point(class_scope:megastructure.Message)
  private:
   class _Internal;
-  void set_has_slavehostrequest_enroll();
-  void set_has_hostslaveresponse_enroll();
-  void set_has_hostslaverequest_alive();
-  void set_has_slavehostresponse_alive();
+  void set_has_smq_enroll();
+  void set_has_mss_enroll();
+  void set_has_msq_alive();
+  void set_has_sms_alive();
+  void set_has_hcq_enroll();
+  void set_has_chs_enroll();
 
   inline bool has_foobar() const;
   inline void clear_has_foobar();
@@ -894,10 +1290,12 @@ class Message PROTOBUF_FINAL :
   ::PROTOBUF_NAMESPACE_ID::int32 id_;
   union FoobarUnion {
     FoobarUnion() {}
-    ::megastructure::Message_SlaveHostRequest_Enroll* slavehostrequest_enroll_;
-    ::megastructure::Message_HostSlaveResponse_Enroll* hostslaveresponse_enroll_;
-    ::megastructure::Message_HostSlaveRequest_Alive* hostslaverequest_alive_;
-    ::megastructure::Message_SlaveHostResponse_Alive* slavehostresponse_alive_;
+    ::megastructure::Message_SMQ_Enroll* smq_enroll_;
+    ::megastructure::Message_MSS_Enroll* mss_enroll_;
+    ::megastructure::Message_MSQ_Alive* msq_alive_;
+    ::megastructure::Message_SMS_Alive* sms_alive_;
+    ::megastructure::Message_HCQ_Enroll* hcq_enroll_;
+    ::megastructure::Message_CHS_Enroll* chs_enroll_;
   } foobar_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   ::PROTOBUF_NAMESPACE_ID::uint32 _oneof_case_[1];
@@ -913,60 +1311,60 @@ class Message PROTOBUF_FINAL :
   #pragma GCC diagnostic push
   #pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif  // __GNUC__
-// Message_SlaveHostRequest_Enroll
+// Message_SMQ_Enroll
 
 // string slavename = 1;
-inline void Message_SlaveHostRequest_Enroll::clear_slavename() {
+inline void Message_SMQ_Enroll::clear_slavename() {
   slavename_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
-inline const std::string& Message_SlaveHostRequest_Enroll::slavename() const {
-  // @@protoc_insertion_point(field_get:megastructure.Message.SlaveHostRequest_Enroll.slavename)
+inline const std::string& Message_SMQ_Enroll::slavename() const {
+  // @@protoc_insertion_point(field_get:megastructure.Message.SMQ_Enroll.slavename)
   return _internal_slavename();
 }
-inline void Message_SlaveHostRequest_Enroll::set_slavename(const std::string& value) {
+inline void Message_SMQ_Enroll::set_slavename(const std::string& value) {
   _internal_set_slavename(value);
-  // @@protoc_insertion_point(field_set:megastructure.Message.SlaveHostRequest_Enroll.slavename)
+  // @@protoc_insertion_point(field_set:megastructure.Message.SMQ_Enroll.slavename)
 }
-inline std::string* Message_SlaveHostRequest_Enroll::mutable_slavename() {
-  // @@protoc_insertion_point(field_mutable:megastructure.Message.SlaveHostRequest_Enroll.slavename)
+inline std::string* Message_SMQ_Enroll::mutable_slavename() {
+  // @@protoc_insertion_point(field_mutable:megastructure.Message.SMQ_Enroll.slavename)
   return _internal_mutable_slavename();
 }
-inline const std::string& Message_SlaveHostRequest_Enroll::_internal_slavename() const {
+inline const std::string& Message_SMQ_Enroll::_internal_slavename() const {
   return slavename_.Get();
 }
-inline void Message_SlaveHostRequest_Enroll::_internal_set_slavename(const std::string& value) {
+inline void Message_SMQ_Enroll::_internal_set_slavename(const std::string& value) {
   
   slavename_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
 }
-inline void Message_SlaveHostRequest_Enroll::set_slavename(std::string&& value) {
+inline void Message_SMQ_Enroll::set_slavename(std::string&& value) {
   
   slavename_.Set(
     &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
-  // @@protoc_insertion_point(field_set_rvalue:megastructure.Message.SlaveHostRequest_Enroll.slavename)
+  // @@protoc_insertion_point(field_set_rvalue:megastructure.Message.SMQ_Enroll.slavename)
 }
-inline void Message_SlaveHostRequest_Enroll::set_slavename(const char* value) {
+inline void Message_SMQ_Enroll::set_slavename(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
   
   slavename_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
               GetArena());
-  // @@protoc_insertion_point(field_set_char:megastructure.Message.SlaveHostRequest_Enroll.slavename)
+  // @@protoc_insertion_point(field_set_char:megastructure.Message.SMQ_Enroll.slavename)
 }
-inline void Message_SlaveHostRequest_Enroll::set_slavename(const char* value,
+inline void Message_SMQ_Enroll::set_slavename(const char* value,
     size_t size) {
   
   slavename_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
       reinterpret_cast<const char*>(value), size), GetArena());
-  // @@protoc_insertion_point(field_set_pointer:megastructure.Message.SlaveHostRequest_Enroll.slavename)
+  // @@protoc_insertion_point(field_set_pointer:megastructure.Message.SMQ_Enroll.slavename)
 }
-inline std::string* Message_SlaveHostRequest_Enroll::_internal_mutable_slavename() {
+inline std::string* Message_SMQ_Enroll::_internal_mutable_slavename() {
   
   return slavename_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
-inline std::string* Message_SlaveHostRequest_Enroll::release_slavename() {
-  // @@protoc_insertion_point(field_release:megastructure.Message.SlaveHostRequest_Enroll.slavename)
+inline std::string* Message_SMQ_Enroll::release_slavename() {
+  // @@protoc_insertion_point(field_release:megastructure.Message.SMQ_Enroll.slavename)
   return slavename_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
-inline void Message_SlaveHostRequest_Enroll::set_allocated_slavename(std::string* slavename) {
+inline void Message_SMQ_Enroll::set_allocated_slavename(std::string* slavename) {
   if (slavename != nullptr) {
     
   } else {
@@ -974,16 +1372,16 @@ inline void Message_SlaveHostRequest_Enroll::set_allocated_slavename(std::string
   }
   slavename_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), slavename,
       GetArena());
-  // @@protoc_insertion_point(field_set_allocated:megastructure.Message.SlaveHostRequest_Enroll.slavename)
+  // @@protoc_insertion_point(field_set_allocated:megastructure.Message.SMQ_Enroll.slavename)
 }
-inline std::string* Message_SlaveHostRequest_Enroll::unsafe_arena_release_slavename() {
-  // @@protoc_insertion_point(field_unsafe_arena_release:megastructure.Message.SlaveHostRequest_Enroll.slavename)
+inline std::string* Message_SMQ_Enroll::unsafe_arena_release_slavename() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:megastructure.Message.SMQ_Enroll.slavename)
   GOOGLE_DCHECK(GetArena() != nullptr);
   
   return slavename_.UnsafeArenaRelease(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
       GetArena());
 }
-inline void Message_SlaveHostRequest_Enroll::unsafe_arena_set_allocated_slavename(
+inline void Message_SMQ_Enroll::unsafe_arena_set_allocated_slavename(
     std::string* slavename) {
   GOOGLE_DCHECK(GetArena() != nullptr);
   if (slavename != nullptr) {
@@ -993,89 +1391,89 @@ inline void Message_SlaveHostRequest_Enroll::unsafe_arena_set_allocated_slavenam
   }
   slavename_.UnsafeArenaSetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
       slavename, GetArena());
-  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:megastructure.Message.SlaveHostRequest_Enroll.slavename)
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:megastructure.Message.SMQ_Enroll.slavename)
 }
 
 // -------------------------------------------------------------------
 
-// Message_HostSlaveResponse_Enroll
+// Message_MSS_Enroll
 
 // bool success = 1;
-inline void Message_HostSlaveResponse_Enroll::clear_success() {
+inline void Message_MSS_Enroll::clear_success() {
   success_ = false;
 }
-inline bool Message_HostSlaveResponse_Enroll::_internal_success() const {
+inline bool Message_MSS_Enroll::_internal_success() const {
   return success_;
 }
-inline bool Message_HostSlaveResponse_Enroll::success() const {
-  // @@protoc_insertion_point(field_get:megastructure.Message.HostSlaveResponse_Enroll.success)
+inline bool Message_MSS_Enroll::success() const {
+  // @@protoc_insertion_point(field_get:megastructure.Message.MSS_Enroll.success)
   return _internal_success();
 }
-inline void Message_HostSlaveResponse_Enroll::_internal_set_success(bool value) {
+inline void Message_MSS_Enroll::_internal_set_success(bool value) {
   
   success_ = value;
 }
-inline void Message_HostSlaveResponse_Enroll::set_success(bool value) {
+inline void Message_MSS_Enroll::set_success(bool value) {
   _internal_set_success(value);
-  // @@protoc_insertion_point(field_set:megastructure.Message.HostSlaveResponse_Enroll.success)
+  // @@protoc_insertion_point(field_set:megastructure.Message.MSS_Enroll.success)
 }
 
 // -------------------------------------------------------------------
 
-// Message_HostSlaveRequest_Alive
+// Message_MSQ_Alive
 
 // string slavename = 1;
-inline void Message_HostSlaveRequest_Alive::clear_slavename() {
+inline void Message_MSQ_Alive::clear_slavename() {
   slavename_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
-inline const std::string& Message_HostSlaveRequest_Alive::slavename() const {
-  // @@protoc_insertion_point(field_get:megastructure.Message.HostSlaveRequest_Alive.slavename)
+inline const std::string& Message_MSQ_Alive::slavename() const {
+  // @@protoc_insertion_point(field_get:megastructure.Message.MSQ_Alive.slavename)
   return _internal_slavename();
 }
-inline void Message_HostSlaveRequest_Alive::set_slavename(const std::string& value) {
+inline void Message_MSQ_Alive::set_slavename(const std::string& value) {
   _internal_set_slavename(value);
-  // @@protoc_insertion_point(field_set:megastructure.Message.HostSlaveRequest_Alive.slavename)
+  // @@protoc_insertion_point(field_set:megastructure.Message.MSQ_Alive.slavename)
 }
-inline std::string* Message_HostSlaveRequest_Alive::mutable_slavename() {
-  // @@protoc_insertion_point(field_mutable:megastructure.Message.HostSlaveRequest_Alive.slavename)
+inline std::string* Message_MSQ_Alive::mutable_slavename() {
+  // @@protoc_insertion_point(field_mutable:megastructure.Message.MSQ_Alive.slavename)
   return _internal_mutable_slavename();
 }
-inline const std::string& Message_HostSlaveRequest_Alive::_internal_slavename() const {
+inline const std::string& Message_MSQ_Alive::_internal_slavename() const {
   return slavename_.Get();
 }
-inline void Message_HostSlaveRequest_Alive::_internal_set_slavename(const std::string& value) {
+inline void Message_MSQ_Alive::_internal_set_slavename(const std::string& value) {
   
   slavename_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
 }
-inline void Message_HostSlaveRequest_Alive::set_slavename(std::string&& value) {
+inline void Message_MSQ_Alive::set_slavename(std::string&& value) {
   
   slavename_.Set(
     &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
-  // @@protoc_insertion_point(field_set_rvalue:megastructure.Message.HostSlaveRequest_Alive.slavename)
+  // @@protoc_insertion_point(field_set_rvalue:megastructure.Message.MSQ_Alive.slavename)
 }
-inline void Message_HostSlaveRequest_Alive::set_slavename(const char* value) {
+inline void Message_MSQ_Alive::set_slavename(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
   
   slavename_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
               GetArena());
-  // @@protoc_insertion_point(field_set_char:megastructure.Message.HostSlaveRequest_Alive.slavename)
+  // @@protoc_insertion_point(field_set_char:megastructure.Message.MSQ_Alive.slavename)
 }
-inline void Message_HostSlaveRequest_Alive::set_slavename(const char* value,
+inline void Message_MSQ_Alive::set_slavename(const char* value,
     size_t size) {
   
   slavename_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
       reinterpret_cast<const char*>(value), size), GetArena());
-  // @@protoc_insertion_point(field_set_pointer:megastructure.Message.HostSlaveRequest_Alive.slavename)
+  // @@protoc_insertion_point(field_set_pointer:megastructure.Message.MSQ_Alive.slavename)
 }
-inline std::string* Message_HostSlaveRequest_Alive::_internal_mutable_slavename() {
+inline std::string* Message_MSQ_Alive::_internal_mutable_slavename() {
   
   return slavename_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
-inline std::string* Message_HostSlaveRequest_Alive::release_slavename() {
-  // @@protoc_insertion_point(field_release:megastructure.Message.HostSlaveRequest_Alive.slavename)
+inline std::string* Message_MSQ_Alive::release_slavename() {
+  // @@protoc_insertion_point(field_release:megastructure.Message.MSQ_Alive.slavename)
   return slavename_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
-inline void Message_HostSlaveRequest_Alive::set_allocated_slavename(std::string* slavename) {
+inline void Message_MSQ_Alive::set_allocated_slavename(std::string* slavename) {
   if (slavename != nullptr) {
     
   } else {
@@ -1083,16 +1481,16 @@ inline void Message_HostSlaveRequest_Alive::set_allocated_slavename(std::string*
   }
   slavename_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), slavename,
       GetArena());
-  // @@protoc_insertion_point(field_set_allocated:megastructure.Message.HostSlaveRequest_Alive.slavename)
+  // @@protoc_insertion_point(field_set_allocated:megastructure.Message.MSQ_Alive.slavename)
 }
-inline std::string* Message_HostSlaveRequest_Alive::unsafe_arena_release_slavename() {
-  // @@protoc_insertion_point(field_unsafe_arena_release:megastructure.Message.HostSlaveRequest_Alive.slavename)
+inline std::string* Message_MSQ_Alive::unsafe_arena_release_slavename() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:megastructure.Message.MSQ_Alive.slavename)
   GOOGLE_DCHECK(GetArena() != nullptr);
   
   return slavename_.UnsafeArenaRelease(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
       GetArena());
 }
-inline void Message_HostSlaveRequest_Alive::unsafe_arena_set_allocated_slavename(
+inline void Message_MSQ_Alive::unsafe_arena_set_allocated_slavename(
     std::string* slavename) {
   GOOGLE_DCHECK(GetArena() != nullptr);
   if (slavename != nullptr) {
@@ -1102,31 +1500,302 @@ inline void Message_HostSlaveRequest_Alive::unsafe_arena_set_allocated_slavename
   }
   slavename_.UnsafeArenaSetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
       slavename, GetArena());
-  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:megastructure.Message.HostSlaveRequest_Alive.slavename)
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:megastructure.Message.MSQ_Alive.slavename)
 }
 
 // -------------------------------------------------------------------
 
-// Message_SlaveHostResponse_Alive
+// Message_SMS_Alive
 
 // bool success = 1;
-inline void Message_SlaveHostResponse_Alive::clear_success() {
+inline void Message_SMS_Alive::clear_success() {
   success_ = false;
 }
-inline bool Message_SlaveHostResponse_Alive::_internal_success() const {
+inline bool Message_SMS_Alive::_internal_success() const {
   return success_;
 }
-inline bool Message_SlaveHostResponse_Alive::success() const {
-  // @@protoc_insertion_point(field_get:megastructure.Message.SlaveHostResponse_Alive.success)
+inline bool Message_SMS_Alive::success() const {
+  // @@protoc_insertion_point(field_get:megastructure.Message.SMS_Alive.success)
   return _internal_success();
 }
-inline void Message_SlaveHostResponse_Alive::_internal_set_success(bool value) {
+inline void Message_SMS_Alive::_internal_set_success(bool value) {
   
   success_ = value;
 }
-inline void Message_SlaveHostResponse_Alive::set_success(bool value) {
+inline void Message_SMS_Alive::set_success(bool value) {
   _internal_set_success(value);
-  // @@protoc_insertion_point(field_set:megastructure.Message.SlaveHostResponse_Alive.success)
+  // @@protoc_insertion_point(field_set:megastructure.Message.SMS_Alive.success)
+}
+
+// -------------------------------------------------------------------
+
+// Message_HCQ_Enroll
+
+// string processname = 1;
+inline void Message_HCQ_Enroll::clear_processname() {
+  processname_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline const std::string& Message_HCQ_Enroll::processname() const {
+  // @@protoc_insertion_point(field_get:megastructure.Message.HCQ_Enroll.processname)
+  return _internal_processname();
+}
+inline void Message_HCQ_Enroll::set_processname(const std::string& value) {
+  _internal_set_processname(value);
+  // @@protoc_insertion_point(field_set:megastructure.Message.HCQ_Enroll.processname)
+}
+inline std::string* Message_HCQ_Enroll::mutable_processname() {
+  // @@protoc_insertion_point(field_mutable:megastructure.Message.HCQ_Enroll.processname)
+  return _internal_mutable_processname();
+}
+inline const std::string& Message_HCQ_Enroll::_internal_processname() const {
+  return processname_.Get();
+}
+inline void Message_HCQ_Enroll::_internal_set_processname(const std::string& value) {
+  
+  processname_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+}
+inline void Message_HCQ_Enroll::set_processname(std::string&& value) {
+  
+  processname_.Set(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+  // @@protoc_insertion_point(field_set_rvalue:megastructure.Message.HCQ_Enroll.processname)
+}
+inline void Message_HCQ_Enroll::set_processname(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  
+  processname_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
+              GetArena());
+  // @@protoc_insertion_point(field_set_char:megastructure.Message.HCQ_Enroll.processname)
+}
+inline void Message_HCQ_Enroll::set_processname(const char* value,
+    size_t size) {
+  
+  processname_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
+  // @@protoc_insertion_point(field_set_pointer:megastructure.Message.HCQ_Enroll.processname)
+}
+inline std::string* Message_HCQ_Enroll::_internal_mutable_processname() {
+  
+  return processname_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline std::string* Message_HCQ_Enroll::release_processname() {
+  // @@protoc_insertion_point(field_release:megastructure.Message.HCQ_Enroll.processname)
+  return processname_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline void Message_HCQ_Enroll::set_allocated_processname(std::string* processname) {
+  if (processname != nullptr) {
+    
+  } else {
+    
+  }
+  processname_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), processname,
+      GetArena());
+  // @@protoc_insertion_point(field_set_allocated:megastructure.Message.HCQ_Enroll.processname)
+}
+inline std::string* Message_HCQ_Enroll::unsafe_arena_release_processname() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:megastructure.Message.HCQ_Enroll.processname)
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  
+  return processname_.UnsafeArenaRelease(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      GetArena());
+}
+inline void Message_HCQ_Enroll::unsafe_arena_set_allocated_processname(
+    std::string* processname) {
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  if (processname != nullptr) {
+    
+  } else {
+    
+  }
+  processname_.UnsafeArenaSetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      processname, GetArena());
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:megastructure.Message.HCQ_Enroll.processname)
+}
+
+// -------------------------------------------------------------------
+
+// Message_CHS_Enroll
+
+// bool success = 1;
+inline void Message_CHS_Enroll::clear_success() {
+  success_ = false;
+}
+inline bool Message_CHS_Enroll::_internal_success() const {
+  return success_;
+}
+inline bool Message_CHS_Enroll::success() const {
+  // @@protoc_insertion_point(field_get:megastructure.Message.CHS_Enroll.success)
+  return _internal_success();
+}
+inline void Message_CHS_Enroll::_internal_set_success(bool value) {
+  
+  success_ = value;
+}
+inline void Message_CHS_Enroll::set_success(bool value) {
+  _internal_set_success(value);
+  // @@protoc_insertion_point(field_set:megastructure.Message.CHS_Enroll.success)
+}
+
+// string hostpath = 2;
+inline void Message_CHS_Enroll::clear_hostpath() {
+  hostpath_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline const std::string& Message_CHS_Enroll::hostpath() const {
+  // @@protoc_insertion_point(field_get:megastructure.Message.CHS_Enroll.hostpath)
+  return _internal_hostpath();
+}
+inline void Message_CHS_Enroll::set_hostpath(const std::string& value) {
+  _internal_set_hostpath(value);
+  // @@protoc_insertion_point(field_set:megastructure.Message.CHS_Enroll.hostpath)
+}
+inline std::string* Message_CHS_Enroll::mutable_hostpath() {
+  // @@protoc_insertion_point(field_mutable:megastructure.Message.CHS_Enroll.hostpath)
+  return _internal_mutable_hostpath();
+}
+inline const std::string& Message_CHS_Enroll::_internal_hostpath() const {
+  return hostpath_.Get();
+}
+inline void Message_CHS_Enroll::_internal_set_hostpath(const std::string& value) {
+  
+  hostpath_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+}
+inline void Message_CHS_Enroll::set_hostpath(std::string&& value) {
+  
+  hostpath_.Set(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+  // @@protoc_insertion_point(field_set_rvalue:megastructure.Message.CHS_Enroll.hostpath)
+}
+inline void Message_CHS_Enroll::set_hostpath(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  
+  hostpath_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
+              GetArena());
+  // @@protoc_insertion_point(field_set_char:megastructure.Message.CHS_Enroll.hostpath)
+}
+inline void Message_CHS_Enroll::set_hostpath(const char* value,
+    size_t size) {
+  
+  hostpath_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
+  // @@protoc_insertion_point(field_set_pointer:megastructure.Message.CHS_Enroll.hostpath)
+}
+inline std::string* Message_CHS_Enroll::_internal_mutable_hostpath() {
+  
+  return hostpath_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline std::string* Message_CHS_Enroll::release_hostpath() {
+  // @@protoc_insertion_point(field_release:megastructure.Message.CHS_Enroll.hostpath)
+  return hostpath_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline void Message_CHS_Enroll::set_allocated_hostpath(std::string* hostpath) {
+  if (hostpath != nullptr) {
+    
+  } else {
+    
+  }
+  hostpath_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), hostpath,
+      GetArena());
+  // @@protoc_insertion_point(field_set_allocated:megastructure.Message.CHS_Enroll.hostpath)
+}
+inline std::string* Message_CHS_Enroll::unsafe_arena_release_hostpath() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:megastructure.Message.CHS_Enroll.hostpath)
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  
+  return hostpath_.UnsafeArenaRelease(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      GetArena());
+}
+inline void Message_CHS_Enroll::unsafe_arena_set_allocated_hostpath(
+    std::string* hostpath) {
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  if (hostpath != nullptr) {
+    
+  } else {
+    
+  }
+  hostpath_.UnsafeArenaSetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      hostpath, GetArena());
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:megastructure.Message.CHS_Enroll.hostpath)
+}
+
+// string program = 3;
+inline void Message_CHS_Enroll::clear_program() {
+  program_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline const std::string& Message_CHS_Enroll::program() const {
+  // @@protoc_insertion_point(field_get:megastructure.Message.CHS_Enroll.program)
+  return _internal_program();
+}
+inline void Message_CHS_Enroll::set_program(const std::string& value) {
+  _internal_set_program(value);
+  // @@protoc_insertion_point(field_set:megastructure.Message.CHS_Enroll.program)
+}
+inline std::string* Message_CHS_Enroll::mutable_program() {
+  // @@protoc_insertion_point(field_mutable:megastructure.Message.CHS_Enroll.program)
+  return _internal_mutable_program();
+}
+inline const std::string& Message_CHS_Enroll::_internal_program() const {
+  return program_.Get();
+}
+inline void Message_CHS_Enroll::_internal_set_program(const std::string& value) {
+  
+  program_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+}
+inline void Message_CHS_Enroll::set_program(std::string&& value) {
+  
+  program_.Set(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+  // @@protoc_insertion_point(field_set_rvalue:megastructure.Message.CHS_Enroll.program)
+}
+inline void Message_CHS_Enroll::set_program(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  
+  program_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
+              GetArena());
+  // @@protoc_insertion_point(field_set_char:megastructure.Message.CHS_Enroll.program)
+}
+inline void Message_CHS_Enroll::set_program(const char* value,
+    size_t size) {
+  
+  program_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
+  // @@protoc_insertion_point(field_set_pointer:megastructure.Message.CHS_Enroll.program)
+}
+inline std::string* Message_CHS_Enroll::_internal_mutable_program() {
+  
+  return program_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline std::string* Message_CHS_Enroll::release_program() {
+  // @@protoc_insertion_point(field_release:megastructure.Message.CHS_Enroll.program)
+  return program_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline void Message_CHS_Enroll::set_allocated_program(std::string* program) {
+  if (program != nullptr) {
+    
+  } else {
+    
+  }
+  program_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), program,
+      GetArena());
+  // @@protoc_insertion_point(field_set_allocated:megastructure.Message.CHS_Enroll.program)
+}
+inline std::string* Message_CHS_Enroll::unsafe_arena_release_program() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:megastructure.Message.CHS_Enroll.program)
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  
+  return program_.UnsafeArenaRelease(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      GetArena());
+}
+inline void Message_CHS_Enroll::unsafe_arena_set_allocated_program(
+    std::string* program) {
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  if (program != nullptr) {
+    
+  } else {
+    
+  }
+  program_.UnsafeArenaSetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      program, GetArena());
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:megastructure.Message.CHS_Enroll.program)
 }
 
 // -------------------------------------------------------------------
@@ -1153,296 +1822,442 @@ inline void Message::set_id(::PROTOBUF_NAMESPACE_ID::int32 value) {
   // @@protoc_insertion_point(field_set:megastructure.Message.id)
 }
 
-// .megastructure.Message.SlaveHostRequest_Enroll slavehostrequest_enroll = 2;
-inline bool Message::_internal_has_slavehostrequest_enroll() const {
-  return foobar_case() == kSlavehostrequestEnroll;
+// .megastructure.Message.SMQ_Enroll smq_enroll = 2;
+inline bool Message::_internal_has_smq_enroll() const {
+  return foobar_case() == kSmqEnroll;
 }
-inline bool Message::has_slavehostrequest_enroll() const {
-  return _internal_has_slavehostrequest_enroll();
+inline bool Message::has_smq_enroll() const {
+  return _internal_has_smq_enroll();
 }
-inline void Message::set_has_slavehostrequest_enroll() {
-  _oneof_case_[0] = kSlavehostrequestEnroll;
+inline void Message::set_has_smq_enroll() {
+  _oneof_case_[0] = kSmqEnroll;
 }
-inline void Message::clear_slavehostrequest_enroll() {
-  if (_internal_has_slavehostrequest_enroll()) {
+inline void Message::clear_smq_enroll() {
+  if (_internal_has_smq_enroll()) {
     if (GetArena() == nullptr) {
-      delete foobar_.slavehostrequest_enroll_;
+      delete foobar_.smq_enroll_;
     }
     clear_has_foobar();
   }
 }
-inline ::megastructure::Message_SlaveHostRequest_Enroll* Message::release_slavehostrequest_enroll() {
-  // @@protoc_insertion_point(field_release:megastructure.Message.slavehostrequest_enroll)
-  if (_internal_has_slavehostrequest_enroll()) {
+inline ::megastructure::Message_SMQ_Enroll* Message::release_smq_enroll() {
+  // @@protoc_insertion_point(field_release:megastructure.Message.smq_enroll)
+  if (_internal_has_smq_enroll()) {
     clear_has_foobar();
-      ::megastructure::Message_SlaveHostRequest_Enroll* temp = foobar_.slavehostrequest_enroll_;
+      ::megastructure::Message_SMQ_Enroll* temp = foobar_.smq_enroll_;
     if (GetArena() != nullptr) {
       temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
     }
-    foobar_.slavehostrequest_enroll_ = nullptr;
+    foobar_.smq_enroll_ = nullptr;
     return temp;
   } else {
     return nullptr;
   }
 }
-inline const ::megastructure::Message_SlaveHostRequest_Enroll& Message::_internal_slavehostrequest_enroll() const {
-  return _internal_has_slavehostrequest_enroll()
-      ? *foobar_.slavehostrequest_enroll_
-      : *reinterpret_cast< ::megastructure::Message_SlaveHostRequest_Enroll*>(&::megastructure::_Message_SlaveHostRequest_Enroll_default_instance_);
+inline const ::megastructure::Message_SMQ_Enroll& Message::_internal_smq_enroll() const {
+  return _internal_has_smq_enroll()
+      ? *foobar_.smq_enroll_
+      : *reinterpret_cast< ::megastructure::Message_SMQ_Enroll*>(&::megastructure::_Message_SMQ_Enroll_default_instance_);
 }
-inline const ::megastructure::Message_SlaveHostRequest_Enroll& Message::slavehostrequest_enroll() const {
-  // @@protoc_insertion_point(field_get:megastructure.Message.slavehostrequest_enroll)
-  return _internal_slavehostrequest_enroll();
+inline const ::megastructure::Message_SMQ_Enroll& Message::smq_enroll() const {
+  // @@protoc_insertion_point(field_get:megastructure.Message.smq_enroll)
+  return _internal_smq_enroll();
 }
-inline ::megastructure::Message_SlaveHostRequest_Enroll* Message::unsafe_arena_release_slavehostrequest_enroll() {
-  // @@protoc_insertion_point(field_unsafe_arena_release:megastructure.Message.slavehostrequest_enroll)
-  if (_internal_has_slavehostrequest_enroll()) {
+inline ::megastructure::Message_SMQ_Enroll* Message::unsafe_arena_release_smq_enroll() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:megastructure.Message.smq_enroll)
+  if (_internal_has_smq_enroll()) {
     clear_has_foobar();
-    ::megastructure::Message_SlaveHostRequest_Enroll* temp = foobar_.slavehostrequest_enroll_;
-    foobar_.slavehostrequest_enroll_ = nullptr;
+    ::megastructure::Message_SMQ_Enroll* temp = foobar_.smq_enroll_;
+    foobar_.smq_enroll_ = nullptr;
     return temp;
   } else {
     return nullptr;
   }
 }
-inline void Message::unsafe_arena_set_allocated_slavehostrequest_enroll(::megastructure::Message_SlaveHostRequest_Enroll* slavehostrequest_enroll) {
+inline void Message::unsafe_arena_set_allocated_smq_enroll(::megastructure::Message_SMQ_Enroll* smq_enroll) {
   clear_foobar();
-  if (slavehostrequest_enroll) {
-    set_has_slavehostrequest_enroll();
-    foobar_.slavehostrequest_enroll_ = slavehostrequest_enroll;
+  if (smq_enroll) {
+    set_has_smq_enroll();
+    foobar_.smq_enroll_ = smq_enroll;
   }
-  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:megastructure.Message.slavehostrequest_enroll)
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:megastructure.Message.smq_enroll)
 }
-inline ::megastructure::Message_SlaveHostRequest_Enroll* Message::_internal_mutable_slavehostrequest_enroll() {
-  if (!_internal_has_slavehostrequest_enroll()) {
+inline ::megastructure::Message_SMQ_Enroll* Message::_internal_mutable_smq_enroll() {
+  if (!_internal_has_smq_enroll()) {
     clear_foobar();
-    set_has_slavehostrequest_enroll();
-    foobar_.slavehostrequest_enroll_ = CreateMaybeMessage< ::megastructure::Message_SlaveHostRequest_Enroll >(GetArena());
+    set_has_smq_enroll();
+    foobar_.smq_enroll_ = CreateMaybeMessage< ::megastructure::Message_SMQ_Enroll >(GetArena());
   }
-  return foobar_.slavehostrequest_enroll_;
+  return foobar_.smq_enroll_;
 }
-inline ::megastructure::Message_SlaveHostRequest_Enroll* Message::mutable_slavehostrequest_enroll() {
-  // @@protoc_insertion_point(field_mutable:megastructure.Message.slavehostrequest_enroll)
-  return _internal_mutable_slavehostrequest_enroll();
+inline ::megastructure::Message_SMQ_Enroll* Message::mutable_smq_enroll() {
+  // @@protoc_insertion_point(field_mutable:megastructure.Message.smq_enroll)
+  return _internal_mutable_smq_enroll();
 }
 
-// .megastructure.Message.HostSlaveResponse_Enroll hostslaveresponse_enroll = 3;
-inline bool Message::_internal_has_hostslaveresponse_enroll() const {
-  return foobar_case() == kHostslaveresponseEnroll;
+// .megastructure.Message.MSS_Enroll mss_enroll = 3;
+inline bool Message::_internal_has_mss_enroll() const {
+  return foobar_case() == kMssEnroll;
 }
-inline bool Message::has_hostslaveresponse_enroll() const {
-  return _internal_has_hostslaveresponse_enroll();
+inline bool Message::has_mss_enroll() const {
+  return _internal_has_mss_enroll();
 }
-inline void Message::set_has_hostslaveresponse_enroll() {
-  _oneof_case_[0] = kHostslaveresponseEnroll;
+inline void Message::set_has_mss_enroll() {
+  _oneof_case_[0] = kMssEnroll;
 }
-inline void Message::clear_hostslaveresponse_enroll() {
-  if (_internal_has_hostslaveresponse_enroll()) {
+inline void Message::clear_mss_enroll() {
+  if (_internal_has_mss_enroll()) {
     if (GetArena() == nullptr) {
-      delete foobar_.hostslaveresponse_enroll_;
+      delete foobar_.mss_enroll_;
     }
     clear_has_foobar();
   }
 }
-inline ::megastructure::Message_HostSlaveResponse_Enroll* Message::release_hostslaveresponse_enroll() {
-  // @@protoc_insertion_point(field_release:megastructure.Message.hostslaveresponse_enroll)
-  if (_internal_has_hostslaveresponse_enroll()) {
+inline ::megastructure::Message_MSS_Enroll* Message::release_mss_enroll() {
+  // @@protoc_insertion_point(field_release:megastructure.Message.mss_enroll)
+  if (_internal_has_mss_enroll()) {
     clear_has_foobar();
-      ::megastructure::Message_HostSlaveResponse_Enroll* temp = foobar_.hostslaveresponse_enroll_;
+      ::megastructure::Message_MSS_Enroll* temp = foobar_.mss_enroll_;
     if (GetArena() != nullptr) {
       temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
     }
-    foobar_.hostslaveresponse_enroll_ = nullptr;
+    foobar_.mss_enroll_ = nullptr;
     return temp;
   } else {
     return nullptr;
   }
 }
-inline const ::megastructure::Message_HostSlaveResponse_Enroll& Message::_internal_hostslaveresponse_enroll() const {
-  return _internal_has_hostslaveresponse_enroll()
-      ? *foobar_.hostslaveresponse_enroll_
-      : *reinterpret_cast< ::megastructure::Message_HostSlaveResponse_Enroll*>(&::megastructure::_Message_HostSlaveResponse_Enroll_default_instance_);
+inline const ::megastructure::Message_MSS_Enroll& Message::_internal_mss_enroll() const {
+  return _internal_has_mss_enroll()
+      ? *foobar_.mss_enroll_
+      : *reinterpret_cast< ::megastructure::Message_MSS_Enroll*>(&::megastructure::_Message_MSS_Enroll_default_instance_);
 }
-inline const ::megastructure::Message_HostSlaveResponse_Enroll& Message::hostslaveresponse_enroll() const {
-  // @@protoc_insertion_point(field_get:megastructure.Message.hostslaveresponse_enroll)
-  return _internal_hostslaveresponse_enroll();
+inline const ::megastructure::Message_MSS_Enroll& Message::mss_enroll() const {
+  // @@protoc_insertion_point(field_get:megastructure.Message.mss_enroll)
+  return _internal_mss_enroll();
 }
-inline ::megastructure::Message_HostSlaveResponse_Enroll* Message::unsafe_arena_release_hostslaveresponse_enroll() {
-  // @@protoc_insertion_point(field_unsafe_arena_release:megastructure.Message.hostslaveresponse_enroll)
-  if (_internal_has_hostslaveresponse_enroll()) {
+inline ::megastructure::Message_MSS_Enroll* Message::unsafe_arena_release_mss_enroll() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:megastructure.Message.mss_enroll)
+  if (_internal_has_mss_enroll()) {
     clear_has_foobar();
-    ::megastructure::Message_HostSlaveResponse_Enroll* temp = foobar_.hostslaveresponse_enroll_;
-    foobar_.hostslaveresponse_enroll_ = nullptr;
+    ::megastructure::Message_MSS_Enroll* temp = foobar_.mss_enroll_;
+    foobar_.mss_enroll_ = nullptr;
     return temp;
   } else {
     return nullptr;
   }
 }
-inline void Message::unsafe_arena_set_allocated_hostslaveresponse_enroll(::megastructure::Message_HostSlaveResponse_Enroll* hostslaveresponse_enroll) {
+inline void Message::unsafe_arena_set_allocated_mss_enroll(::megastructure::Message_MSS_Enroll* mss_enroll) {
   clear_foobar();
-  if (hostslaveresponse_enroll) {
-    set_has_hostslaveresponse_enroll();
-    foobar_.hostslaveresponse_enroll_ = hostslaveresponse_enroll;
+  if (mss_enroll) {
+    set_has_mss_enroll();
+    foobar_.mss_enroll_ = mss_enroll;
   }
-  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:megastructure.Message.hostslaveresponse_enroll)
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:megastructure.Message.mss_enroll)
 }
-inline ::megastructure::Message_HostSlaveResponse_Enroll* Message::_internal_mutable_hostslaveresponse_enroll() {
-  if (!_internal_has_hostslaveresponse_enroll()) {
+inline ::megastructure::Message_MSS_Enroll* Message::_internal_mutable_mss_enroll() {
+  if (!_internal_has_mss_enroll()) {
     clear_foobar();
-    set_has_hostslaveresponse_enroll();
-    foobar_.hostslaveresponse_enroll_ = CreateMaybeMessage< ::megastructure::Message_HostSlaveResponse_Enroll >(GetArena());
+    set_has_mss_enroll();
+    foobar_.mss_enroll_ = CreateMaybeMessage< ::megastructure::Message_MSS_Enroll >(GetArena());
   }
-  return foobar_.hostslaveresponse_enroll_;
+  return foobar_.mss_enroll_;
 }
-inline ::megastructure::Message_HostSlaveResponse_Enroll* Message::mutable_hostslaveresponse_enroll() {
-  // @@protoc_insertion_point(field_mutable:megastructure.Message.hostslaveresponse_enroll)
-  return _internal_mutable_hostslaveresponse_enroll();
+inline ::megastructure::Message_MSS_Enroll* Message::mutable_mss_enroll() {
+  // @@protoc_insertion_point(field_mutable:megastructure.Message.mss_enroll)
+  return _internal_mutable_mss_enroll();
 }
 
-// .megastructure.Message.HostSlaveRequest_Alive hostslaverequest_alive = 4;
-inline bool Message::_internal_has_hostslaverequest_alive() const {
-  return foobar_case() == kHostslaverequestAlive;
+// .megastructure.Message.MSQ_Alive msq_alive = 4;
+inline bool Message::_internal_has_msq_alive() const {
+  return foobar_case() == kMsqAlive;
 }
-inline bool Message::has_hostslaverequest_alive() const {
-  return _internal_has_hostslaverequest_alive();
+inline bool Message::has_msq_alive() const {
+  return _internal_has_msq_alive();
 }
-inline void Message::set_has_hostslaverequest_alive() {
-  _oneof_case_[0] = kHostslaverequestAlive;
+inline void Message::set_has_msq_alive() {
+  _oneof_case_[0] = kMsqAlive;
 }
-inline void Message::clear_hostslaverequest_alive() {
-  if (_internal_has_hostslaverequest_alive()) {
+inline void Message::clear_msq_alive() {
+  if (_internal_has_msq_alive()) {
     if (GetArena() == nullptr) {
-      delete foobar_.hostslaverequest_alive_;
+      delete foobar_.msq_alive_;
     }
     clear_has_foobar();
   }
 }
-inline ::megastructure::Message_HostSlaveRequest_Alive* Message::release_hostslaverequest_alive() {
-  // @@protoc_insertion_point(field_release:megastructure.Message.hostslaverequest_alive)
-  if (_internal_has_hostslaverequest_alive()) {
+inline ::megastructure::Message_MSQ_Alive* Message::release_msq_alive() {
+  // @@protoc_insertion_point(field_release:megastructure.Message.msq_alive)
+  if (_internal_has_msq_alive()) {
     clear_has_foobar();
-      ::megastructure::Message_HostSlaveRequest_Alive* temp = foobar_.hostslaverequest_alive_;
+      ::megastructure::Message_MSQ_Alive* temp = foobar_.msq_alive_;
     if (GetArena() != nullptr) {
       temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
     }
-    foobar_.hostslaverequest_alive_ = nullptr;
+    foobar_.msq_alive_ = nullptr;
     return temp;
   } else {
     return nullptr;
   }
 }
-inline const ::megastructure::Message_HostSlaveRequest_Alive& Message::_internal_hostslaverequest_alive() const {
-  return _internal_has_hostslaverequest_alive()
-      ? *foobar_.hostslaverequest_alive_
-      : *reinterpret_cast< ::megastructure::Message_HostSlaveRequest_Alive*>(&::megastructure::_Message_HostSlaveRequest_Alive_default_instance_);
+inline const ::megastructure::Message_MSQ_Alive& Message::_internal_msq_alive() const {
+  return _internal_has_msq_alive()
+      ? *foobar_.msq_alive_
+      : *reinterpret_cast< ::megastructure::Message_MSQ_Alive*>(&::megastructure::_Message_MSQ_Alive_default_instance_);
 }
-inline const ::megastructure::Message_HostSlaveRequest_Alive& Message::hostslaverequest_alive() const {
-  // @@protoc_insertion_point(field_get:megastructure.Message.hostslaverequest_alive)
-  return _internal_hostslaverequest_alive();
+inline const ::megastructure::Message_MSQ_Alive& Message::msq_alive() const {
+  // @@protoc_insertion_point(field_get:megastructure.Message.msq_alive)
+  return _internal_msq_alive();
 }
-inline ::megastructure::Message_HostSlaveRequest_Alive* Message::unsafe_arena_release_hostslaverequest_alive() {
-  // @@protoc_insertion_point(field_unsafe_arena_release:megastructure.Message.hostslaverequest_alive)
-  if (_internal_has_hostslaverequest_alive()) {
+inline ::megastructure::Message_MSQ_Alive* Message::unsafe_arena_release_msq_alive() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:megastructure.Message.msq_alive)
+  if (_internal_has_msq_alive()) {
     clear_has_foobar();
-    ::megastructure::Message_HostSlaveRequest_Alive* temp = foobar_.hostslaverequest_alive_;
-    foobar_.hostslaverequest_alive_ = nullptr;
+    ::megastructure::Message_MSQ_Alive* temp = foobar_.msq_alive_;
+    foobar_.msq_alive_ = nullptr;
     return temp;
   } else {
     return nullptr;
   }
 }
-inline void Message::unsafe_arena_set_allocated_hostslaverequest_alive(::megastructure::Message_HostSlaveRequest_Alive* hostslaverequest_alive) {
+inline void Message::unsafe_arena_set_allocated_msq_alive(::megastructure::Message_MSQ_Alive* msq_alive) {
   clear_foobar();
-  if (hostslaverequest_alive) {
-    set_has_hostslaverequest_alive();
-    foobar_.hostslaverequest_alive_ = hostslaverequest_alive;
+  if (msq_alive) {
+    set_has_msq_alive();
+    foobar_.msq_alive_ = msq_alive;
   }
-  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:megastructure.Message.hostslaverequest_alive)
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:megastructure.Message.msq_alive)
 }
-inline ::megastructure::Message_HostSlaveRequest_Alive* Message::_internal_mutable_hostslaverequest_alive() {
-  if (!_internal_has_hostslaverequest_alive()) {
+inline ::megastructure::Message_MSQ_Alive* Message::_internal_mutable_msq_alive() {
+  if (!_internal_has_msq_alive()) {
     clear_foobar();
-    set_has_hostslaverequest_alive();
-    foobar_.hostslaverequest_alive_ = CreateMaybeMessage< ::megastructure::Message_HostSlaveRequest_Alive >(GetArena());
+    set_has_msq_alive();
+    foobar_.msq_alive_ = CreateMaybeMessage< ::megastructure::Message_MSQ_Alive >(GetArena());
   }
-  return foobar_.hostslaverequest_alive_;
+  return foobar_.msq_alive_;
 }
-inline ::megastructure::Message_HostSlaveRequest_Alive* Message::mutable_hostslaverequest_alive() {
-  // @@protoc_insertion_point(field_mutable:megastructure.Message.hostslaverequest_alive)
-  return _internal_mutable_hostslaverequest_alive();
+inline ::megastructure::Message_MSQ_Alive* Message::mutable_msq_alive() {
+  // @@protoc_insertion_point(field_mutable:megastructure.Message.msq_alive)
+  return _internal_mutable_msq_alive();
 }
 
-// .megastructure.Message.SlaveHostResponse_Alive slavehostresponse_alive = 5;
-inline bool Message::_internal_has_slavehostresponse_alive() const {
-  return foobar_case() == kSlavehostresponseAlive;
+// .megastructure.Message.SMS_Alive sms_alive = 5;
+inline bool Message::_internal_has_sms_alive() const {
+  return foobar_case() == kSmsAlive;
 }
-inline bool Message::has_slavehostresponse_alive() const {
-  return _internal_has_slavehostresponse_alive();
+inline bool Message::has_sms_alive() const {
+  return _internal_has_sms_alive();
 }
-inline void Message::set_has_slavehostresponse_alive() {
-  _oneof_case_[0] = kSlavehostresponseAlive;
+inline void Message::set_has_sms_alive() {
+  _oneof_case_[0] = kSmsAlive;
 }
-inline void Message::clear_slavehostresponse_alive() {
-  if (_internal_has_slavehostresponse_alive()) {
+inline void Message::clear_sms_alive() {
+  if (_internal_has_sms_alive()) {
     if (GetArena() == nullptr) {
-      delete foobar_.slavehostresponse_alive_;
+      delete foobar_.sms_alive_;
     }
     clear_has_foobar();
   }
 }
-inline ::megastructure::Message_SlaveHostResponse_Alive* Message::release_slavehostresponse_alive() {
-  // @@protoc_insertion_point(field_release:megastructure.Message.slavehostresponse_alive)
-  if (_internal_has_slavehostresponse_alive()) {
+inline ::megastructure::Message_SMS_Alive* Message::release_sms_alive() {
+  // @@protoc_insertion_point(field_release:megastructure.Message.sms_alive)
+  if (_internal_has_sms_alive()) {
     clear_has_foobar();
-      ::megastructure::Message_SlaveHostResponse_Alive* temp = foobar_.slavehostresponse_alive_;
+      ::megastructure::Message_SMS_Alive* temp = foobar_.sms_alive_;
     if (GetArena() != nullptr) {
       temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
     }
-    foobar_.slavehostresponse_alive_ = nullptr;
+    foobar_.sms_alive_ = nullptr;
     return temp;
   } else {
     return nullptr;
   }
 }
-inline const ::megastructure::Message_SlaveHostResponse_Alive& Message::_internal_slavehostresponse_alive() const {
-  return _internal_has_slavehostresponse_alive()
-      ? *foobar_.slavehostresponse_alive_
-      : *reinterpret_cast< ::megastructure::Message_SlaveHostResponse_Alive*>(&::megastructure::_Message_SlaveHostResponse_Alive_default_instance_);
+inline const ::megastructure::Message_SMS_Alive& Message::_internal_sms_alive() const {
+  return _internal_has_sms_alive()
+      ? *foobar_.sms_alive_
+      : *reinterpret_cast< ::megastructure::Message_SMS_Alive*>(&::megastructure::_Message_SMS_Alive_default_instance_);
 }
-inline const ::megastructure::Message_SlaveHostResponse_Alive& Message::slavehostresponse_alive() const {
-  // @@protoc_insertion_point(field_get:megastructure.Message.slavehostresponse_alive)
-  return _internal_slavehostresponse_alive();
+inline const ::megastructure::Message_SMS_Alive& Message::sms_alive() const {
+  // @@protoc_insertion_point(field_get:megastructure.Message.sms_alive)
+  return _internal_sms_alive();
 }
-inline ::megastructure::Message_SlaveHostResponse_Alive* Message::unsafe_arena_release_slavehostresponse_alive() {
-  // @@protoc_insertion_point(field_unsafe_arena_release:megastructure.Message.slavehostresponse_alive)
-  if (_internal_has_slavehostresponse_alive()) {
+inline ::megastructure::Message_SMS_Alive* Message::unsafe_arena_release_sms_alive() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:megastructure.Message.sms_alive)
+  if (_internal_has_sms_alive()) {
     clear_has_foobar();
-    ::megastructure::Message_SlaveHostResponse_Alive* temp = foobar_.slavehostresponse_alive_;
-    foobar_.slavehostresponse_alive_ = nullptr;
+    ::megastructure::Message_SMS_Alive* temp = foobar_.sms_alive_;
+    foobar_.sms_alive_ = nullptr;
     return temp;
   } else {
     return nullptr;
   }
 }
-inline void Message::unsafe_arena_set_allocated_slavehostresponse_alive(::megastructure::Message_SlaveHostResponse_Alive* slavehostresponse_alive) {
+inline void Message::unsafe_arena_set_allocated_sms_alive(::megastructure::Message_SMS_Alive* sms_alive) {
   clear_foobar();
-  if (slavehostresponse_alive) {
-    set_has_slavehostresponse_alive();
-    foobar_.slavehostresponse_alive_ = slavehostresponse_alive;
+  if (sms_alive) {
+    set_has_sms_alive();
+    foobar_.sms_alive_ = sms_alive;
   }
-  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:megastructure.Message.slavehostresponse_alive)
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:megastructure.Message.sms_alive)
 }
-inline ::megastructure::Message_SlaveHostResponse_Alive* Message::_internal_mutable_slavehostresponse_alive() {
-  if (!_internal_has_slavehostresponse_alive()) {
+inline ::megastructure::Message_SMS_Alive* Message::_internal_mutable_sms_alive() {
+  if (!_internal_has_sms_alive()) {
     clear_foobar();
-    set_has_slavehostresponse_alive();
-    foobar_.slavehostresponse_alive_ = CreateMaybeMessage< ::megastructure::Message_SlaveHostResponse_Alive >(GetArena());
+    set_has_sms_alive();
+    foobar_.sms_alive_ = CreateMaybeMessage< ::megastructure::Message_SMS_Alive >(GetArena());
   }
-  return foobar_.slavehostresponse_alive_;
+  return foobar_.sms_alive_;
 }
-inline ::megastructure::Message_SlaveHostResponse_Alive* Message::mutable_slavehostresponse_alive() {
-  // @@protoc_insertion_point(field_mutable:megastructure.Message.slavehostresponse_alive)
-  return _internal_mutable_slavehostresponse_alive();
+inline ::megastructure::Message_SMS_Alive* Message::mutable_sms_alive() {
+  // @@protoc_insertion_point(field_mutable:megastructure.Message.sms_alive)
+  return _internal_mutable_sms_alive();
+}
+
+// .megastructure.Message.HCQ_Enroll hcq_enroll = 6;
+inline bool Message::_internal_has_hcq_enroll() const {
+  return foobar_case() == kHcqEnroll;
+}
+inline bool Message::has_hcq_enroll() const {
+  return _internal_has_hcq_enroll();
+}
+inline void Message::set_has_hcq_enroll() {
+  _oneof_case_[0] = kHcqEnroll;
+}
+inline void Message::clear_hcq_enroll() {
+  if (_internal_has_hcq_enroll()) {
+    if (GetArena() == nullptr) {
+      delete foobar_.hcq_enroll_;
+    }
+    clear_has_foobar();
+  }
+}
+inline ::megastructure::Message_HCQ_Enroll* Message::release_hcq_enroll() {
+  // @@protoc_insertion_point(field_release:megastructure.Message.hcq_enroll)
+  if (_internal_has_hcq_enroll()) {
+    clear_has_foobar();
+      ::megastructure::Message_HCQ_Enroll* temp = foobar_.hcq_enroll_;
+    if (GetArena() != nullptr) {
+      temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+    }
+    foobar_.hcq_enroll_ = nullptr;
+    return temp;
+  } else {
+    return nullptr;
+  }
+}
+inline const ::megastructure::Message_HCQ_Enroll& Message::_internal_hcq_enroll() const {
+  return _internal_has_hcq_enroll()
+      ? *foobar_.hcq_enroll_
+      : *reinterpret_cast< ::megastructure::Message_HCQ_Enroll*>(&::megastructure::_Message_HCQ_Enroll_default_instance_);
+}
+inline const ::megastructure::Message_HCQ_Enroll& Message::hcq_enroll() const {
+  // @@protoc_insertion_point(field_get:megastructure.Message.hcq_enroll)
+  return _internal_hcq_enroll();
+}
+inline ::megastructure::Message_HCQ_Enroll* Message::unsafe_arena_release_hcq_enroll() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:megastructure.Message.hcq_enroll)
+  if (_internal_has_hcq_enroll()) {
+    clear_has_foobar();
+    ::megastructure::Message_HCQ_Enroll* temp = foobar_.hcq_enroll_;
+    foobar_.hcq_enroll_ = nullptr;
+    return temp;
+  } else {
+    return nullptr;
+  }
+}
+inline void Message::unsafe_arena_set_allocated_hcq_enroll(::megastructure::Message_HCQ_Enroll* hcq_enroll) {
+  clear_foobar();
+  if (hcq_enroll) {
+    set_has_hcq_enroll();
+    foobar_.hcq_enroll_ = hcq_enroll;
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:megastructure.Message.hcq_enroll)
+}
+inline ::megastructure::Message_HCQ_Enroll* Message::_internal_mutable_hcq_enroll() {
+  if (!_internal_has_hcq_enroll()) {
+    clear_foobar();
+    set_has_hcq_enroll();
+    foobar_.hcq_enroll_ = CreateMaybeMessage< ::megastructure::Message_HCQ_Enroll >(GetArena());
+  }
+  return foobar_.hcq_enroll_;
+}
+inline ::megastructure::Message_HCQ_Enroll* Message::mutable_hcq_enroll() {
+  // @@protoc_insertion_point(field_mutable:megastructure.Message.hcq_enroll)
+  return _internal_mutable_hcq_enroll();
+}
+
+// .megastructure.Message.CHS_Enroll chs_enroll = 7;
+inline bool Message::_internal_has_chs_enroll() const {
+  return foobar_case() == kChsEnroll;
+}
+inline bool Message::has_chs_enroll() const {
+  return _internal_has_chs_enroll();
+}
+inline void Message::set_has_chs_enroll() {
+  _oneof_case_[0] = kChsEnroll;
+}
+inline void Message::clear_chs_enroll() {
+  if (_internal_has_chs_enroll()) {
+    if (GetArena() == nullptr) {
+      delete foobar_.chs_enroll_;
+    }
+    clear_has_foobar();
+  }
+}
+inline ::megastructure::Message_CHS_Enroll* Message::release_chs_enroll() {
+  // @@protoc_insertion_point(field_release:megastructure.Message.chs_enroll)
+  if (_internal_has_chs_enroll()) {
+    clear_has_foobar();
+      ::megastructure::Message_CHS_Enroll* temp = foobar_.chs_enroll_;
+    if (GetArena() != nullptr) {
+      temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+    }
+    foobar_.chs_enroll_ = nullptr;
+    return temp;
+  } else {
+    return nullptr;
+  }
+}
+inline const ::megastructure::Message_CHS_Enroll& Message::_internal_chs_enroll() const {
+  return _internal_has_chs_enroll()
+      ? *foobar_.chs_enroll_
+      : *reinterpret_cast< ::megastructure::Message_CHS_Enroll*>(&::megastructure::_Message_CHS_Enroll_default_instance_);
+}
+inline const ::megastructure::Message_CHS_Enroll& Message::chs_enroll() const {
+  // @@protoc_insertion_point(field_get:megastructure.Message.chs_enroll)
+  return _internal_chs_enroll();
+}
+inline ::megastructure::Message_CHS_Enroll* Message::unsafe_arena_release_chs_enroll() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:megastructure.Message.chs_enroll)
+  if (_internal_has_chs_enroll()) {
+    clear_has_foobar();
+    ::megastructure::Message_CHS_Enroll* temp = foobar_.chs_enroll_;
+    foobar_.chs_enroll_ = nullptr;
+    return temp;
+  } else {
+    return nullptr;
+  }
+}
+inline void Message::unsafe_arena_set_allocated_chs_enroll(::megastructure::Message_CHS_Enroll* chs_enroll) {
+  clear_foobar();
+  if (chs_enroll) {
+    set_has_chs_enroll();
+    foobar_.chs_enroll_ = chs_enroll;
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:megastructure.Message.chs_enroll)
+}
+inline ::megastructure::Message_CHS_Enroll* Message::_internal_mutable_chs_enroll() {
+  if (!_internal_has_chs_enroll()) {
+    clear_foobar();
+    set_has_chs_enroll();
+    foobar_.chs_enroll_ = CreateMaybeMessage< ::megastructure::Message_CHS_Enroll >(GetArena());
+  }
+  return foobar_.chs_enroll_;
+}
+inline ::megastructure::Message_CHS_Enroll* Message::mutable_chs_enroll() {
+  // @@protoc_insertion_point(field_mutable:megastructure.Message.chs_enroll)
+  return _internal_mutable_chs_enroll();
 }
 
 inline bool Message::has_foobar() const {
@@ -1457,6 +2272,10 @@ inline Message::FoobarCase Message::foobar_case() const {
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

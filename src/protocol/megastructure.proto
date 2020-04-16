@@ -7,33 +7,56 @@ message Message
 {
 	int32 id = 1;
 
+	//MSQ : Master Slave Request
+	//MSS : Master Slave Response
+	//SMQ : Slave Master Request
+	//SMS : Slave Master Response
+	
+	//CHQ : Coordinator Host Request
+	//CHS : Coordinator Host Response
+	//HCQ : Host Coordinator Request
+	//HCS : Host Coordinator Response
 
-	message SlaveHostRequest_Enroll
+	message SMQ_Enroll
 	{
 		string slavename = 1;
 	}
-	message HostSlaveResponse_Enroll
+	message MSS_Enroll
 	{
 		bool success = 1;
 	}
 	
-	message HostSlaveRequest_Alive
+	message MSQ_Alive
 	{
 		string slavename = 1;
 	}
-	message SlaveHostResponse_Alive
+	message SMS_Alive
 	{
 		bool success = 1;
+	}
+	
+	message HCQ_Enroll
+	{
+		string processname = 1;
+	}
+	message CHS_Enroll
+	{
+		bool success = 1;
+		string hostpath = 2;
+		string program = 3;
 	}
 	
 	
 	oneof foobar
 	{
-		SlaveHostRequest_Enroll slavehostrequest_enroll = 2;
-		HostSlaveResponse_Enroll hostslaveresponse_enroll = 3;
+		SMQ_Enroll smq_enroll = 2;
+		MSS_Enroll mss_enroll = 3;
 		
-		HostSlaveRequest_Alive hostslaverequest_alive = 4;
-		SlaveHostResponse_Alive slavehostresponse_alive = 5;
+		MSQ_Alive msq_alive = 4;
+		SMS_Alive sms_alive = 5;
+		
+		HCQ_Enroll hcq_enroll = 6;
+		CHS_Enroll chs_enroll = 7;
 	}
 	
 }

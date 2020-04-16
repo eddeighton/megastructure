@@ -9,7 +9,7 @@ include( ${MS_ROOT_DIR}/cmake/common_include.cmake )
 
 #get the sources
 set( MS_TEST_HOST_SOURCES
-	${MS_ROOT_DIR}/tests/host/main.cpp
+	${MS_ROOT_DIR}/tests/host/host.cpp
     )
 	
 add_executable( test_host 
