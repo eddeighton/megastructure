@@ -1,0 +1,56 @@
+
+cmake_minimum_required( VERSION 3.1...3.16 )
+
+#get xsde
+include( ${MEGA_ROOT_DIR}/cmake/xsde_include.cmake )
+
+#get eg schema
+include( ${MEGA_ROOT_DIR}/cmake/schema/schema_include.cmake )
+
+#get boost
+include( ${MEGA_ROOT_DIR}/cmake/boost_include.cmake )
+
+#get clang
+include( ${MEGA_ROOT_DIR}/cmake/clang_include.cmake )
+
+#get indicators
+include( ${MEGA_ROOT_DIR}/cmake/indicators_include.cmake )
+
+#get common
+include( ${MEGA_ROOT_DIR}/cmake/common_include.cmake )
+
+#get eg
+include( ${MEGA_ROOT_DIR}/cmake/eg_include.cmake )
+
+#get the source code
+set( DRIVER_SOURCE_DIR ${MEGA_ROOT_DIR}/src/driver )
+set( DRIVER_SOURCES
+	${DRIVER_SOURCE_DIR}/command_build.cpp
+	${DRIVER_SOURCE_DIR}/command_clean.cpp
+	${DRIVER_SOURCE_DIR}/command_create.cpp
+	${DRIVER_SOURCE_DIR}/command_info.cpp
+	${DRIVER_SOURCE_DIR}/command_log.cpp
+	${DRIVER_SOURCE_DIR}/command_run.cpp
+	${DRIVER_SOURCE_DIR}/main.cpp
+	)
+
+source_group( src FILES ${DRIVER_SOURCES} )
+
+add_executable( mega ${DRIVER_SOURCES} )
+
+set_target_properties( mega PROPERTIES FOLDER mega )
+set_target_properties( mega PROPERTIES DEBUG_POSTFIX d )
+
+link_xsde( mega )
+link_schemalib( mega )
+link_boost( mega program_options )
+link_boost( mega timer )
+link_boost( mega filesystem )
+link_boost( mega iostreams )
+link_boost( mega serialization )
+link_clang( mega )
+link_indicators( mega )
+link_common( mega )
+link_eg( mega )
+
+install( TARGETS mega DESTINATION bin)

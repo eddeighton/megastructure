@@ -1,12 +1,12 @@
 
 cmake_minimum_required( VERSION 3.1...3.16 )
 
-include( ${MS_THIRD_PARTY_DIR}/boost/install/lib/cmake/Boost-1.73.0/BoostConfig.cmake )
+include( ${MEGA_THIRD_PARTY_DIR}/boost/install/lib/cmake/Boost-1.73.0/BoostConfig.cmake )
 
 ######################################
 #Sort out the boost dependencies
-find_path( BOOST_INCLUDEDIR NAMES boost PATHS ${MS_THIRD_PARTY_DIR}/boost/install/include/boost-1_73 )
-find_path( BOOST_LIBRARYDIR NAMES "cmake/Boost-1.73.0/BoostConfig.cmake" PATHS ${MS_THIRD_PARTY_DIR}/boost/install/lib )
+find_path( BOOST_INCLUDEDIR NAMES boost PATHS ${MEGA_THIRD_PARTY_DIR}/boost/install/include/boost-1_73 )
+find_path( BOOST_LIBRARYDIR NAMES "cmake/Boost-1.73.0/BoostConfig.cmake" PATHS ${MEGA_THIRD_PARTY_DIR}/boost/install/lib )
 
 set(BOOST_REQUIRED_VERSION 1.73.0 )
 set(Boost_USE_STATIC_LIBS ON)

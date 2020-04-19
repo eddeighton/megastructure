@@ -2,7 +2,7 @@
 
 cmake_minimum_required( VERSION 3.1...3.16 )
 
-include( ${MS_THIRD_PARTY_DIR}/protobuf/install/cmake/protobuf-targets.cmake )
+include( ${MEGA_THIRD_PARTY_DIR}/protobuf/install/cmake/protobuf-targets.cmake )
 
 find_package( Protobuf REQUIRED  )
 

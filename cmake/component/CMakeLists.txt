@@ -2,23 +2,23 @@
 cmake_minimum_required( VERSION 3.1...3.16 )
 
 #get boost
-include( ${MS_ROOT_DIR}/cmake/boost_include.cmake )
+include( ${MEGA_ROOT_DIR}/cmake/boost_include.cmake )
 
 #get megastructure
-include( ${MS_ROOT_DIR}/cmake/core/megastructure_include.cmake )
+include( ${MEGA_ROOT_DIR}/cmake/core/megastructure_include.cmake )
 
 #get the sources
-set( MS_COMPONENT_API
-	${MS_API_DIR}/megastructure/component.hpp
+set( MEGA_COMPONENT_API
+	${MEGA_API_DIR}/megastructure/component.hpp
 	)
 
-set( MS_COMPONENT_SOURCES
-	${MS_SRC_DIR}/component/component.cpp
+set( MEGA_COMPONENT_SOURCES
+	${MEGA_SRC_DIR}/component/component.cpp
     )
 
 add_library( componentlib STATIC
-					${MS_COMPONENT_API}
-					${MS_COMPONENT_SOURCES}
+					${MEGA_COMPONENT_API}
+					${MEGA_COMPONENT_SOURCES}
 				)
 		
 set_target_properties( componentlib PROPERTIES FOLDER log )

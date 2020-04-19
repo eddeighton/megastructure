@@ -2,18 +2,18 @@
 cmake_minimum_required( VERSION 3.1...3.16 )
 
 #get boost
-include( ${MS_ROOT_DIR}/cmake/boost_include.cmake )
+include( ${MEGA_ROOT_DIR}/cmake/boost_include.cmake )
 
 #get megastructure
-include( ${MS_ROOT_DIR}/cmake/core/megastructure_include.cmake )
+include( ${MEGA_ROOT_DIR}/cmake/core/megastructure_include.cmake )
 
 #get the sources
-set( MS_SLAVE_SOURCES
-	${MS_SRC_DIR}/slave/slave.cpp
+set( MEGA_SLAVE_SOURCES
+	${MEGA_SRC_DIR}/slave/slave.cpp
     )
 	
 add_executable( slave 
-					${MS_SLAVE_SOURCES}
+					${MEGA_SLAVE_SOURCES}
 				)
 		
 set_target_properties( slave PROPERTIES FOLDER log )

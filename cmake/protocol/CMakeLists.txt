@@ -2,12 +2,12 @@
 cmake_minimum_required( VERSION 3.1...3.16 )
 
 #protobuf
-include( ${MS_ROOT_DIR}/cmake/protobuf_include.cmake )
+include( ${MEGA_ROOT_DIR}/cmake/protobuf_include.cmake )
 
 #folders
-set( MEGASTRUCTURE_PROTOCOL_API_DIR ${MS_API_DIR}/protocol )
-set( MEGASTRUCTURE_PROTOCOL_SRC_DIR ${MS_SRC_DIR}/protocol )
-set( MEGASTRUCTURE_PROTOCOL_SRC_GEN_DIR ${MS_SRC_DIR}/protocol/generated )
+set( MEGASTRUCTURE_PROTOCOL_API_DIR ${MEGA_API_DIR}/protocol )
+set( MEGASTRUCTURE_PROTOCOL_SRC_DIR ${MEGA_SRC_DIR}/protocol )
+set( MEGASTRUCTURE_PROTOCOL_SRC_GEN_DIR ${MEGA_SRC_DIR}/protocol/generated )
 
 #files
 set( MEGASTRUCTURE_PROTOCOL ${MEGASTRUCTURE_PROTOCOL_SRC_DIR}/megastructure.proto )

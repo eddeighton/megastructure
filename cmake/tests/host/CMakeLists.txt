@@ -2,18 +2,18 @@
 cmake_minimum_required( VERSION 3.1...3.16 )
 
 #get boost
-include( ${MS_ROOT_DIR}/cmake/boost_include.cmake )
+include( ${MEGA_ROOT_DIR}/cmake/boost_include.cmake )
 
 #get common
-include( ${MS_ROOT_DIR}/cmake/common_include.cmake )
+include( ${MEGA_ROOT_DIR}/cmake/common_include.cmake )
 
 #get the sources
-set( MS_TEST_HOST_SOURCES
-	${MS_ROOT_DIR}/tests/host/host.cpp
+set( MEGA_TEST_HOST_SOURCES
+	${MEGA_ROOT_DIR}/tests/host/host.cpp
     )
 	
 add_executable( test_host 
-					${MS_TEST_HOST_SOURCES}
+					${MEGA_TEST_HOST_SOURCES}
 				)
 		
 set_target_properties( test_host PROPERTIES FOLDER log )
@@ -31,3 +31,4 @@ target_link_libraries( test_host megastructureprotocollib )
 target_link_libraries( test_host componentlib )
 
 install( TARGETS test_host DESTINATION bin)
+install( FILES ${MEGA_ROOT_DIR}/tests/host/.eg DESTINATION include/testhost )

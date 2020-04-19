@@ -2,18 +2,18 @@
 cmake_minimum_required( VERSION 3.1...3.16 )
 
 #get boost
-include( ${MS_ROOT_DIR}/cmake/boost_include.cmake )
+include( ${MEGA_ROOT_DIR}/cmake/boost_include.cmake )
 
 #get common
-include( ${MS_ROOT_DIR}/cmake/common_include.cmake )
+include( ${MEGA_ROOT_DIR}/cmake/common_include.cmake )
 
 #get the sources
-set( MS_TEST_EG_SOURCES
-	${MS_ROOT_DIR}/tests/eg/test_eg.cpp
+set( MEGA_TEST_EG_SOURCES
+	${MEGA_ROOT_DIR}/tests/eg/test_eg.cpp
     )
 	
 add_library( test_eg SHARED
-					${MS_TEST_EG_SOURCES}
+					${MEGA_TEST_EG_SOURCES}
 				)
 		
 set_target_properties( test_eg PROPERTIES FOLDER log )

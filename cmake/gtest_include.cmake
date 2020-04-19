@@ -1,11 +1,11 @@
 
 cmake_minimum_required( VERSION 3.1...3.16 )
 
-include( ${MS_THIRD_PARTY_DIR}/gtest/install/lib/cmake/GTest/GTestConfig.cmake )
+include( ${MEGA_THIRD_PARTY_DIR}/gtest/install/lib/cmake/GTest/GTestConfig.cmake )
 
-find_path( GTEST_INCLUDE_DIR NAMES gtest PATHS ${MS_THIRD_PARTY_DIR}/gtest/install/include )
-find_path( GTEST_LIBRARY_PATH NAMES "gtest.lib" PATHS ${MS_THIRD_PARTY_DIR}/gtest/install/lib )
-find_path( GTEST_MAIN_LIBRARY_PATH NAMES "gtest_main.lib" PATHS ${MS_THIRD_PARTY_DIR}/gtest/install/lib )
+find_path( GTEST_INCLUDE_DIR NAMES gtest PATHS ${MEGA_THIRD_PARTY_DIR}/gtest/install/include )
+find_path( GTEST_LIBRARY_PATH NAMES "gtest.lib" PATHS ${MEGA_THIRD_PARTY_DIR}/gtest/install/lib )
+find_path( GTEST_MAIN_LIBRARY_PATH NAMES "gtest_main.lib" PATHS ${MEGA_THIRD_PARTY_DIR}/gtest/install/lib )
 
 set( GTEST_LIBRARY ${GTEST_LIBRARY_PATH}/gtest.lib )
 set( GTEST_LIBRARY_DEBUG ${GTEST_LIBRARY_PATH}/gtestd.lib )
