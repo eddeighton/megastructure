@@ -10,6 +10,7 @@
 #include <memory>
 #include <vector>
 #include <ostream>
+#include <map>
 
 class ProjectName
 {
@@ -20,10 +21,13 @@ public:
 	ProjectName( Environment& environment, const boost::filesystem::path& root );
 	
 	std::string name() const { return m_path.filename().string(); }
+	const std::vector< boost::filesystem::path >& sourceFiles() const { return m_sourceFiles; }
 	
 	void print( std::ostream& os );
+	void getSourceFilesMap( std::multimap< boost::filesystem::path, boost::filesystem::path >& pathMap ) const;
 private:
 	boost::filesystem::path m_path;
+	std::vector< boost::filesystem::path > m_sourceFiles;
 	Project m_project;
 };
 
@@ -43,6 +47,7 @@ public:
 	}
 	
 	void print( std::ostream& os );
+	void getSourceFilesMap( std::multimap< boost::filesystem::path, boost::filesystem::path >& pathMap ) const;
 	
 private:
 	boost::filesystem::path m_path;
@@ -65,6 +70,7 @@ public:
 	}
 	
 	void print( std::ostream& os );
+	void getSourceFilesMap( std::multimap< boost::filesystem::path, boost::filesystem::path >& pathMap ) const;
 private:
 	boost::filesystem::path m_path;
 	HostName::PtrVector m_hostNames;
@@ -74,12 +80,17 @@ private:
 class ProjectTree
 {
 public:
-	ProjectTree( Environment& environment, const boost::filesystem::path& root );
+	ProjectTree( Environment& environment, const boost::filesystem::path& root, const std::string& projectName );
 	
 	void print( std::ostream& os );
 	
+	
+	const boost::filesystem::path& getRootPath() const { return m_path; }
+	void getSourceFilesMap( std::multimap< boost::filesystem::path, boost::filesystem::path >& pathMap ) const;
+	
 private:
 	boost::filesystem::path m_path;
+	std::string m_projectName;
 	Coordinator::PtrVector m_coordinators;
 };
 

@@ -4,19 +4,60 @@
 
 #include "common/assert_verify.hpp"
 
+
+std::vector< boost::filesystem::path > getEGSourceCode( const boost::filesystem::path& root )
+{
+    std::vector< boost::filesystem::path > egSourceCode;
+    
+    for( boost::filesystem::directory_iterator iter( root );
+        iter != boost::filesystem::directory_iterator(); ++iter )
+    {
+        const boost::filesystem::path& filePath = *iter;
+        if( !boost::filesystem::is_directory( filePath ) )
+        {
+            if( boost::filesystem::extension( *iter ) == Environment::EG_FILE_EXTENSION )
+            {
+                if( !filePath.stem().empty() ) //ignore .eg xml files
+                {
+                    egSourceCode.push_back( *iter );
+                }
+                else
+                {
+                    //make this recursive...
+                }
+            }
+        }
+    }
+    return egSourceCode;
+}
+
 ProjectName::ProjectName( Environment& environment, const boost::filesystem::path& root )
 	:	m_path( root ),
-		m_project( m_path / Environment::EG_FILE_EXTENSION, environment, XMLManager::load( m_path )->Project() )
+		m_project( m_path / Environment::EG_FILE_EXTENSION, environment, 
+			XMLManager::load( m_path / Environment::EG_FILE_EXTENSION)->Project() )
 {
+	m_sourceFiles = getEGSourceCode( m_path );
+	
 }
 void ProjectName::print( std::ostream& os )
 {
 	os << "      ProjectName: " << name() << "\n";
 }
 	
+void ProjectName::getSourceFilesMap( std::multimap< boost::filesystem::path, boost::filesystem::path >& pathMap ) const
+{
+	for( auto& path : m_sourceFiles )
+	{
+		pathMap.insert( std::make_pair( m_path, path.filename() ) );
+	}
+}
+	
+/////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////
 HostName::HostName( const boost::filesystem::path& root )
 	:	m_path( root )
 {
+	
 }
 
 void HostName::print( std::ostream& os )
@@ -28,6 +69,16 @@ void HostName::print( std::ostream& os )
 	}
 }
 
+void HostName::getSourceFilesMap( std::multimap< boost::filesystem::path, boost::filesystem::path >& pathMap ) const
+{
+	for( ProjectName::Ptr pProjectName : m_projects )
+	{
+		pProjectName->getSourceFilesMap( pathMap );
+	}
+}
+
+/////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////
 Coordinator::Coordinator( const boost::filesystem::path& root )
 	:	m_path( root )
 {
@@ -42,27 +93,21 @@ void Coordinator::print( std::ostream& os )
 		pHostName->print( os );
 	}
 }
-/*
-void recurseModuleFolder( const boost::filesystem::path& p )
+
+void Coordinator::getSourceFilesMap( std::multimap< boost::filesystem::path, boost::filesystem::path >& pathMap ) const
 {
-	for( auto& directoryItem : boost::filesystem::recursive_directory_iterator( p ) )
+	for( HostName::Ptr pHostName : m_hostNames )
 	{
-		if( boost::filesystem::is_directory( directoryItem ) )
-		{
-			recurseModuleFolder( directoryItem );
-		}
-		else
-		{
-			
-		}
+		pHostName->getSourceFilesMap( pathMap );
 	}
 }
-*/
 
+/////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////
 ProjectName::Ptr recurseProjectFolder( Environment& environment, const boost::filesystem::path& p )
 {
 	ProjectName::Ptr pProject;
-	for( auto& directoryItem : boost::filesystem::recursive_directory_iterator( p ) )
+	for( auto& directoryItem : boost::filesystem::directory_iterator( p ) )
 	{
 		if( boost::filesystem::is_directory( directoryItem ) )
 		{
@@ -82,13 +127,14 @@ ProjectName::Ptr recurseProjectFolder( Environment& environment, const boost::fi
 	return pProject;
 }
 
-HostName::Ptr recurseHostFolder( Environment& environment, const boost::filesystem::path& p )
+HostName::Ptr recurseHostFolder( Environment& environment, const boost::filesystem::path& p, const std::string& projectName )
 {
 	HostName::Ptr pHostName;
 	
-	for( auto& directoryItem : boost::filesystem::recursive_directory_iterator( p ) )
+	for( auto& directoryItem : boost::filesystem::directory_iterator( p ) )
 	{
-		if( boost::filesystem::is_directory( directoryItem ) )
+		if( boost::filesystem::is_directory( directoryItem ) && 
+			directoryItem.path().filename() == projectName )
 		{
 			if( ProjectName::Ptr pProject = recurseProjectFolder( environment, directoryItem ) )
 			{
@@ -104,15 +150,15 @@ HostName::Ptr recurseHostFolder( Environment& environment, const boost::filesyst
 	return pHostName;
 }
 
-Coordinator::Ptr recurseCoordinatorFolder( Environment& environment, const boost::filesystem::path& p )
+Coordinator::Ptr recurseCoordinatorFolder( Environment& environment, const boost::filesystem::path& p, const std::string& projectName )
 {
 	Coordinator::Ptr pCoordinator;
 	
-	for( auto& directoryItem : boost::filesystem::recursive_directory_iterator( p ) )
+	for( auto& directoryItem : boost::filesystem::directory_iterator( p ) )
 	{
 		if( boost::filesystem::is_directory( directoryItem ) )
 		{
-			if( HostName::Ptr pHostName = recurseHostFolder( environment, directoryItem ) )
+			if( HostName::Ptr pHostName = recurseHostFolder( environment, directoryItem, projectName ) )
 			{
 				if( !pCoordinator )
 				{
@@ -129,14 +175,15 @@ Coordinator::Ptr recurseCoordinatorFolder( Environment& environment, const boost
 	return pCoordinator;
 }
 
-ProjectTree::ProjectTree( Environment& environment, const boost::filesystem::path& root )
-	:	m_path( root )
+ProjectTree::ProjectTree( Environment& environment, const boost::filesystem::path& root, const std::string& projectName )
+	:	m_path( root ),
+		m_projectName( projectName )
 {
-	for( auto& directoryItem : boost::filesystem::recursive_directory_iterator( m_path ) )
+	for( auto& directoryItem : boost::filesystem::directory_iterator( m_path ) )
 	{
 		if( boost::filesystem::is_directory( directoryItem ) )
 		{
-			if( Coordinator::Ptr pCoordinator = recurseCoordinatorFolder( environment, directoryItem ) )
+			if( Coordinator::Ptr pCoordinator = recurseCoordinatorFolder( environment, directoryItem, m_projectName ) )
 			{
 				m_coordinators.push_back( pCoordinator );
 			}
@@ -157,3 +204,11 @@ void ProjectTree::print( std::ostream& os )
 	}
 }
 	
+	
+void ProjectTree::getSourceFilesMap( std::multimap< boost::filesystem::path, boost::filesystem::path >& pathMap ) const
+{
+	for( auto p : m_coordinators )
+	{
+		p->getSourceFilesMap( pathMap );
+	}
+}
