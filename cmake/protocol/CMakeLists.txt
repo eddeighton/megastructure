@@ -35,6 +35,9 @@ add_custom_command(
 add_library( megastructureprotocollib 
 	${MEGASTRUCTURE_PROTOCOL_API} 
 	${MEGASTRUCTURE_PROTOCOL_SOURCE} )
+	
+set_target_properties( megastructureprotocollib PROPERTIES FOLDER core )
+set_target_properties( megastructureprotocollib PROPERTIES DEBUG_POSTFIX d )
 
 link_protobuf( megastructureprotocollib )
 

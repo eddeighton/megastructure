@@ -58,9 +58,7 @@ add_library( schemalib
 
 #add_dependencies( schemalib mega_schema_target )
 
-set_target_properties( schemalib PROPERTIES FOLDER schema )
-#set_target_properties( mega_schema_target PROPERTIES FOLDER schema )
-
+set_target_properties( schemalib PROPERTIES FOLDER driver )
 set_target_properties( schemalib PROPERTIES DEBUG_POSTFIX d )
 
 link_xsde( schemalib )

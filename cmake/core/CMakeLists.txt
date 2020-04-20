@@ -27,8 +27,7 @@ add_library( megastructurelib
                     ${MEGA_SOURCES}
 				)
 
-set_target_properties( megastructurelib PROPERTIES FOLDER eg )
-
+set_target_properties( megastructurelib PROPERTIES FOLDER core )
 set_target_properties( megastructurelib PROPERTIES DEBUG_POSTFIX d )
 
 link_boost( megastructurelib filesystem )

@@ -38,7 +38,7 @@ source_group( src FILES ${DRIVER_SOURCES} )
 
 add_executable( mega ${DRIVER_SOURCES} )
 
-set_target_properties( mega PROPERTIES FOLDER mega )
+set_target_properties( mega PROPERTIES FOLDER driver )
 set_target_properties( mega PROPERTIES DEBUG_POSTFIX d )
 
 link_xsde( mega )

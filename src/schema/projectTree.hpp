@@ -88,6 +88,32 @@ public:
 	const boost::filesystem::path& getRootPath() const { return m_path; }
 	void getSourceFilesMap( std::multimap< boost::filesystem::path, boost::filesystem::path >& pathMap ) const;
 	
+    std::vector< boost::filesystem::path > getSystemIncludes() const
+	{
+		std::vector< boost::filesystem::path > includes;
+		return includes;
+	}
+    std::vector< boost::filesystem::path > getUserIncludes() const
+	{
+		std::vector< boost::filesystem::path > includes;
+		return includes;
+	}
+	
+	
+    boost::filesystem::path getIncludeHeader() const
+	{
+		return m_path / "include.hpp";
+	}
+	
+    boost::filesystem::path getInterfaceHeader() const
+	{
+		return m_path / "interface.hpp";
+	}
+	
+    std::size_t getFiberStackSize() const
+	{
+		return 4096;
+	}
 private:
 	boost::filesystem::path m_path;
 	std::string m_projectName;

@@ -113,6 +113,83 @@ private:
     FileTimeMap m_fileTimes;
 };
 
+
+void build_include_header( const Environment& environment, const eg::interface::Root* pInterfaceRoot, const ProjectTree& project )
+{
+	//generate the includes header
+	{
+		//careful to only write to the file if it has been modified
+		VERIFY_RTE( pInterfaceRoot );
+		std::ostringstream osInclude;
+		eg::generateIncludeHeader( osInclude, 
+			pInterfaceRoot, 
+			project.getSystemIncludes(), 
+			project.getUserIncludes() );
+		boost::filesystem::updateFileIfChanged( 
+			project.getIncludeHeader(), osInclude.str() );
+		
+		/*if( bNoReUsePCH )
+		{
+			//force the file timestamp to have changed to prevent reusing the pch
+			boost::filesystem::last_write_time( project.getIncludeHeader(),
+				boost::filesystem::last_write_time( project.getIncludeHeader() ) + 1 );
+		}*/
+	}
+	
+	/*{
+		//LogEntry log( std::cout, "Compiling include precompiled header", bBenchCommands );
+		
+		std::ostringstream osCmd;
+		environment.startCompilationCommand( osCmd );
+		osCmd << " " << project.getCompilerFlags() << " ";
+		
+		osCmd << "-Xclang -emit-pch -o " << environment.printPath( project.getIncludePCH() ) << " ";
+		
+		osCmd << environment.printPath( project.getIncludeHeader() ) << " ";
+		
+		osCmd << "-I " << environment.getEGLibraryInclude().generic_string() << " ";
+		
+		for( const boost::filesystem::path& includeDirectory : project.getIncludeDirectories() )
+		{
+			osCmd << "-I " << environment.printPath( includeDirectory ) << " ";
+		}
+		
+		if( bLogCommands )
+		{
+			std::cout << "\n" << osCmd.str() << std::endl;
+		}
+		
+		{
+			const int iResult = boost::process::system( osCmd.str() );
+			if( iResult )
+			{
+				THROW_RTE( "Error invoking clang++ " << iResult );
+			}
+			else
+			{
+				//artificially set the file time stamp to match the include file
+				boost::filesystem::last_write_time( project.getIncludePCH(), 
+					boost::filesystem::last_write_time( project.getIncludeHeader() ) );
+			}
+		}
+	}*/
+	
+}
+
+void build_interface_header( const Environment& environment, eg::ParserSession* pParserSession, const ProjectTree& project )
+{
+	
+    //generate the interface
+    {
+        //LogEntry log( std::cout, "Generating Interface", bBenchCommands );
+        VERIFY_RTE( pParserSession );
+        std::ostringstream osInterface;
+        eg::generateInterface( osInterface, 
+            pParserSession->getTreeRoot(), pParserSession->getIdentifiers(), project.getFiberStackSize() );
+        boost::filesystem::updateFileIfChanged( project.getInterfaceHeader(), osInterface.str() );
+    }
+}
+
 void build_parser_session( const Environment& environment, const ProjectTree& project )
 {
 	
@@ -140,6 +217,9 @@ void build_parser_session( const Environment& environment, const ProjectTree& pr
 	const eg::interface::Root* pInterfaceRoot = pParserSession->getTreeRoot();
 	std::string strIndent;
 	pInterfaceRoot->print( std::cout, strIndent, true );
+	
+	build_include_header( environment, pInterfaceRoot, project );
+	build_interface_header( environment, pParserSession.get(), project );
 	
 }
 

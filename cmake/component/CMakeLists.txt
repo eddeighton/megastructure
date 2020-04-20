@@ -21,8 +21,7 @@ add_library( componentlib STATIC
 					${MEGA_COMPONENT_SOURCES}
 				)
 		
-set_target_properties( componentlib PROPERTIES FOLDER log )
-
+set_target_properties( componentlib PROPERTIES FOLDER core )
 set_target_properties( componentlib PROPERTIES DEBUG_POSTFIX d )
 
 link_boost( componentlib program_options )

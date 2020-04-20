@@ -16,8 +16,7 @@ add_library( test_eg SHARED
 					${MEGA_TEST_EG_SOURCES}
 				)
 		
-set_target_properties( test_eg PROPERTIES FOLDER log )
-
+set_target_properties( test_eg PROPERTIES FOLDER tests )
 set_target_properties( test_eg PROPERTIES DEBUG_POSTFIX d )
 
 target_compile_definitions( test_eg PRIVATE -DMEGASTRUCTURE_COMPONENT )

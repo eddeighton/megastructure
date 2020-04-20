@@ -16,8 +16,7 @@ add_executable( master
 					${MEGA_MASTER_SOURCES}
 				)
 		
-set_target_properties( master PROPERTIES FOLDER log )
-
+set_target_properties( master PROPERTIES FOLDER core )
 set_target_properties( master PROPERTIES DEBUG_POSTFIX d )
 
 link_boost( master program_options )

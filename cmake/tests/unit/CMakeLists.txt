@@ -23,7 +23,7 @@ add_executable( mega_tests ${MEGA_UNIT_TESTS})
 
 ##configure all debug builds to have 'd' postfix
 set_target_properties( mega_tests PROPERTIES DEBUG_POSTFIX d )
-set_target_properties( mega_tests PROPERTIES FOLDER common )
+set_target_properties( mega_tests PROPERTIES FOLDER tests )
 
 link_boost( mega_tests filesystem )
 link_boost( mega_tests system )

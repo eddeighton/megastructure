@@ -16,8 +16,7 @@ add_executable( slave
 					${MEGA_SLAVE_SOURCES}
 				)
 		
-set_target_properties( slave PROPERTIES FOLDER log )
-
+set_target_properties( slave PROPERTIES FOLDER core )
 set_target_properties( slave PROPERTIES DEBUG_POSTFIX d )
 
 link_boost( slave program_options )

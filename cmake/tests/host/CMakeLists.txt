@@ -16,8 +16,7 @@ add_executable( test_host
 					${MEGA_TEST_HOST_SOURCES}
 				)
 		
-set_target_properties( test_host PROPERTIES FOLDER log )
-
+set_target_properties( test_host PROPERTIES FOLDER tests )
 set_target_properties( test_host PROPERTIES DEBUG_POSTFIX d )
 
 link_boost( test_host program_options )
