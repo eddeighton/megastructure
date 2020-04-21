@@ -4,6 +4,8 @@
 
 #include "project.hpp"
 
+#include "common/file.hpp"
+
 #include <boost/filesystem.hpp>
 
 #include <string>
@@ -11,6 +13,7 @@
 #include <vector>
 #include <ostream>
 #include <map>
+#include <set>
 
 class ProjectName
 {
@@ -91,25 +94,94 @@ public:
     std::vector< boost::filesystem::path > getSystemIncludes() const
 	{
 		std::vector< boost::filesystem::path > includes;
+		
 		return includes;
 	}
     std::vector< boost::filesystem::path > getUserIncludes() const
 	{
 		std::vector< boost::filesystem::path > includes;
+		
+		includes.push_back( "eg/include.hpp" );
+		
 		return includes;
 	}
 	
+	boost::filesystem::path getInterfaceFolder() const
+	{
+		return m_path / "interface" / m_projectName;
+	}
+	
+	boost::filesystem::path getParserDatabaseFile() const
+	{
+		return getInterfaceFolder() / "parser.db";
+	}
+	boost::filesystem::path getInterfaceDatabaseFile() const
+	{
+		return getInterfaceFolder() / "interface.db";
+	}
+	boost::filesystem::path getInterfacePCH() const
+	{
+		return getInterfaceFolder() / "interface.pch";
+	}
+    boost::filesystem::path getInterfaceHeader() const
+	{
+		return getInterfaceFolder() / "interface.hpp";
+	}
+		
+	std::string getCompilerFlags() const
+	{
+		return "";
+	}
 	
     boost::filesystem::path getIncludeHeader() const
 	{
-		return m_path / "include.hpp";
+		return getInterfaceFolder() / "include.hpp";
 	}
 	
-    boost::filesystem::path getInterfaceHeader() const
+    boost::filesystem::path getIncludePCH() const
 	{
-		return m_path / "interface.hpp";
+		return getInterfaceFolder() / "include.pch";
 	}
 	
+		
+	static void collateIncludeDirectories( 
+		const Environment& environment,
+		std::set< boost::filesystem::path >& uniquified, 
+		std::vector< boost::filesystem::path >& directories,
+		const std::string& strDirectory )
+	{
+		const boost::filesystem::path absPath =
+			boost::filesystem::edsCannonicalise(
+				boost::filesystem::absolute( 
+					environment.expand( strDirectory ) ) );
+				
+		if( 0 == uniquified.count( absPath ) )
+		{
+			uniquified.insert( absPath );
+			directories.push_back( absPath );
+		}
+	}
+
+	std::vector< boost::filesystem::path > getIncludeDirectories( const Environment& environment ) const
+	{
+		std::set< boost::filesystem::path > uniquified;
+		std::vector< boost::filesystem::path > directories;
+		
+		collateIncludeDirectories( environment, uniquified, directories, "${EG}/include" );
+		collateIncludeDirectories( environment, uniquified, directories, "${BOOST}/include/boost-1_73" );
+		
+		/*if( m_host.Directories_present() )
+			collateIncludeDirectories( m_environment, uniquified, directories, m_host.Directories() );
+		
+		for( const megaxml::Package& package : m_packages )
+		{
+			if( package.Directories_present() )
+				collateIncludeDirectories( m_environment, uniquified, directories, package.Directories() );
+		}*/
+		
+		return directories;
+	}
+
     std::size_t getFiberStackSize() const
 	{
 		return 4096;

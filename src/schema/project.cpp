@@ -248,8 +248,12 @@ const boost::filesystem::path& Environment::getClangPluginDll() const
 {
     static boost::filesystem::path EG_CLANG_PLUGIN;
     if( EG_CLANG_PLUGIN.empty() )
-    {
+	{
+//#ifdef _DEBUG
+        //EG_CLANG_PLUGIN = boost::filesystem::path( get( ENV_KEY_EG_INSTALLATION ) ) / "bin/eg_clang_plugind.dll";
+//#else
         EG_CLANG_PLUGIN = boost::filesystem::path( get( ENV_KEY_EG_INSTALLATION ) ) / "bin/eg_clang_plugin.dll";
+//#endif
     }
     return EG_CLANG_PLUGIN;
 }

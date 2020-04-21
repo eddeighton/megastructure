@@ -136,7 +136,7 @@ void build_include_header( const Environment& environment, const eg::interface::
 		}*/
 	}
 	
-	/*{
+	{
 		//LogEntry log( std::cout, "Compiling include precompiled header", bBenchCommands );
 		
 		std::ostringstream osCmd;
@@ -149,15 +149,15 @@ void build_include_header( const Environment& environment, const eg::interface::
 		
 		osCmd << "-I " << environment.getEGLibraryInclude().generic_string() << " ";
 		
-		for( const boost::filesystem::path& includeDirectory : project.getIncludeDirectories() )
+		for( const boost::filesystem::path& includeDirectory : project.getIncludeDirectories( environment ) )
 		{
 			osCmd << "-I " << environment.printPath( includeDirectory ) << " ";
 		}
 		
-		if( bLogCommands )
-		{
-			std::cout << "\n" << osCmd.str() << std::endl;
-		}
+		//if( bLogCommands )
+		//{
+		//	std::cout << "\n" << osCmd.str() << std::endl;
+		//}
 		
 		{
 			const int iResult = boost::process::system( osCmd.str() );
@@ -168,11 +168,11 @@ void build_include_header( const Environment& environment, const eg::interface::
 			else
 			{
 				//artificially set the file time stamp to match the include file
-				boost::filesystem::last_write_time( project.getIncludePCH(), 
-					boost::filesystem::last_write_time( project.getIncludeHeader() ) );
+				//boost::filesystem::last_write_time( project.getIncludePCH(), 
+				//	boost::filesystem::last_write_time( project.getIncludeHeader() ) );
 			}
 		}
-	}*/
+	}
 	
 }
 
@@ -188,6 +188,37 @@ void build_interface_header( const Environment& environment, eg::ParserSession* 
             pParserSession->getTreeRoot(), pParserSession->getIdentifiers(), project.getFiberStackSize() );
         boost::filesystem::updateFileIfChanged( project.getInterfaceHeader(), osInterface.str() );
     }
+	
+	{
+		//LogEntry log( std::cout, "Compiling interface to pch", bBenchCommands );
+		std::ostringstream osCmd;
+		environment.startCompilationCommand( osCmd );
+		osCmd << " " << project.getCompilerFlags() << " ";
+		
+		osCmd << "-Xclang -include-pch ";
+		osCmd << "-Xclang " << environment.printPath( project.getIncludePCH() ) << " ";
+		
+		osCmd << "-Xclang -emit-pch -o " << environment.printPath( project.getInterfacePCH() ) << " ";
+		osCmd << "-Xclang -egdb=" << environment.printPath( project.getParserDatabaseFile() ) << " ";
+		osCmd << "-Xclang -egdll=" << environment.printPath( environment.getClangPluginDll() ) << " ";
+		
+		osCmd << "-I " << environment.getEGLibraryInclude().generic_string() << " ";
+		
+		osCmd << environment.printPath( project.getInterfaceHeader() ) << " ";
+		
+		//if( bLogCommands )
+		//{
+		//	std::cout << "\n" << osCmd.str() << std::endl;
+		//}
+		
+		{
+			const int iResult = boost::process::system( osCmd.str() );
+			if( iResult )
+			{
+				THROW_RTE( "Error invoking clang++ " << iResult );
+			}
+		}
+	}
 }
 
 void build_parser_session( const Environment& environment, const ProjectTree& project )
@@ -201,26 +232,57 @@ void build_parser_session( const Environment& environment, const ProjectTree& pr
 		project.getSourceFilesMap( sourceCodeTree.files );
 	}
 	
-    std::unique_ptr< eg::ParserSession > pParserSession = 
-		std::make_unique< eg::ParserSession >();
+	{
+		std::unique_ptr< eg::ParserSession > pParserSession = 
+			std::make_unique< eg::ParserSession >();
+			
+		pParserSession->parse( sourceCodeTree, diagnostics );
 		
-	pParserSession->parse( sourceCodeTree, diagnostics );
+		pParserSession->buildAbstractTree();
+		
+		pParserSession->store( project.getParserDatabaseFile() );
+		
+		std::cout << "Generated: " << project.getParserDatabaseFile() << std::endl;
+		std::cout << std::endl;
+		
+		const eg::interface::Root* pInterfaceRoot = pParserSession->getTreeRoot();
+		std::string strIndent;
+		pInterfaceRoot->print( std::cout, strIndent, true );
+		
+		build_include_header( environment, pInterfaceRoot, project );
+		build_interface_header( environment, pParserSession.get(), project );
+	}
 	
-	pParserSession->buildAbstractTree();
-	
-	
-	pParserSession->store( project.getRootPath() / "interface.db" );
-	
-	std::cout << "Generated: " << project.getRootPath() / "interface.db" << std::endl;
-	std::cout << std::endl;
-	
-	const eg::interface::Root* pInterfaceRoot = pParserSession->getTreeRoot();
-	std::string strIndent;
-	pInterfaceRoot->print( std::cout, strIndent, true );
-	
-	build_include_header( environment, pInterfaceRoot, project );
-	build_interface_header( environment, pParserSession.get(), project );
-	
+	{
+		//LogEntry log( std::cout, "Performing interface analysis", bBenchCommands );
+		
+		std::unique_ptr< eg::InterfaceSession > pInterfaceSession
+			= std::make_unique< eg::InterfaceSession >( project.getParserDatabaseFile() );
+			
+		//perform the analysis
+		pInterfaceSession->linkAnalysis();
+		pInterfaceSession->instanceAnalysis();
+		pInterfaceSession->dependencyAnalysis();
+		
+		/*
+		pInterfaceSession->translationUnitAnalysis( project.getIntermediateFolder(), 
+			[ &project ]( const std::string& strName )
+			{
+				eg::IndexedObject::FileID fileID = eg::IndexedObject::NO_FILE;
+				
+				const boost::filesystem::path dbPath = project.getTUDBName( strName );
+				if( boost::filesystem::exists( dbPath ) )
+				{
+					//read the fileID out of the file
+					fileID = eg::IndexedFile::readFileID( dbPath );
+				}
+				
+				return fileID;
+			}
+		);*/
+		
+		pInterfaceSession->store( project.getInterfaceDatabaseFile() );
+	}
 }
 
 void command_build( bool bHelp, const std::string& strBuildCommand, const std::vector< std::string >& args )
