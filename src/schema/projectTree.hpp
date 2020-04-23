@@ -14,6 +14,7 @@
 #include <ostream>
 #include <map>
 #include <set>
+#include <sstream>
 
 class ProjectName
 {
@@ -111,6 +112,11 @@ public:
 		return m_path / "interface" / m_projectName;
 	}
 	
+	boost::filesystem::path getBuildFolder() const
+	{
+		return m_path / "build" / m_projectName;
+	}
+	
 	boost::filesystem::path getParserDatabaseFile() const
 	{
 		return getInterfaceFolder() / "parser.db";
@@ -130,7 +136,11 @@ public:
 		
 	std::string getCompilerFlags() const
 	{
-		return "";
+		static const std::string strFlags = //"";
+		//"-D_MT -D_DLL -DNOMINMAX -DBOOST_ALL_NO_LIB -D_CRT_SECURE_NO_WARNINGS -DBOOST_USE_WINDOWS_H -Xclang -std=c++17  -fexceptions";
+		"-DWIN32_LEAN_AND_MEAN -D_MT -D_DLL -DNOMINMAX -DBOOST_ALL_NO_LIB -D_CRT_SECURE_NO_WARNINGS -DBOOST_USE_WINDOWS_H -fexceptions -Xclang -std=c++17 -Xclang -flto-visibility-public-std -Wno-deprecated -Wno-inconsistent-missing-override";
+      //<LinkerFlags>-nostdlib -lmsvcrt -Xlinker /SUBSYSTEM:CONSOLE</LinkerFlags>
+		return strFlags;
 	}
 	
     boost::filesystem::path getIncludeHeader() const
@@ -141,6 +151,16 @@ public:
     boost::filesystem::path getIncludePCH() const
 	{
 		return getInterfaceFolder() / "include.pch";
+	}
+	
+	
+    boost::filesystem::path getTUDBName( const std::string& strTUName ) const
+	{
+		std::ostringstream os;
+		os << "tu_" << strTUName << ".db";
+		return boost::filesystem::edsCannonicalise(
+			boost::filesystem::absolute( 
+				getBuildFolder() / "eg_objects" / os.str() ) );
 	}
 	
 		
@@ -185,6 +205,80 @@ public:
     std::size_t getFiberStackSize() const
 	{
 		return 4096;
+	}
+	
+	
+	
+	boost::filesystem::path getOperationsHeader( const std::string& strTUName ) const
+	{
+		std::ostringstream os;
+		os << "operations_" << strTUName << ".hpp";
+		return boost::filesystem::edsCannonicalise(
+			boost::filesystem::absolute( 
+				getInterfaceFolder() / os.str() ) );
+	}
+	
+	boost::filesystem::path getOperationsPCH( const std::string& strTUName ) const
+	{
+		std::ostringstream os;
+		os << "operations_" << strTUName << ".pch";
+		return boost::filesystem::edsCannonicalise(
+			boost::filesystem::absolute( 
+				getInterfaceFolder() / os.str() ) );
+	}
+	
+	boost::filesystem::path getImplementationSource( const std::string& strTUName ) const
+	{
+		std::ostringstream os;
+		os << "operations_" << strTUName << ".cpp";
+		return boost::filesystem::edsCannonicalise(
+			boost::filesystem::absolute( 
+				getInterfaceFolder() / os.str() ) );
+	}
+
+	boost::filesystem::path getDataStructureSource() const
+	{
+		std::ostringstream os;
+		os << "structures.hpp";
+		return boost::filesystem::edsCannonicalise(
+			boost::filesystem::absolute( 
+				getInterfaceFolder() / os.str() ) );
+	}
+	
+	boost::filesystem::path getRuntimeSource() const
+	{
+		std::ostringstream os;
+		os << "runtime.cpp";
+		return boost::filesystem::edsCannonicalise(
+					boost::filesystem::absolute( 
+						getInterfaceFolder() / os.str() ) );
+	}
+	
+	boost::filesystem::path getAnalysisFileName() const
+	{
+		std::ostringstream os;
+		os << "database.db";
+		return boost::filesystem::edsCannonicalise(
+			boost::filesystem::absolute( 
+				getInterfaceFolder() / os.str() ) );
+	}
+
+	boost::filesystem::path getObjectName( const std::string& strTUName ) const
+	{
+		std::ostringstream os;
+		os << "object_" << strTUName << ".obj";
+		return boost::filesystem::edsCannonicalise(
+					boost::filesystem::absolute( 
+						getInterfaceFolder() / os.str() ) );
+	}
+	
+	boost::filesystem::path getObjectFile( const boost::filesystem::path& sourceFile ) const
+	{
+		std::ostringstream os;
+		os << "object_" << sourceFile.stem().string() << ".obj";
+		return boost::filesystem::edsCannonicalise(
+					boost::filesystem::absolute( 
+						getInterfaceFolder() / os.str() ) );
 	}
 private:
 	boost::filesystem::path m_path;
