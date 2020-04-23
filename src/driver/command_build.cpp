@@ -124,7 +124,7 @@ void build_include_header( const Environment& environment, const eg::interface::
 		eg::generateIncludeHeader( osInclude, 
 			pInterfaceRoot, 
 			project.getSystemIncludes(), 
-			project.getUserIncludes() );
+			project.getUserIncludes( environment ) );
 		boost::filesystem::updateFileIfChanged( 
 			project.getIncludeHeader(), osInclude.str() );
 		
@@ -399,6 +399,27 @@ void generate_objects( const eg::TranslationUnitAnalysis& translationUnits, cons
             eg::generateActionInstanceFunctions( osImpl, *pImplementationSession );
             boost::filesystem::updateFileIfChanged( project.getRuntimeSource(), osImpl.str() );
         }
+		
+		//generate python bindings
+		{
+			
+			std::ostringstream osCmd;
+			osCmd << environment.printPath( environment.expand( "${EG}/bin/python_host.exe" ) ) << " ";
+			
+			osCmd << "--name " << project.getProjectName() << " ";
+			osCmd << "--database " << project.getAnalysisFileName() << " ";
+			osCmd << "--dir " << project.getInterfaceFolder().generic_string() << " ";
+			
+            {
+                std::cout << "\n" << osCmd.str() << std::endl;
+				
+                const int iResult = boost::process::system( osCmd.str() );
+                if( iResult )
+                {
+                    THROW_RTE( "Error invoking python_host.exe " << iResult );
+                }
+            }
+		}
     }
     
     
@@ -522,8 +543,15 @@ std::vector< boost::filesystem::path >
         //}
     }
     
+	std::vector< boost::filesystem::path > sourceFiles =
+	{
+		 project.getRuntimeSource(),
+		 project.getPythonSource()
+	};
+	
+	for( const boost::filesystem::path& strSourceFile : sourceFiles )
     {
-        const boost::filesystem::path strSourceFile = project.getRuntimeSource();
+        //const boost::filesystem::path strSourceFile = project.getRuntimeSource();
         boost::filesystem::path objectFilePath = project.getObjectFile( strSourceFile );
         objectFiles.push_back( objectFilePath );
         
@@ -566,62 +594,6 @@ std::vector< boost::filesystem::path >
                 os.str(), osCmd.str(), bBenchCommands, std::ref( logMutex ) ) );
         //}
     }
-    
-    /*{
-        for( const boost::filesystem::path& strSourceFile : project.getCPPSourceCode() )
-        {
-            boost::filesystem::path objectFilePath = project.getObjectFile( strSourceFile );
-            objectFiles.push_back( objectFilePath );
-            
-            bool bObjectFileMatchesSource = false;
-            if( boost::filesystem::exists( strSourceFile ) && 
-                boost::filesystem::exists( objectFilePath ) &&
-                ( boost::filesystem::last_write_time( strSourceFile ) == 
-                    boost::filesystem::last_write_time( objectFilePath ) ) )
-            {
-                bObjectFileMatchesSource = true;
-            }
-            
-            //if( fileTracker.isModified( project.getIncludePCH() ) ||
-            //    fileTracker.isModified( project.getInterfacePCH() ) ||
-                !bObjectFileMatchesSource )
-            {
-                std::ostringstream os;
-                os << "Compiling: " << objectFilePath.generic_string();
-                    
-                std::ostringstream osCmd;
-                environment.startCompilationCommand( osCmd );
-                osCmd << " " << project.getCompilerFlags() << " ";
-                
-                osCmd << "-c -o " << environment.printPath( objectFilePath ) << " ";
-                
-                osCmd << "-Xclang -include-pch ";
-                osCmd << "-Xclang " << environment.printPath( project.getIncludePCH() ) << " ";
-                
-                osCmd << "-Xclang -include-pch ";
-                osCmd << "-Xclang " << environment.printPath( project.getInterfacePCH() ) << " ";
-            
-                osCmd << "-I " << environment.printPath( environment.getEGLibraryInclude() ) << " ";
-                osCmd << "-I " << environment.printPath( project.getIntermediateFolder() ) << " ";
-                
-                for( const boost::filesystem::path& includeDirectory : project.getIncludeDirectories() )
-                {
-                    osCmd << "-I " << environment.printPath( includeDirectory ) << " ";
-                }
-                
-                osCmd << environment.printPath( strSourceFile ) << " ";
-                    
-                if( bLogCommands )
-                {
-                    std::cout << "\n" << osCmd.str() << std::endl;
-                }
-                
-                commands.push_back( std::bind( objectCompilationCommandSetFileTIme, 
-                    os.str(), osCmd.str(), bBenchCommands, std::ref( logMutex ), 
-                    strSourceFile, objectFilePath ) );
-            }
-        }
-    }*/
     
     //brute force attempt to do all compilations at once
     std::vector< std::thread > threads;

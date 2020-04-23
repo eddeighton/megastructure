@@ -25,6 +25,7 @@ link_boost( test_eg program_options )
 link_boost( test_eg filesystem )
 link_boost( test_eg system )
 link_boost( test_eg date_time )
+link_boost( test_eg fiber )
 link_common( test_eg )
 
 target_link_libraries( test_eg megastructurelib )

@@ -88,22 +88,42 @@ public:
 	
 	void print( std::ostream& os );
 	
+	const std::string& getProjectName() const { return m_projectName; }
 	
 	const boost::filesystem::path& getRootPath() const { return m_path; }
+	
 	void getSourceFilesMap( std::multimap< boost::filesystem::path, boost::filesystem::path >& pathMap ) const;
 	
     std::vector< boost::filesystem::path > getSystemIncludes() const
 	{
 		std::vector< boost::filesystem::path > includes;
 		
+		//includes.push_back( "chrono" );
+		
 		return includes;
 	}
-    std::vector< boost::filesystem::path > getUserIncludes() const
+    std::vector< boost::filesystem::path > getUserIncludes( const Environment& environment ) const
 	{
 		std::vector< boost::filesystem::path > includes;
 		
-		includes.push_back( "eg/include.hpp" );
+		includes.push_back( "boost/filesystem.hpp" );
 		
+		includes.push_back( "pybind11/pybind11.h" );
+		includes.push_back( "pybind11/stl.h" );
+		includes.push_back( "pybind11/stl_bind.h" );
+		includes.push_back( "pybind11/embed.h" );
+		includes.push_back( environment.expand( "${PYBIND}/pybind11_helpers.hpp" ) );
+		
+		
+		includes.push_back( "eg/include.hpp" );
+		includes.push_back( "eg_runtime/eg_runtime.hpp" );
+		
+//#include "W:/root/thirdparty/pybind11/install/include/pybind11/pybind11.h"
+//#include "W:/root/thirdparty/pybind11/install/include/pybind11/stl.h"
+//#include "W:/root/thirdparty/pybind11/install/include/pybind11/stl_bind.h"
+//#include "W:/root/thirdparty/pybind11/install/include/pybind11/embed.h"
+//#include "W:/root/thirdparty/pybind11/install/pybind11_helpers.hpp"
+
 		return includes;
 	}
 	
@@ -189,7 +209,11 @@ public:
 		
 		collateIncludeDirectories( environment, uniquified, directories, "${EG}/include" );
 		collateIncludeDirectories( environment, uniquified, directories, "${BOOST}/include/boost-1_73" );
+		collateIncludeDirectories( environment, uniquified, directories, "${PYBIND}/include" );
+		collateIncludeDirectories( environment, uniquified, directories, "${PYTHONHOME}/include" );
 		
+		
+
 		/*if( m_host.Directories_present() )
 			collateIncludeDirectories( m_environment, uniquified, directories, m_host.Directories() );
 		
@@ -249,6 +273,15 @@ public:
 	{
 		std::ostringstream os;
 		os << "runtime.cpp";
+		return boost::filesystem::edsCannonicalise(
+					boost::filesystem::absolute( 
+						getInterfaceFolder() / os.str() ) );
+	}
+	
+	boost::filesystem::path getPythonSource() const
+	{
+		std::ostringstream os;
+		os << "python_bindings.cpp";
 		return boost::filesystem::edsCannonicalise(
 					boost::filesystem::absolute( 
 						getInterfaceFolder() / os.str() ) );

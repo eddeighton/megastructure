@@ -37,7 +37,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 #ensure language runtimes and other system libs are copied to installation folder
 include (InstallRequiredSystemLibraries)
 
-
+install( FILES ${MEGA_API_DIR}/egcomponent/egcomponent.hpp DESTINATION include/egcomponent )
 #now simply add all the actual targets
 
 add_subdirectory(core)
