@@ -296,7 +296,7 @@ void build_operations( eg::InterfaceSession& interfaceSession, const Environment
         //generate the operation code
         {
             //LogEntry log( std::cout, "Generating operations: " + strTUName, bBenchCommands );
-			std::cout << "Generating operations: " << strTUName << std::endl;
+			std::cout << "\nGenerating operations: " << strTUName << std::endl;
             std::ostringstream osOperations;
             eg::generateOperationSource( osOperations, interfaceSession.getTreeRoot(), *pTranslationUnit );
             boost::filesystem::updateFileIfChanged( project.getOperationsHeader( strTUName ), osOperations.str() );
@@ -347,6 +347,11 @@ void build_operations( eg::InterfaceSession& interfaceSession, const Environment
     }
 }
 
+extern void generate_eg_component( std::ostream& os, 
+		const std::string& strProjectName, 
+		const std::string& strCoordinator, 
+		const std::string& strHost, 
+		const eg::ReadSession& session );
 
 void generate_objects( const eg::TranslationUnitAnalysis& translationUnits, const Environment& environment,
     const ProjectTree& project /*, FileWriteTracker& fileTracker, bool bBenchCommands, bool bLogCommands*/ )
@@ -360,7 +365,9 @@ void generate_objects( const eg::TranslationUnitAnalysis& translationUnits, cons
         //load all the translation unit analysis files
         for( const eg::TranslationUnit* pTranslationUnit : translationUnits.getTranslationUnits() )
         {
-            allFiles.insert( std::make_pair( pTranslationUnit->getDatabaseFileID(), project.getTUDBName( pTranslationUnit->getName() ) ) );
+            allFiles.insert( std::make_pair( 
+				pTranslationUnit->getDatabaseFileID(), 
+				project.getTUDBName( pTranslationUnit->getName() ) ) );
         }
     }
     
@@ -372,54 +379,6 @@ void generate_objects( const eg::TranslationUnitAnalysis& translationUnits, cons
         pImplementationSession->fullProgramAnalysis();
         pImplementationSession->store( project.getAnalysisFileName() );
         
-        {
-            //LogEntry log( std::cout, "Compiling data structures", bBenchCommands );
-            std::ostringstream osStructures;
-            eg::generateBufferStructures( osStructures, *pImplementationSession );
-            boost::filesystem::updateFileIfChanged( project.getDataStructureSource(), osStructures.str() );
-        }
-        
-        //generate the implementation files
-        for( const eg::TranslationUnit* pTranslationUnit : translationUnits.getTranslationUnits() )
-        {
-            //generate the implementation source code
-            {
-                //LogEntry log( std::cout, "Generating implementation: " + pTranslationUnit->getName(), bBenchCommands );
-                std::ostringstream osImpl;
-                eg::generateImplementationSource( osImpl, *pImplementationSession, *pTranslationUnit );
-                boost::filesystem::updateFileIfChanged( project.getImplementationSource( pTranslationUnit->getName() ), osImpl.str() );
-            }
-        }
-        
-        //generate the runtime code
-        {
-            std::ostringstream osImpl;
-            osImpl << "#include \"structures.hpp\"\n";
-            eg::generate_dynamic_interface( osImpl, *pImplementationSession );
-            eg::generateActionInstanceFunctions( osImpl, *pImplementationSession );
-            boost::filesystem::updateFileIfChanged( project.getRuntimeSource(), osImpl.str() );
-        }
-		
-		//generate python bindings
-		{
-			
-			std::ostringstream osCmd;
-			osCmd << environment.printPath( environment.expand( "${EG}/bin/python_host.exe" ) ) << " ";
-			
-			osCmd << "--name " << project.getProjectName() << " ";
-			osCmd << "--database " << project.getAnalysisFileName() << " ";
-			osCmd << "--dir " << project.getInterfaceFolder().generic_string() << " ";
-			
-            {
-                std::cout << "\n" << osCmd.str() << std::endl;
-				
-                const int iResult = boost::process::system( osCmd.str() );
-                if( iResult )
-                {
-                    THROW_RTE( "Error invoking python_host.exe " << iResult );
-                }
-            }
-		}
     }
     
     
@@ -494,105 +453,166 @@ void objectCompilationCommandSetFileTIme( std::string strMsg, std::string strCom
         boost::filesystem::last_write_time( strSourceFile ) );
 }
 
-std::vector< boost::filesystem::path > 
-    build_objects( const eg::TranslationUnitAnalysis& translationUnits, const Environment& environment, const ProjectTree& project,
-        bool bBenchCommands /*FileWriteTracker& fileTracker, bool bLogCommands*/ )
+void build_component( const eg::ReadSession& session, const Environment& environment,
+    const ProjectTree& project, const std::string& strCoordinator, const std::string& strHost, const boost::filesystem::path& binPath
+	/*, FileWriteTracker& fileTracker, bool bBenchCommands, bool bLogCommands*/ )
 {
-    std::vector< boost::filesystem::path > objectFiles;
-    
+	bool bBenchCommands = false;
+	
+	const eg::TranslationUnitAnalysis& translationUnits =
+		session.getTranslationUnitAnalysis();
+	
+	std::vector< boost::filesystem::path > sourceFiles;
+	
+	{
+		//LogEntry log( std::cout, "Compiling data structures", bBenchCommands );
+		std::ostringstream osStructures;
+		eg::generateBufferStructures( osStructures, session );
+		boost::filesystem::updateFileIfChanged( project.getDataStructureSource(), osStructures.str() );
+	}
+	
+	//generate the runtime code
+	{
+		std::ostringstream osImpl;
+		osImpl << "#include \"structures.hpp\"\n";
+		eg::generate_dynamic_interface( osImpl, session );
+		eg::generateActionInstanceFunctions( osImpl, session );
+		boost::filesystem::updateFileIfChanged( project.getRuntimeSource(), osImpl.str() );
+		sourceFiles.push_back( project.getRuntimeSource() );
+	}
+	
+	//generate python bindings
+	{
+		std::ostringstream osCmd;
+		osCmd << environment.printPath( environment.expand( "${EG}/bin/python_host.exe" ) ) << " ";
+		
+		osCmd << "--name " << project.getProjectName() << " ";
+		osCmd << "--database " << project.getAnalysisFileName() << " ";
+		osCmd << "--dir " << project.getInterfaceFolder().generic_string() << " ";
+		
+		{
+			std::cout << "\n" << osCmd.str() << std::endl;
+			
+			const int iResult = boost::process::system( osCmd.str() );
+			if( iResult )
+			{
+				THROW_RTE( "Error invoking python_host.exe " << iResult );
+			}
+		}
+		sourceFiles.push_back( project.getPythonSource() );
+	}
+	
+	//generate the eg component interface implementation
+	{
+		std::ostringstream osEGComponent;
+		generate_eg_component( osEGComponent, project.getProjectName(), strCoordinator, strHost, session );
+		const boost::filesystem::path egComponentSourceFilePath = 
+			project.getEGComponentSource( strCoordinator, strHost, project.getProjectName() );
+		boost::filesystem::updateFileIfChanged( egComponentSourceFilePath, osEGComponent.str() );
+		sourceFiles.push_back( egComponentSourceFilePath );
+	}
+	
     std::mutex logMutex;
     std::vector< std::function< void() > > commands;
-    
-    for( const eg::TranslationUnit* pTranslationUnit : translationUnits.getTranslationUnits() )
-    {
-        boost::filesystem::path objectFilePath = project.getObjectName( pTranslationUnit->getName() );
-        objectFiles.push_back( objectFilePath );
-        
-        /*if( fileTracker.isModified( project.getIncludePCH() ) ||
-            fileTracker.isModified( project.getInterfacePCH() ) ||
-            fileTracker.isModified( project.getOperationsPCH( pTranslationUnit->getName() ) ) ||
-            fileTracker.isModified( objectFilePath ) )
-        {*/
-            std::ostringstream os;
-            os << "Compiling: " << objectFilePath.generic_string();
-            
-            std::ostringstream osCmd;
-            environment.startCompilationCommand( osCmd );
-            osCmd << " " << project.getCompilerFlags() << " ";
-            
-            osCmd << "-c -o " << environment.printPath( objectFilePath ) << " ";
-                
-            osCmd << "-Xclang -include-pch ";
-            osCmd << "-Xclang " << environment.printPath( project.getIncludePCH() ) << " ";
-            
-            osCmd << "-Xclang -include-pch ";
-            osCmd << "-Xclang " << environment.printPath( project.getInterfacePCH() ) << " ";
-            
-            osCmd << "-Xclang -include-pch ";
-            osCmd << "-Xclang " << environment.printPath( project.getOperationsPCH( pTranslationUnit->getName() ) ) << " ";
-                
-            osCmd << environment.printPath( project.getImplementationSource( pTranslationUnit->getName() ) ) << " ";
-                
-            //if( bLogCommands )
-            //{
-                std::cout << "\n" << osCmd.str() << std::endl;
-            //}
-            
-            commands.push_back( std::bind( objectCompilationCommand, 
-                os.str(), osCmd.str(), bBenchCommands, std::ref( logMutex ) ) );
-        //}
-    }
-    
-	std::vector< boost::filesystem::path > sourceFiles =
-	{
-		 project.getRuntimeSource(),
-		 project.getPythonSource()
-	};
 	
 	for( const boost::filesystem::path& strSourceFile : sourceFiles )
     {
         //const boost::filesystem::path strSourceFile = project.getRuntimeSource();
-        boost::filesystem::path objectFilePath = project.getObjectFile( strSourceFile );
-        objectFiles.push_back( objectFilePath );
+        boost::filesystem::path objectFilePath = project.getObjectFile( strSourceFile, binPath );
+        //objectFiles.push_back( objectFilePath );
         
         /*if( fileTracker.isModified( project.getIncludePCH() ) ||
             fileTracker.isModified( project.getInterfacePCH() ) ||
             fileTracker.isModified( strSourceFile ) ||
             fileTracker.isModified( objectFilePath ) )
         {*/
-            std::ostringstream os;
-            os << "Compiling: " << objectFilePath.generic_string();
-                
-            std::ostringstream osCmd;
-            environment.startCompilationCommand( osCmd );
-            osCmd << " " << project.getCompilerFlags() << " ";
-            
-            osCmd << "-c -o " << environment.printPath( objectFilePath ) << " ";
-            
-            osCmd << "-Xclang -include-pch ";
-            osCmd << "-Xclang " << environment.printPath( project.getIncludePCH() ) << " ";
-            
-            osCmd << "-Xclang -include-pch ";
-            osCmd << "-Xclang " << environment.printPath( project.getInterfacePCH() ) << " ";
-        
-            osCmd << "-I " << environment.printPath( environment.getEGLibraryInclude() ) << " ";
-            osCmd << "-I " << environment.printPath( project.getInterfaceFolder() ) << " ";
-            
-            for( const boost::filesystem::path& includeDirectory : project.getIncludeDirectories( environment ) )
-            {
-                osCmd << "-I " << environment.printPath( includeDirectory ) << " ";
-            }
-            
-            osCmd << environment.printPath( strSourceFile ) << " ";
-                
-            //if( bLogCommands )
-            //{
-                std::cout << "\n" << osCmd.str() << std::endl;
-            //}
-            
-            commands.push_back( std::bind( objectCompilationCommand, 
-                os.str(), osCmd.str(), bBenchCommands, std::ref( logMutex ) ) );
+		std::ostringstream os;
+		os << "Compiling: " << objectFilePath.generic_string();
+			
+		std::ostringstream osCmd;
+		environment.startCompilationCommand( osCmd );
+		osCmd << " " << project.getCompilerFlags() << " ";
+		
+		osCmd << "-c -o " << environment.printPath( objectFilePath ) << " ";
+		
+		osCmd << "-Xclang -include-pch ";
+		osCmd << "-Xclang " << environment.printPath( project.getIncludePCH() ) << " ";
+		
+		osCmd << "-Xclang -include-pch ";
+		osCmd << "-Xclang " << environment.printPath( project.getInterfacePCH() ) << " ";
+		
+		osCmd << " -DMEGASTRUCTURE_EG_COMPONENT ";
+	
+		osCmd << "-I " << environment.printPath( environment.getEGLibraryInclude() ) << " ";
+		osCmd << "-I " << environment.printPath( project.getInterfaceFolder() ) << " ";
+		
+		for( const boost::filesystem::path& includeDirectory : project.getIncludeDirectories( environment ) )
+		{
+			osCmd << "-I " << environment.printPath( includeDirectory ) << " ";
+		}
+		
+		osCmd << environment.printPath( strSourceFile ) << " ";
+			
+		//if( bLogCommands )
+		//{
+			std::cout << "\n" << osCmd.str() << std::endl;
+		//}
+		
+		commands.push_back( std::bind( objectCompilationCommand, 
+			os.str(), osCmd.str(), bBenchCommands, std::ref( logMutex ) ) );
         //}
+    }
+	
+	//generate the implementation files for the coordinator host
+    for( const eg::TranslationUnit* pTranslationUnit : translationUnits.getTranslationUnits() )
+    {
+		if( pTranslationUnit->getCoordinatorHostnameDefinitionFile().isHost( strHost ) )
+		{
+			//generate the implementation source code
+			{
+				//LogEntry log( std::cout, "Generating implementation: " + pTranslationUnit->getName(), bBenchCommands );
+				std::ostringstream osImpl;
+				eg::generateImplementationSource( osImpl, session, *pTranslationUnit );
+				boost::filesystem::updateFileIfChanged( project.getImplementationSource( pTranslationUnit->getName() ), osImpl.str() );
+			}
+			
+			boost::filesystem::path objectFilePath = project.getObjectName( pTranslationUnit->getName(), binPath );
+			//objectFiles.push_back( objectFilePath );
+			
+			/*if( fileTracker.isModified( project.getIncludePCH() ) ||
+				fileTracker.isModified( project.getInterfacePCH() ) ||
+				fileTracker.isModified( project.getOperationsPCH( pTranslationUnit->getName() ) ) ||
+				fileTracker.isModified( objectFilePath ) )
+			{*/
+				std::ostringstream os;
+				os << "Compiling: " << objectFilePath.generic_string();
+				
+				std::ostringstream osCmd;
+				environment.startCompilationCommand( osCmd );
+				osCmd << " " << project.getCompilerFlags() << " ";
+				
+				osCmd << "-c -o " << environment.printPath( objectFilePath ) << " ";
+					
+				osCmd << "-Xclang -include-pch ";
+				osCmd << "-Xclang " << environment.printPath( project.getIncludePCH() ) << " ";
+				
+				osCmd << "-Xclang -include-pch ";
+				osCmd << "-Xclang " << environment.printPath( project.getInterfacePCH() ) << " ";
+				
+				osCmd << "-Xclang -include-pch ";
+				osCmd << "-Xclang " << environment.printPath( project.getOperationsPCH( pTranslationUnit->getName() ) ) << " ";
+					
+				osCmd << environment.printPath( project.getImplementationSource( pTranslationUnit->getName() ) ) << " ";
+					
+				//if( bLogCommands )
+				//{
+					std::cout << "\n" << osCmd.str() << std::endl;
+				//}
+				
+				commands.push_back( std::bind( objectCompilationCommand, 
+					os.str(), osCmd.str(), bBenchCommands, std::ref( logMutex ) ) );
+			//}
+		}
     }
     
     //brute force attempt to do all compilations at once
@@ -607,14 +627,12 @@ std::vector< boost::filesystem::path >
         if( th.joinable() )
             th.join();
     }
-    
-    return objectFiles;
 }
-
 
 void command_build( bool bHelp, const std::string& strBuildCommand, const std::vector< std::string >& args )
 {
-    std::string strDirectory, strProject;
+    std::string strDirectory, strProject, strCoordinator, strHost, strBin;
+	boost::filesystem::path binPath;
     bool bBenchCommands = false;
     bool bLogCommands = false;
     bool bNoPCH = false;
@@ -624,12 +642,15 @@ void command_build( bool bHelp, const std::string& strBuildCommand, const std::v
     po::options_description commandOptions(" Create Project Command");
     {
         commandOptions.add_options()
-            ("dir",     po::value< std::string >( &strDirectory ), "Project directory")
-			("project", po::value< std::string >( &strProject ), "Project Name" )
-            ("bench",   po::bool_switch( &bBenchCommands ), "Benchmark compilation steps" )
-            ("trace",   po::bool_switch( &bLogCommands ), "Trace compilation commands" )
-            ("nopch",   po::bool_switch( &bNoPCH ), "Force regeneration of precompiled header file" )
-            ("full",    po::bool_switch( &bFullRebuild ), "Full rebuild - do not reuse previous objects or precompiled headers" )
+            ("dir",     	po::value< std::string >( &strDirectory ), "Project directory")
+			("project", 	po::value< std::string >( &strProject ), "Project Name" )
+			("coordinator", po::value< std::string >( &strCoordinator ), "Coordinator Name" )
+			("host", 		po::value< std::string >( &strHost ), "Host Name" )
+			("bin",         po::value< boost::filesystem::path >( &binPath ), "Binary Directory" )
+            ("bench",   	po::bool_switch( &bBenchCommands ), "Benchmark compilation steps" )
+            ("trace",   	po::bool_switch( &bLogCommands ), "Trace compilation commands" )
+            ("nopch",   	po::bool_switch( &bNoPCH ), "Force regeneration of precompiled header file" )
+            ("full",    	po::bool_switch( &bFullRebuild ), "Full rebuild - do not reuse previous objects or precompiled headers" )
         ;
     }
     
@@ -671,36 +692,44 @@ void command_build( bool bHelp, const std::string& strBuildCommand, const std::v
             THROW_RTE( "Specified path is not a directory: " << projectDirectory.generic_string() );
         }
 		
-		
         Environment environment;
 		
 		ProjectTree projectTree( environment, projectDirectory, strProject );
 		
-        //if( bFullRebuild && boost::filesystem::exists( project.getIntermediateFolder() ) )
-        //{
-        //    std::cout << "Removing: " << project.getIntermediateFolder().generic_string() << std::endl;
-        //    boost::filesystem::remove_all( project.getIntermediateFolder() );
-        //}
-		
-        //FileWriteTracker fileTracker( project ); 
-		
-		projectTree.print( std::cout );
-		
-		build_parser_session( environment, projectTree /*fileTracker, bBenchCommands, bLogCommands, bNoPCH*/ );
-		
-        std::unique_ptr< eg::InterfaceSession > pInterfaceSession
-             = std::make_unique< eg::InterfaceSession >( projectTree.getInterfaceDatabaseFile() );
-             
-        build_operations( *pInterfaceSession, environment, projectTree /*, fileTracker, bBenchCommands, bLogCommands*/ );
-        
-        generate_objects( pInterfaceSession->getTranslationUnitAnalysis(), environment, projectTree/*, fileTracker, bBenchCommands, bLogCommands*/ );
-        
-        std::vector< boost::filesystem::path > objectFiles = 
-            build_objects( pInterfaceSession->getTranslationUnitAnalysis(), environment, projectTree, bBenchCommands/*, fileTracker, bBenchCommands, bLogCommands */);
-            
-		/*
-        link_program( environment, project, fileTracker, bBenchCommands, bLogCommands, objectFiles );
-        */
+		if( strCoordinator.empty() && strHost.empty() )
+		{
+			//if( bFullRebuild && boost::filesystem::exists( project.getIntermediateFolder() ) )
+			//{
+			//    std::cout << "Removing: " << project.getIntermediateFolder().generic_string() << std::endl;
+			//    boost::filesystem::remove_all( project.getIntermediateFolder() );
+			//}
+			
+			//FileWriteTracker fileTracker( project ); 
+			
+			projectTree.print( std::cout );
+			
+			build_parser_session( environment, projectTree /*fileTracker, bBenchCommands, bLogCommands, bNoPCH*/ );
+			
+			std::unique_ptr< eg::InterfaceSession > pInterfaceSession
+				 = std::make_unique< eg::InterfaceSession >( projectTree.getInterfaceDatabaseFile() );
+				 
+			build_operations( *pInterfaceSession, environment, projectTree /*, fileTracker, bBenchCommands, bLogCommands*/ );
+			
+			generate_objects( pInterfaceSession->getTranslationUnitAnalysis(), environment, projectTree/*, fileTracker, bBenchCommands, bLogCommands*/ );
+			
+		}
+		else
+		{
+			VERIFY_RTE_MSG( !strCoordinator.empty(), "Missing Coordinator" );
+			VERIFY_RTE_MSG( !strHost.empty(), "Missing Host Name" );
+			
+			eg::ReadSession session( projectDirectory / "interface" / projectTree.getProjectName() / "database.db" );
+			
+			std::cout << "building component: " << strCoordinator << " " << strHost << " " << projectTree.getProjectName() << std::endl;
+			build_component( session, environment, projectTree, strCoordinator, strHost, binPath );
+			//	/*, FileWriteTracker& fileTracker, bool bBenchCommands, bool bLogCommands*/ )
+					
+		}
     }
     
 }

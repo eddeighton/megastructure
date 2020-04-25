@@ -180,7 +180,7 @@ public:
 		os << "tu_" << strTUName << ".db";
 		return boost::filesystem::edsCannonicalise(
 			boost::filesystem::absolute( 
-				getBuildFolder() / "eg_objects" / os.str() ) );
+				getInterfaceFolder() / os.str() ) );
 	}
 	
 		
@@ -207,10 +207,11 @@ public:
 		std::set< boost::filesystem::path > uniquified;
 		std::vector< boost::filesystem::path > directories;
 		
-		collateIncludeDirectories( environment, uniquified, directories, "${EG}/include" );
 		collateIncludeDirectories( environment, uniquified, directories, "${BOOST}/include/boost-1_73" );
 		collateIncludeDirectories( environment, uniquified, directories, "${PYBIND}/include" );
 		collateIncludeDirectories( environment, uniquified, directories, "${PYTHONHOME}/include" );
+		collateIncludeDirectories( environment, uniquified, directories, "${EG}/include" );
+		collateIncludeDirectories( environment, uniquified, directories, "${MEGA}/include" );
 		
 		
 
@@ -296,23 +297,36 @@ public:
 				getInterfaceFolder() / os.str() ) );
 	}
 
-	boost::filesystem::path getObjectName( const std::string& strTUName ) const
+	boost::filesystem::path getObjectName( const std::string& strTUName, const boost::filesystem::path& binPath ) const
 	{
 		std::ostringstream os;
 		os << "object_" << strTUName << ".obj";
 		return boost::filesystem::edsCannonicalise(
 					boost::filesystem::absolute( 
-						getInterfaceFolder() / os.str() ) );
+						binPath / os.str() ) );
 	}
 	
-	boost::filesystem::path getObjectFile( const boost::filesystem::path& sourceFile ) const
+	boost::filesystem::path getObjectFile( const boost::filesystem::path& sourceFile, const boost::filesystem::path& binPath ) const
 	{
 		std::ostringstream os;
 		os << "object_" << sourceFile.stem().string() << ".obj";
 		return boost::filesystem::edsCannonicalise(
 					boost::filesystem::absolute( 
-						getInterfaceFolder() / os.str() ) );
+						binPath / os.str() ) );
 	}
+	
+
+	boost::filesystem::path getEGComponentSource( const std::string& strCoordinator, 
+		const std::string& strHostName, const std::string& strProjectName ) const
+	{
+		std::ostringstream os;
+		os << strCoordinator << '_' << strHostName << '_' << strProjectName << "_component.cpp";
+		return boost::filesystem::edsCannonicalise(
+			boost::filesystem::absolute( 
+				getInterfaceFolder() / os.str() ) );
+	}
+	
+	
 private:
 	boost::filesystem::path m_path;
 	std::string m_projectName;

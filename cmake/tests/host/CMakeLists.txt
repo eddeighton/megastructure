@@ -23,6 +23,7 @@ link_boost( test_host program_options )
 link_boost( test_host filesystem )
 link_boost( test_host system )
 link_boost( test_host date_time )
+link_boost( test_host fiber )
 link_common( test_host )
 
 target_link_libraries( test_host megastructurelib )

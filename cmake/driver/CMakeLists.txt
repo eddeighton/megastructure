@@ -24,6 +24,7 @@ include( ${MEGA_ROOT_DIR}/cmake/eg_include.cmake )
 
 #get the source code
 set( DRIVER_SOURCE_DIR ${MEGA_ROOT_DIR}/src/driver )
+
 set( DRIVER_SOURCES
 	${DRIVER_SOURCE_DIR}/command_build.cpp
 	${DRIVER_SOURCE_DIR}/command_clean.cpp
@@ -33,10 +34,15 @@ set( DRIVER_SOURCES
 	${DRIVER_SOURCE_DIR}/command_run.cpp
 	${DRIVER_SOURCE_DIR}/main.cpp
 	)
+	
+set( GENERATOR_SOURCE_DIR ${MEGA_ROOT_DIR}/src/egcomponent )
+
+set( GENERATOR_SOURCES 
+	${GENERATOR_SOURCE_DIR}/generator.cpp )
 
 source_group( src FILES ${DRIVER_SOURCES} )
 
-add_executable( mega ${DRIVER_SOURCES} )
+add_executable( mega ${DRIVER_SOURCES} ${GENERATOR_SOURCES} )
 
 set_target_properties( mega PROPERTIES FOLDER driver )
 set_target_properties( mega PROPERTIES DEBUG_POSTFIX d )

@@ -17,11 +17,9 @@
 namespace megastructure
 {
 	
-	class MEGASTRUCTURE_EG_API Buffer
+	class Buffer
 	{
 	public:
-		virtual ~Buffer() = 0;
-		
 		virtual void Release() = 0;
 		
 		virtual const char* getName() = 0;
@@ -29,31 +27,26 @@ namespace megastructure
 		virtual std::size_t getSize() = 0;
 	};
 	
-	class MEGASTRUCTURE_EG_API SharedBuffer : public Buffer
+	class SharedBuffer : public Buffer
 	{
 	public:
 	};
 	
-	class MEGASTRUCTURE_EG_API LocalBuffer : public Buffer
+	class LocalBuffer : public Buffer
 	{
 	public:
 	};
 	
-	class MEGASTRUCTURE_EG_API MemorySystem
+	class MemorySystem
 	{
 	public:
-		virtual ~MemorySystem() = 0;
-		
 		virtual Buffer* getSharedBuffer( const char* pszName, std::size_t szSize ) = 0;
 		virtual Buffer* getLocalBuffer( const char* pszName, std::size_t szSize ) = 0;
 	};
 	
-	
-	class MEGASTRUCTURE_EG_API MegaProtocol
+	class MegaProtocol
 	{
 	public:
-		virtual ~MegaProtocol() = 0;
-		
 		virtual boost::fibers::future< std::string > Read( std::uint32_t uiDimensionType, std::uint32_t uiInstance ) = 0;
 		
 		virtual void Write( std::uint32_t uiDimensionType, std::uint32_t uiInstance, const std::string& buffer ) = 0;
@@ -65,11 +58,9 @@ namespace megastructure
 	};
 	
 	
-	class MEGASTRUCTURE_EG_API EGComponent
+	class EGComponent
 	{
 	public:
-		virtual ~EGComponent() = 0;		
-		
 		virtual void Initialise( MemorySystem* pMemorySystem, MegaProtocol* pMegaProtocol ) = 0;
 		virtual void Uninitialise() = 0 ;
 		

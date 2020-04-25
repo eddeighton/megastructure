@@ -1,21 +1,24 @@
 
-
-#include "megastructure/component.hpp"
-
-#include "protocol/protocol_helpers.hpp"
-
-#include "common/processID.hpp"
-
-#include <boost/program_options.hpp>
-
 #include <iostream>
 #include <chrono>
 #include <thread>
-
 #include <signal.h>
+
+#include <boost/program_options.hpp>
+#include <boost/filesystem.hpp>
+
+#include "common/processID.hpp"
+#include "common/assert_verify.hpp"
+
+#include "protocol/protocol_helpers.hpp"
+
+#include "megastructure/component.hpp"
+#include "egcomponent/egcomponent.hpp"
+
 
 struct Args
 {
+	boost::filesystem::path componentPath;
 };
 
 bool parse_args( int argc, const char* argv[], Args& args )
@@ -27,11 +30,12 @@ bool parse_args( int argc, const char* argv[], Args& args )
 		boost::program_options::variables_map variables;
 		
 		options.add_options()
+            ("component", po::value< boost::filesystem::path >( &args.componentPath ), "Component" )
 			("help", "produce help message")
 		;
 
 		po::positional_options_description p;
-		p.add( "filters", -1 );
+		p.add( "component", -1 );
 
 		po::store( po::command_line_parser( argc, argv).
 					options( options ).
@@ -42,6 +46,12 @@ bool parse_args( int argc, const char* argv[], Args& args )
 		if( variables.count("help") )
 		{
 			std::cout << options << "\n";
+			return false;
+		}
+		
+		if( args.componentPath.empty() )
+		{
+			std::cout << "Missing component specification" << std::endl;
 			return false;
 		}
 
@@ -62,10 +72,21 @@ int main( int argc, const char* argv[] )
 	{
 		return 0;
 	}
-				
+	
 	try
 	{
-		std::cout << "Host: " << megastructure::getHostProgramName() << " : " << Common::getProcessID() << std::endl;
+		HMODULE hModule = LoadLibrary( args.componentPath.string().c_str() );
+		VERIFY_RTE_MSG( hModule, "Failed to load module: " << args.componentPath );
+		
+		typedef megastructure::EGComponent*(*GetComponentFunctionPtr)();
+		GetComponentFunctionPtr pFunction = (GetComponentFunctionPtr) GetProcAddress( hModule, "GET_EG_COMPONENT" );
+		VERIFY_RTE_MSG( pFunction, "Failed to find GET_EG_COMPONENT in module: " << args.componentPath );
+		
+		megastructure::EGComponent* pComponent = (*pFunction)();
+		
+		std::cout << "Host: " << 
+			megastructure::getHostProgramName() << " : " << 
+			Common::getProcessID() << std::endl;
 		
 		megastructure::Component component( 
 			megastructure::getGlobalCoordinatorPort(),
