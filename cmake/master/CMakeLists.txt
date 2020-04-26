@@ -10,6 +10,10 @@ include( ${MEGA_ROOT_DIR}/cmake/core/megastructure_include.cmake )
 #get the sources
 set( MEGA_MASTER_SOURCES
 	${MEGA_SRC_DIR}/master/master.cpp
+	${MEGA_SRC_DIR}/master/master.hpp
+	${MEGA_SRC_DIR}/master/main.cpp
+	${MEGA_SRC_DIR}/master/activities.hpp
+	${MEGA_SRC_DIR}/master/activities.cpp
     )
 	
 add_executable( master 

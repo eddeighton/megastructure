@@ -62,7 +62,10 @@ namespace slave
 		{
 			return m_clients.getClientID( strName, clientID );
 		}
-		
+		bool enroll( const std::string& strName, std::uint32_t clientID )
+		{
+			return m_clients.enroll( strName, clientID );
+		}
 		void listClients( std::ostream& os )
 		{
 			const megastructure::ClientMap::ClientIDMap& clients = m_clients.getClients();
@@ -72,10 +75,6 @@ namespace slave
 			{
 				os << "Client: " << i->first << " id: " << i->second << std::endl;
 			}
-		}
-		bool enroll( const std::string& strName, std::uint32_t clientID )
-		{
-			return m_clients.enroll( strName, clientID );
 		}
 		
 		const std::string& getName() const { return m_strSlaveName; }

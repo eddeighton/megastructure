@@ -18,7 +18,8 @@
 
 struct Args
 {
-	boost::filesystem::path componentPath;
+	//boost::filesystem::path componentPath;
+	std::string slavePort;
 };
 
 bool parse_args( int argc, const char* argv[], Args& args )
@@ -30,7 +31,8 @@ bool parse_args( int argc, const char* argv[], Args& args )
 		boost::program_options::variables_map variables;
 		
 		options.add_options()
-            ("component", po::value< boost::filesystem::path >( &args.componentPath ), "Component" )
+           //("component", po::value< boost::filesystem::path >( &args.componentPath ), "Component" )
+			("port", po::value< std::string >( &args.slavePort ), "Slave Port" )
 			("help", "produce help message")
 		;
 
@@ -49,11 +51,11 @@ bool parse_args( int argc, const char* argv[], Args& args )
 			return false;
 		}
 		
-		if( args.componentPath.empty() )
+		/*if( args.componentPath.empty() )
 		{
 			std::cout << "Missing component specification" << std::endl;
 			return false;
-		}
+		}*/
 
 	}
 	catch( std::exception& e )
@@ -87,9 +89,17 @@ int main( int argc, const char* argv[] )
 		std::cout << "Host: " << 
 			megastructure::getHostProgramName() << " : " << 
 			Common::getProcessID() << std::endl;
+			
+		std::string strSlavePort = args.slavePort;
+		if( args.slavePort.empty() )
+			strSlavePort = megastructure::getGlobalCoordinatorPort();
+		if( strSlavePort.empty() )
+		{
+			THROW_RTE( "Could not resolve Slave Port number - set MEGAPORT or pass port on command line" );
+		}
 		
 		megastructure::Component component( 
-			megastructure::getGlobalCoordinatorPort(),
+			strSlavePort,
 			megastructure::getHostProgramName() );
 		
 		while( true )
