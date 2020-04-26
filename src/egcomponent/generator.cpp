@@ -19,10 +19,42 @@
 
 
 #include <ostream>
+#include <iostream>
 
 #include "eg_compiler/codegen/codegen.hpp"
 #include "eg_compiler/sessions/implementation_session.hpp"
 #include "eg_compiler/translation_unit.hpp"
+
+enum BufferRelation
+{
+    eComponent,
+    eProcess,
+    ePlanet
+};
+
+BufferRelation getBufferRelation( const eg::TranslationUnitAnalysis& translationUnitAnalysis, 
+	const std::string& strCoordinator, const std::string& strHost, const eg::Buffer* pBuffer )
+{
+	const eg::concrete::Action* pConcreteAction = pBuffer->getAction();
+    const eg::interface::Action* pInterfaceAction = pConcreteAction->getAction();
+	const eg::TranslationUnit* pUnit = translationUnitAnalysis.getActionTU( pInterfaceAction );
+		
+	if( pUnit->getCoordinatorHostnameDefinitionFile().isCoordinator( strCoordinator ) )
+    {
+        if( pUnit->getCoordinatorHostnameDefinitionFile().isHost( strHost ) )
+        {
+            return eComponent;
+        }
+        else
+        {
+            return eProcess;
+        }
+    }
+    else
+    {
+        return ePlanet;
+    }
+}
 
 void generate_eg_component( std::ostream& os, 
 		const std::string& strProjectName, 
@@ -48,9 +80,16 @@ void generate_eg_component( std::ostream& os,
     os << "\n//buffers\n";
     for( const eg::Buffer* pBuffer : layout.getBuffers() )
     {
-        //os << "static std::unique_ptr< std::array< " << pBuffer->getTypeName() << ", " << pBuffer->getSize() << " > > " << 
-        //    pBuffer->getVariableName() << "_allocation;\n";
-		//os << "static megastructure::
+		auto r  = getBufferRelation( translationUnitAnalysis, strCoordinator, strHost, pBuffer );
+		std::cout << "Buffer: " << pBuffer->getVariableName() << " relation: " << r << std::endl;
+        if( r == eComponent )
+        {
+            os << "megastructure::SharedBuffer* " << pBuffer->getVariableName() << "_mega;\n";
+        }
+        else
+        {
+            os << "megastructure::LocalBuffer* " << pBuffer->getVariableName() << "_mega;\n";
+        }
         os << pBuffer->getTypeName() << "* " << pBuffer->getVariableName() << " = nullptr;\n";
     }
 	os << "\n";
@@ -59,10 +98,18 @@ void generate_eg_component( std::ostream& os,
     os << "{\n";
     for( const eg::Buffer* pBuffer : layout.getBuffers() )
     {
-    //os << "    " << pBuffer->getVariableName() << "_allocation = std::make_unique< std::array< " << 
-    //    pBuffer->getTypeName() << ", " << pBuffer->getSize() << " > >();\n";
-    //os << "    " << pBuffer->getVariableName() << " = " << pBuffer->getVariableName() << "_allocation->data();\n";
-    
+        if( getBufferRelation( translationUnitAnalysis, strCoordinator, strHost, pBuffer ) == eComponent )
+        {
+            os << "    " << pBuffer->getVariableName() << "_mega = pMemorySystem->getSharedBuffer( \"" << 
+                pBuffer->getVariableName() << "\" , " <<  pBuffer->getSize() * pBuffer->getStride() << " );\n";
+        }
+        else
+        {
+            os << "    " << pBuffer->getVariableName() << "_mega = pMemorySystem->getLocalBuffer( \"" << 
+                pBuffer->getVariableName() << "\" , " <<  pBuffer->getSize() * pBuffer->getStride() << " );\n";
+        }
+		os << "    " << pBuffer->getVariableName() << " = reinterpret_cast< " << pBuffer->getTypeName() << "* >( " << pBuffer->getVariableName() << "_mega->getData() );\n";
+
     os << "    for( " << eg::EG_INSTANCE << " i = 0U; i != " << pBuffer->getSize() << "; ++i )\n";
     os << "    {\n";
         for( const eg::DataMember* pDimension : pBuffer->getDimensions() )
@@ -82,6 +129,8 @@ void generate_eg_component( std::ostream& os,
     for( std::size_t sz = layout.getBuffers().size(); sz > 0U; --sz )
     {
         const eg::Buffer* pBuffer = layout.getBuffers()[ sz - 1U ];
+        os << "    " << pBuffer->getVariableName() << "_mega->Release();\n";
+
     os << "    for( " << eg::EG_INSTANCE << " i = 0U; i != " << pBuffer->getSize() << "; ++i )\n";
     os << "    {\n";
         for( const eg::DataMember* pDimension : pBuffer->getDimensions() )

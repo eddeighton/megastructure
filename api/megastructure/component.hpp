@@ -73,6 +73,18 @@ namespace megastructure
 					"host path: " << enroll.hostpath() << "\n" <<
 					"program: " << enroll.program() << std::endl;
 				m_queue.activityComplete( shared_from_this() );
+				
+				if( enroll.success() )
+				{
+					
+					
+				}
+				else
+				{
+					std::cout << "Enroll failed" << std::endl;
+				}
+				
+				
 				return true;
 			}
 			return false;

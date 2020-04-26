@@ -40,8 +40,8 @@ namespace megastructure
 	class MemorySystem
 	{
 	public:
-		virtual Buffer* getSharedBuffer( const char* pszName, std::size_t szSize ) = 0;
-		virtual Buffer* getLocalBuffer( const char* pszName, std::size_t szSize ) = 0;
+		virtual SharedBuffer* getSharedBuffer( const char* pszName, std::size_t szSize ) = 0;
+		virtual LocalBuffer* getLocalBuffer( const char* pszName, std::size_t szSize ) = 0;
 	};
 	
 	class MegaProtocol

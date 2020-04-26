@@ -75,14 +75,14 @@ int main( int argc, const char* argv[] )
 	
 	try
 	{
-		HMODULE hModule = LoadLibrary( args.componentPath.string().c_str() );
+		/*HMODULE hModule = LoadLibrary( args.componentPath.string().c_str() );
 		VERIFY_RTE_MSG( hModule, "Failed to load module: " << args.componentPath );
 		
 		typedef megastructure::EGComponent*(*GetComponentFunctionPtr)();
 		GetComponentFunctionPtr pFunction = (GetComponentFunctionPtr) GetProcAddress( hModule, "GET_EG_COMPONENT" );
 		VERIFY_RTE_MSG( pFunction, "Failed to find GET_EG_COMPONENT in module: " << args.componentPath );
 		
-		megastructure::EGComponent* pComponent = (*pFunction)();
+		megastructure::EGComponent* pComponent = (*pFunction)();*/
 		
 		std::cout << "Host: " << 
 			megastructure::getHostProgramName() << " : " << 

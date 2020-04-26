@@ -9,7 +9,13 @@ include( ${MEGA_ROOT_DIR}/cmake/core/megastructure_include.cmake )
 
 #get the sources
 set( MEGA_SLAVE_SOURCES
+	${MEGA_SRC_DIR}/slave/slave.hpp
 	${MEGA_SRC_DIR}/slave/slave.cpp
+	${MEGA_SRC_DIR}/slave/activitiesMaster.hpp
+	${MEGA_SRC_DIR}/slave/activitiesMaster.cpp
+	${MEGA_SRC_DIR}/slave/activitiesHost.hpp
+	${MEGA_SRC_DIR}/slave/activitiesHost.cpp
+	${MEGA_SRC_DIR}/slave/main.cpp
     )
 	
 add_executable( slave 
