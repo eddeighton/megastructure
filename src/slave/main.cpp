@@ -6,6 +6,7 @@
 #include "common/assert_verify.hpp"
 
 #include <boost/program_options.hpp>
+#include <boost/filesystem.hpp>
 
 #include <iostream>
 #include <thread>
@@ -16,7 +17,8 @@ struct Args
 	std::string master_ip;
 	std::string master_port;
 	std::string slave_port;
-	std::string slave_name;
+	boost::filesystem::path slave_path;
+	bool bWait;
 };
 
 bool parse_args( int argc, const char* argv[], Args& args )
@@ -32,7 +34,8 @@ bool parse_args( int argc, const char* argv[], Args& args )
 			("mip",    po::value< std::string >( &args.master_ip ), "Master IP Address" )
 			("mport",  po::value< std::string >( &args.master_port ), "Master Port" )
 			("sport",  po::value< std::string >( &args.slave_port ), "Slave Port" )
-			("sname",  po::value< std::string >( &args.slave_name ), "Slave Name" )
+			("spath",  po::value< boost::filesystem::path >( &args.slave_path ), "Slave Path" )
+			("wait",   po::bool_switch( &args.bWait ), "Wait at startup for attaching a debugger" )
 		;
 
 		po::positional_options_description p;
@@ -68,11 +71,16 @@ bool parse_args( int argc, const char* argv[], Args& args )
 			return false;
 		}
 		
-		if( args.slave_name.empty() )
+		if( args.slave_path.empty() )
 		{
-			std::cout << "Slave Name not specified" << std::endl;
+			std::cout << "Slave Path not specified" << std::endl;
 			return false;
 		}
+		//else if( !boost::filesystem::exists( args.slave_path ) )
+		//{
+		//	std::cout << "Invalid Slave Path specified: " << args.slave_path.string() << std::endl;
+		//	return false;
+		//}
 
 	}
 	catch( std::exception& e )
@@ -91,9 +99,19 @@ int main( int argc, const char* argv[] )
 		return 0;
 	}
 	
+	if( args.bWait )
+	{
+		char c;
+		std::cin >> c;
+	}
+	
 	try
 	{
-		slave::Slave slave( args.master_ip, args.master_port, args.slave_port, args.slave_name );
+		slave::Slave slave( 
+			args.master_ip, 
+			args.master_port, 
+			args.slave_port, 
+			args.slave_path );
 		
 		std::string str, strResponse;
 		while( true )

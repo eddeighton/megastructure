@@ -4,14 +4,37 @@
 #include "activitiesMaster.hpp"
 #include "activitiesHost.hpp"
 
+#include "common/file.hpp"
+#include "common/assert_verify.hpp"
+
+#include "boost/filesystem.hpp"
+
 namespace slave
 {
+	
+	void getWorkspaceAndSlaveNameFromPath( const boost::filesystem::path& thePath, 
+		boost::filesystem::path& workspace, std::string& strSlaveName )
+	{
+		const boost::filesystem::path canonPath = 
+			boost::filesystem::edsCannonicalise(
+				boost::filesystem::absolute( thePath ) );
+		
+		VERIFY_RTE_MSG( boost::filesystem::exists( canonPath ), 
+			"Specified slave path does not exist: " << thePath.string() );
+		
+		workspace = canonPath.parent_path();
+		strSlaveName = canonPath.stem().string();
+	}
 
-	Slave::Slave( const std::string& strMasterIP, const std::string strMasterPort, const std::string& strSlavePort, const std::string& strSlaveName )
-		:	m_strSlaveName( strSlaveName ),
-			m_server( strSlavePort ),
+	Slave::Slave( const std::string& strMasterIP, const std::string strMasterPort, 
+		const std::string& strSlavePort, const boost::filesystem::path& strSlavePath )
+		:	m_server( strSlavePort ),
 			m_client( strMasterIP, strMasterPort )
 	{
+		getWorkspaceAndSlaveNameFromPath( strSlavePath, m_workspacePath, m_strSlaveName );
+		
+		std::cout << "Workspace: " << m_workspacePath.string() << std::endl;
+		std::cout << "Slave: " << m_strSlaveName << std::endl;
 		
 		megastructure::Queue& queue = m_queue;
 		megastructure::Server& server = m_server;
@@ -37,10 +60,10 @@ namespace slave
 	Slave::~Slave()
 	{
 		m_queue.stop();
-		
-		//m_zeromqClient.join();
-		//m_zeromqServer.join();
-		
+		m_server.stop();
+		m_client.stop();
+		m_zeromqClient.join();
+		m_zeromqServer.join();
 	}
 	
 	

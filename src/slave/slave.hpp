@@ -12,7 +12,7 @@
 
 #include "common/assert_verify.hpp"
 
-#include <boost/program_options.hpp>
+#include <boost/filesystem/path.hpp>
 
 #include <iostream>
 #include <thread>
@@ -28,7 +28,7 @@ namespace slave
 		Slave( const std::string& strMasterIP, 
 			const std::string strMasterPort, 
 			const std::string& strSlavePort, 
-			const std::string& strSlaveName );
+			const boost::filesystem::path& strSlavePath );
 		~Slave();
 		
 		bool sendMaster( megastructure::Message& message )
@@ -78,10 +78,12 @@ namespace slave
 		}
 		
 		const std::string& getName() const { return m_strSlaveName; }
+		const boost::filesystem::path& getWorkspace() const { return m_workspacePath; }
 		
 		const megastructure::ClientMap::ClientIDMap& getClients() const { return m_clients.getClients(); }
 		
 	private:
+		boost::filesystem::path m_workspacePath;
 		std::string m_strSlaveName;
 		megastructure::ClientMap m_clients;
 		megastructure::Queue m_queue;

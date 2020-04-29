@@ -25,6 +25,8 @@ namespace master
 	Master::~Master()
 	{
 		m_queue.stop();
+		m_server.stop();
+		m_zeromqServer.join();
 	}
 	
 }

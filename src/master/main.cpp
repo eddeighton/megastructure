@@ -11,6 +11,7 @@
 struct Args
 {
 	std::string port;
+	bool bWait;
 };
 
 bool parse_args( int argc, const char* argv[], Args& args )
@@ -24,6 +25,7 @@ bool parse_args( int argc, const char* argv[], Args& args )
 		options.add_options()
 			("help", "produce help message")
 			("port",  po::value< std::string >( &args.port ), "Port" )
+			("wait",   po::bool_switch( &args.bWait ), "Wait at startup for attaching a debugger" )
 		;
 
 		po::positional_options_description p;
@@ -62,6 +64,12 @@ int main( int argc, const char* argv[] )
 	if( !parse_args( argc, argv, args ) )
 	{
 		return 0;
+	}
+	
+	if( args.bWait )
+	{
+		char c;
+		std::cin >> c;
 	}
 	
 	{

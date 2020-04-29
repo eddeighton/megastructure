@@ -23,7 +23,7 @@ namespace
 			case EFSM:
 				THROW_RTE( "zmq_msg_recv returned: The zmq_msg_recv() operation cannot be performed on this socket at the moment due to the socket not being in the appropriate state. This error may occur with socket types that switch between several states, such as ZMQ_REP. See the messaging patterns section of zmq_socket(3) for more information." );
 			case ETERM:
-				THROW_RTE( "zmq_msg_recv returned: The ØMQ context associated with the specified socket was terminated." );
+				THROW_RTE( "zmq_msg_recv returned: The 0MQ context associated with the specified socket was terminated." );
 			case ENOTSOCK:
 				THROW_RTE( "zmq_msg_recv returned: The provided socket was invalid." );
 			case EINTR:
@@ -57,6 +57,86 @@ namespace
 				THROW_RTE( "zmq_msg_send returned unknown error code: " << errno );
 		}
 	}*/
+	
+	class ZMQMsg
+	{
+	public:
+		/*ZMQMsg( const std::string& str )
+		{
+			bRequiresClose = false;
+			
+			int rc = zmq_msg_init_size( &msg, str.size() );
+			VERIFY_RTE_MSG( rc == 0, "zmq_msg_init_size failed" );
+			
+			char* pData = reinterpret_cast< char* >( zmq_msg_data( &msg ));
+			std::copy( str.begin(), str.end(), pData );
+		}*/
+		
+		ZMQMsg( const megastructure::Message& message ) 
+		{
+			const std::size_t szSize = message.ByteSizeLong();
+			
+			int rc = zmq_msg_init_size( &msg, szSize );
+			VERIFY_RTE_MSG( rc == 0, "zmq_msg_init_size failed" );
+			
+			char* pData = reinterpret_cast< char* >( zmq_msg_data( &msg ));
+			message.SerializeToArray( pData, szSize );
+		}
+		
+		ZMQMsg( const megastructure::Message& message, std::uint32_t uiClient ) 
+		{
+			const std::size_t szSize = message.ByteSizeLong();
+			
+			int rc = zmq_msg_init_size( &msg, szSize );
+			VERIFY_RTE_MSG( rc == 0, "zmq_msg_init_size failed" );
+			
+			char* pData = reinterpret_cast< char* >( zmq_msg_data( &msg ));
+			message.SerializeToArray( pData, szSize );
+			
+			rc = zmq_msg_set_routing_id( &msg, uiClient );
+			VERIFY_RTE_MSG( rc != -1, "zmq_msg_set_routing_id failed" );
+		}
+		
+		ZMQMsg()
+		{
+			int rc = zmq_msg_init( &msg );
+			VERIFY_RTE_MSG( rc == 0, "zmq_msg_init failed" );
+			bRequiresClose = true;
+		}
+		
+		~ZMQMsg()
+		{
+			if( bRequiresClose )
+			{
+				/* Release message */ 
+				zmq_msg_close( &msg );
+			}
+		}
+		inline void readMessage( megastructure::Message& message )
+		{
+			const std::size_t szSize = zmq_msg_size( &msg );
+			const char* pData = reinterpret_cast< char* >( zmq_msg_data( &msg ) );
+			if( !message.ParseFromArray( pData, szSize ) )
+			{
+				throw std::runtime_error( 
+					"Failed to parse received message: " + std::string( pData, pData + szSize ) );
+			}
+		}
+		
+		inline void readMessage( megastructure::Message& message, std::uint32_t& uiClient )
+		{
+			uiClient = zmq_msg_routing_id( &msg );
+			VERIFY_RTE_MSG( uiClient != 0, "zmq_msg_routing_id failed" );
+			
+			readMessage( message );
+		}
+		
+		inline zmq_msg_t* get() { return &msg; }
+		
+	private:
+		zmq_msg_t msg;
+		bool bRequiresClose = false;
+	};
 }
 
 namespace megastructure
@@ -80,10 +160,10 @@ namespace megastructure
 		m_pContext 		= zmq_ctx_new();
 		m_pSocket 		= zmq_socket( m_pContext, ZMQ_CLIENT );
 		
-		//{
-		//	int64_t zmqLinger = 0;
-		//	zmq_setsockopt( m_pSocket, ZMQ_LINGER, &zmqLinger, sizeof( zmqLinger ) );
-		//}
+		{
+			int64_t zmqLinger = 0;
+			zmq_setsockopt( m_pSocket, ZMQ_LINGER, &zmqLinger, sizeof( zmqLinger ) );
+		}
 		
 		std::string strSlaveEndpoint;
 		{
@@ -99,26 +179,25 @@ namespace megastructure
 	
 	Client::~Client()
 	{
+        stop();
+	}
+	
+	void Client::stop()
+	{
+		zmq_close( m_pSocket );
 		zmq_ctx_term( m_pContext );
 		zmq_ctx_shutdown( m_pContext );
 	}
 	
 	bool Client::send( Message& message )
 	{
-		std::string str;
 		message.set_id( m_messageID++ );
-		message.SerializeToString( &str );
 		
-		zmq_msg_t msg;
-		int rc = zmq_msg_init_size( &msg, str.size() );
-		VERIFY_RTE_MSG( rc == 0, "zmq_msg_init_size failed" );
+		ZMQMsg msg( message );
 		
-		char* pData = reinterpret_cast< char* >( zmq_msg_data( &msg ));
-		std::copy( str.begin(), str.end(), pData );
-		rc = zmq_msg_send( &msg, m_pSocket, 0 ); 
+		const int rc = zmq_msg_send( msg.get(), m_pSocket, 0 ); 
 		if( rc == -1 )
 		{
-			
 			switch( errno )
 			{
 				case EAGAIN:
@@ -138,42 +217,35 @@ namespace megastructure
 				default:
 					THROW_RTE( "zmq_msg_send returned unknown error code: " << errno );
 			}
-		
 		}
-		VERIFY_RTE_MSG( rc == str.size(), "zmq_msg_send retuned incorrect size" );
 		return true;
 	}
 	
-	bool Client::recv_sync( Message& message )
+	bool Client::recv_sync( Message& message, bool& bReceived )
 	{
-		bool bReceived = false;
-		
 		/* Create an empty ØMQ message */
-		zmq_msg_t msg;
-		int rc = zmq_msg_init( &msg );
-		VERIFY_RTE_MSG( rc == 0, "zmq_msg_init failed" );
+		ZMQMsg msg;
 		
 		/* Block until a message is available to be received from socket */
-		rc = zmq_msg_recv( &msg, m_pSocket, 0 );
+		const int rc = zmq_msg_recv( msg.get(), m_pSocket, 0 );
+		
+		//test if connection was broken
+		if( rc < 0 && errno == ETERM )
+		{
+			return false;
+		}
+		
 		if( rc >= 0 )
 		{
+			msg.readMessage( message );
 			bReceived = true;
-			const std::size_t szSize = zmq_msg_size( &msg );
-			const char* pData = reinterpret_cast< char* >( zmq_msg_data( &msg ) );
-			if( !message.ParseFromArray( pData, szSize ) )
-			{
-				throw std::runtime_error( "Failed to parse received message: " + std::string( pData, pData + szSize ) );
-			}
 		}
 		else //if( errno != EAGAIN )
 		{
 			throwReceiveError();
 		}
 		
-		/* Release message */ 
-		zmq_msg_close( &msg );
-		
-		return bReceived;
+		return true;
 	}
 	
 	////////////////////////////////////////////////////////////////////
@@ -202,27 +274,25 @@ namespace megastructure
 	
 	Server::~Server()
 	{
+        zmq_close( m_pSocket );
+		zmq_ctx_term( m_pContext );
+		zmq_ctx_shutdown( m_pContext );
+	}
+	
+	void Server::stop()
+	{
+		zmq_close( m_pSocket );
 		zmq_ctx_term( m_pContext );
 		zmq_ctx_shutdown( m_pContext );
 	}
 	
 	bool Server::send( Message& message, std::uint32_t uiClient )
 	{
-		std::string str;
 		message.set_id( m_messageID++ );
-		message.SerializeToString( &str );
 		
-		zmq_msg_t msg;
-		int rc = zmq_msg_init_size( &msg, str.size() );
-		VERIFY_RTE_MSG(rc == 0, "zmq_msg_init_size failed" );
+		ZMQMsg msg( message, uiClient );
 		
-		char* pData = reinterpret_cast< char* >( zmq_msg_data( &msg ));
-		std::copy( str.begin(), str.end(), pData );
-		
-		rc = zmq_msg_set_routing_id( &msg, uiClient );
-		VERIFY_RTE_MSG( rc != -1, "zmq_msg_set_routing_id failed" );
-		
-		rc = zmq_msg_send( &msg, m_pSocket, 0); 
+		const int rc = zmq_msg_send( msg.get(), m_pSocket, 0); 
 		if( rc == -1 )
 		{
 			switch( errno )
@@ -250,40 +320,33 @@ namespace megastructure
 					//THROW_RTE( "zmq_msg_send returned unknown error code: " << errno );
 			}
 		}
-		VERIFY_RTE_MSG( rc == str.size(), "zmq_msg_send retuned incorrect size" );
 		return true;
 	}
 	
-	bool Server::recv_sync( Message& message, std::uint32_t& uiClient )
+	bool Server::recv_sync( Message& message, std::uint32_t& uiClient, bool& bReceived )
 	{
-		bool bResult = false;
-		
 		// Create an empty ØMQ message 
-		zmq_msg_t msg;
-		int rc = zmq_msg_init( &msg );
-		VERIFY_RTE_MSG( rc == 0, "zmq_msg_init failed" );
+		ZMQMsg msg;
 		
 		// Block until a message is available to be received from socket 
-		rc = zmq_msg_recv( &msg, m_pSocket, 0 );
+		const int rc = zmq_msg_recv( msg.get(), m_pSocket, 0 );
+		
+		//test if connection was broken
+		if( rc < 0 && errno == ETERM )
+		{
+			return false;
+		}
+		
 		if( rc >= 0 )
 		{
-			uiClient = zmq_msg_routing_id( &msg );
-			const std::size_t szSize = zmq_msg_size( &msg );
-			const char* pData = reinterpret_cast< char* >( zmq_msg_data( &msg ) );
-			if( !message.ParseFromArray( pData, szSize ) )
-			{
-				throw std::runtime_error( "Failed to parse received message: " + std::string( pData, pData + szSize ) );
-			}
-			bResult = true;
+			msg.readMessage( message, uiClient );
+			bReceived = true;
 		}
 		else //if( errno != EAGAIN )
 		{
 			throwReceiveError();
 		}
 		
-		// Release message  
-		zmq_msg_close( &msg );
-		
-		return bResult;
+		return true;
 	}
 }

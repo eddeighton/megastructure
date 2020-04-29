@@ -113,16 +113,20 @@ namespace megastructure
 		{
 			while( true )
 			{
+				std::cout << ".";
+				
 				std::string str;
 				std::uint32_t uiClient = 0;
 				megastructure::Message message;
-				if( readSocket.recv_sync( message, uiClient ) )
+				bool bReceived = false;
+				if( readSocket.recv_sync( message, uiClient, bReceived ) )
 				{
-					queue.clientMessage( uiClient, message );
+					if( bReceived )
+						queue.clientMessage( uiClient, message );
 				}
 				else
 				{
-					std::cout << "Error receiving message" << std::endl;
+					break;
 				}
 			}
 		}
@@ -144,14 +148,18 @@ namespace megastructure
 		{
 			while( true )
 			{
+				std::cout << ".";
+				
 				megastructure::Message message;
-				if( readSocket.recv_sync( message ) )
+				bool bReceived = false;
+				if( readSocket.recv_sync( message, bReceived ) )
 				{
-					queue.serverMessage( message );
+					if( bReceived )
+						queue.serverMessage( message );
 				}
 				else
 				{
-					std::cout << "Error receiving message" << std::endl;
+					break;
 				}
 			}
 		}
