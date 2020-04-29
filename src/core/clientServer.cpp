@@ -101,12 +101,12 @@ namespace
 		{
 			int rc = zmq_msg_init( &msg );
 			VERIFY_RTE_MSG( rc == 0, "zmq_msg_init failed" );
-			bRequiresClose = true;
+			//bRequiresClose = true;
 		}
 		
 		~ZMQMsg()
 		{
-			if( bRequiresClose )
+			//if( bRequiresClose )
 			{
 				/* Release message */ 
 				zmq_msg_close( &msg );
@@ -135,7 +135,7 @@ namespace
 		
 	private:
 		zmq_msg_t msg;
-		bool bRequiresClose = false;
+		//bool bRequiresClose = false;
 	};
 }
 
@@ -155,7 +155,9 @@ namespace megastructure
 	
 
 	Client::Client( const std::string& strMasterIP, const std::string& strMasterPort )
-		:	m_messageID( 1 )
+		:	m_messageID( 1 ),
+			m_pSocket( nullptr ),
+			m_pContext( nullptr )
 	{
 		m_pContext 		= zmq_ctx_new();
 		m_pSocket 		= zmq_socket( m_pContext, ZMQ_CLIENT );
@@ -184,9 +186,18 @@ namespace megastructure
 	
 	void Client::stop()
 	{
-		zmq_close( m_pSocket );
-		zmq_ctx_term( m_pContext );
-		zmq_ctx_shutdown( m_pContext );
+		if( m_pSocket != nullptr )
+		{
+			zmq_close( m_pSocket );
+			m_pSocket = nullptr;
+		}
+		
+		if( m_pContext != nullptr )
+		{
+			zmq_ctx_term( m_pContext );
+			//zmq_ctx_shutdown( m_pContext );
+			m_pContext = nullptr;
+		}
 	}
 	
 	bool Client::send( Message& message )
@@ -251,7 +262,10 @@ namespace megastructure
 	////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////
 	Server::Server( const std::string& strPort )
-		:	m_messageID( 1 )
+		:	m_messageID( 1 ),
+			m_pSocket( nullptr ),
+			m_pContext( nullptr )
+			
 	{
 		m_pContext 		= zmq_ctx_new();
 		m_pSocket 		= zmq_socket( m_pContext, ZMQ_SERVER );
@@ -274,16 +288,23 @@ namespace megastructure
 	
 	Server::~Server()
 	{
-        zmq_close( m_pSocket );
-		zmq_ctx_term( m_pContext );
-		zmq_ctx_shutdown( m_pContext );
+        stop();
 	}
 	
 	void Server::stop()
 	{
-		zmq_close( m_pSocket );
-		zmq_ctx_term( m_pContext );
-		zmq_ctx_shutdown( m_pContext );
+		if( m_pSocket != nullptr )
+		{
+			zmq_close( m_pSocket );
+			m_pSocket = nullptr;
+		}
+		
+		if( m_pContext != nullptr )
+		{
+			zmq_ctx_term( m_pContext );
+			//zmq_ctx_shutdown( m_pContext );
+			m_pContext = nullptr;
+		}
 	}
 	
 	bool Server::send( Message& message, std::uint32_t uiClient )

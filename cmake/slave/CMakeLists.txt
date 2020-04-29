@@ -4,6 +4,15 @@ cmake_minimum_required( VERSION 3.1...3.16 )
 #get boost
 include( ${MEGA_ROOT_DIR}/cmake/boost_include.cmake )
 
+#get xsde
+include( ${MEGA_ROOT_DIR}/cmake/xsde_include.cmake )
+
+#get eg schema
+include( ${MEGA_ROOT_DIR}/cmake/schema/schema_include.cmake )
+
+#get common
+include( ${MEGA_ROOT_DIR}/cmake/common_include.cmake )
+
 #get megastructure
 include( ${MEGA_ROOT_DIR}/cmake/core/megastructure_include.cmake )
 
@@ -29,7 +38,9 @@ link_boost( slave program_options )
 link_boost( slave filesystem )
 link_boost( slave system )
 link_boost( slave date_time )
-#link_common( slave )
+link_xsde( slave )
+link_schemalib( slave )
+link_common( slave )
 #link_eventlog( slave )
 link_megastructure( slave )
 

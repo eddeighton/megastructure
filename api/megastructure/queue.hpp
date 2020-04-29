@@ -3,6 +3,8 @@
 #ifndef MEGASTRUCTURE_QUEUE_15_04_2020
 #define MEGASTRUCTURE_QUEUE_15_04_2020
 
+#include "activity.hpp"
+
 #include "protocol/megastructure.pb.h"
 
 #include "boost/asio.hpp"
@@ -15,57 +17,6 @@
 namespace megastructure
 {
 
-
-
-	class Job
-	{
-	public:
-		using Ptr = std::shared_ptr< Job >;
-	
-		virtual ~Job();
-		
-	};
-	
-	class Activity : public std::enable_shared_from_this< Activity >
-	{
-	public:
-		using Ptr = std::shared_ptr< Activity >;
-		using PtrVector = std::vector< Ptr >;
-		using PtrList = std::list< Ptr >;
-		
-		virtual ~Activity();
-		
-		virtual void keepAlive()
-		{
-		}
-		virtual bool precondition( PtrList& active )
-		{
-			return true;
-		}
-		
-		virtual void start()
-		{
-		}
-		
-		virtual bool serverMessage( const Message& message )
-		{
-			return false;
-		}
-		virtual bool clientMessage( std::uint32_t uiClient, const Message& message )
-		{
-			return false;
-		}
-		virtual bool jobComplete( Job::Ptr pJob )
-		{
-			return false;
-		}
-		virtual bool activityComplete( Activity::Ptr pActivity )
-		{
-			return false;
-		}
-	};
-	
-	
 	class Queue
 	{
 	public:
@@ -113,8 +64,6 @@ namespace megastructure
 		{
 			while( true )
 			{
-				std::cout << ".";
-				
 				std::string str;
 				std::uint32_t uiClient = 0;
 				megastructure::Message message;
@@ -148,8 +97,6 @@ namespace megastructure
 		{
 			while( true )
 			{
-				std::cout << ".";
-				
 				megastructure::Message message;
 				bool bReceived = false;
 				if( readSocket.recv_sync( message, bReceived ) )

@@ -10,6 +10,8 @@
 #include "protocol/megastructure.pb.h"
 #include "protocol/protocol_helpers.hpp"
 
+#include "schema/project.hpp"
+
 #include "common/assert_verify.hpp"
 
 #include <boost/filesystem/path.hpp>
@@ -18,14 +20,59 @@
 #include <thread>
 #include <chrono>
 #include <ostream>
+#include <map>
 
 namespace slave
 {
+	
+	template< typename Container, typename ValueType = typename Container::value_type::second_type >
+	void eraseByMapSecond( Container& container, const ValueType& value )
+	{
+		for( auto i = container.begin(), iEnd = container.end(); i!=iEnd;  )
+		{
+			if( i->second == value )
+				i = container.erase( i );
+			else
+				++i;
+		}
+	}
+	
+	class HostMap
+	{
+	public:
+		using HostProcessNameMap = std::multimap< std::string, std::uint32_t >;
+	
+		void removeClient( std::uint32_t uiClient )
+		{
+			eraseByMapSecond( m_clientProcessNameMap, uiClient );
+			eraseByMapSecond( m_hostnameMapping, uiClient );
+		}
+		bool enroll( const std::string& strProcessName, std::uint32_t clientID )
+		{
+			m_clientProcessNameMap.insert( std::make_pair( strProcessName, clientID ) );
+			return true;
+		}
+		void listClients( std::ostream& os )
+		{
+			for( auto i : m_clientProcessNameMap )
+			{
+				std::cout << "Client Process Name: " << i.first << " id: " << i.second << std::endl;
+			}
+		}
+	
+		const HostProcessNameMap& getEnrolledHosts() const { return m_clientProcessNameMap; }
+	
+	private:
+		std::multimap< std::string, std::uint32_t > m_clientProcessNameMap;
+		std::map< std::string, std::uint32_t > m_hostnameMapping;
+	};
+	
 	class Slave
 	{
 	public:
 		
-		Slave( const std::string& strMasterIP, 
+		Slave( Environment& environment,
+			const std::string& strMasterIP, 
 			const std::string strMasterPort, 
 			const std::string& strSlavePort, 
 			const boost::filesystem::path& strSlavePath );
@@ -56,36 +103,52 @@ namespace slave
 		
 		void removeClient( std::uint32_t uiClient )
 		{
-			m_clients.removeClient( uiClient );
-		}
-		bool getClientID( const std::string& strName, std::uint32_t& clientID ) const
-		{
-			return m_clients.getClientID( strName, clientID );
+			m_hostMap.removeClient( uiClient );
 		}
 		bool enroll( const std::string& strName, std::uint32_t clientID )
 		{
-			return m_clients.enroll( strName, clientID );
+			return m_hostMap.enroll( strName, clientID );
 		}
 		void listClients( std::ostream& os )
 		{
-			const megastructure::ClientMap::ClientIDMap& clients = m_clients.getClients();
-			for( megastructure::ClientMap::ClientIDMap::const_iterator 
-				i = clients.begin(), iEnd = clients.end();
-				i!=iEnd; ++i )
-			{
-				os << "Client: " << i->first << " id: " << i->second << std::endl;
-			}
+			m_hostMap.listClients( os );
 		}
 		
 		const std::string& getName() const { return m_strSlaveName; }
 		const boost::filesystem::path& getWorkspace() const { return m_workspacePath; }
 		
-		const megastructure::ClientMap::ClientIDMap& getClients() const { return m_clients.getClients(); }
+		std::future< bool > getEnrollment()
+		{
+			return m_masterEnrollPromise.get_future();
+		}
+		void setEnrollment( bool bEnrolledWithMaster )
+		{
+			m_masterEnrollPromise.set_value( bEnrolledWithMaster );
+		}
+		
+		void setActiveProgramName( const std::string& strActiveProgramName )
+		{
+			m_strActiveProgramName = strActiveProgramName;
+		}
+		const std::string& getActiveProgramName() const
+		{
+			return m_strActiveProgramName;
+		}
+		
+		
+		Environment& getEnvironment() const { return m_environment; }
+		const HostMap& getHosts() const { return m_hostMap; }
 		
 	private:
+		Environment& m_environment;
+	
+		std::promise< bool > m_masterEnrollPromise;
+		std::string m_strActiveProgramName;
+		
 		boost::filesystem::path m_workspacePath;
 		std::string m_strSlaveName;
-		megastructure::ClientMap m_clients;
+		HostMap m_hostMap;
+		
 		megastructure::Queue m_queue;
 		megastructure::Server m_server;
 		megastructure::Client m_client;

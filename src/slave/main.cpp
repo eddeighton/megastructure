@@ -3,10 +3,13 @@
 #include "activitiesHost.hpp"
 #include "activitiesMaster.hpp"
 
+#include "schema/project.hpp"
+
 #include "common/assert_verify.hpp"
 
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/process/environment.hpp>
 
 #include <iostream>
 #include <thread>
@@ -107,11 +110,26 @@ int main( int argc, const char* argv[] )
 	
 	try
 	{
+        Environment environment;
+		
 		slave::Slave slave( 
+			environment,
 			args.master_ip, 
 			args.master_port, 
 			args.slave_port, 
 			args.slave_path );
+			
+		if( !slave.getEnrollment().get() )
+		{
+			std::cout << "Failed to enroll slave with master as: " << slave.getName() << 
+				" in workspace: " << slave.getWorkspace().string() << std::endl;
+			return 0;
+		}
+		else
+		{
+			std::cout << "Slave successfully enrolled with master as: " << slave.getName() << 
+				" in workspace: " << slave.getWorkspace().string() << std::endl;
+		}
 		
 		std::string str, strResponse;
 		while( true )

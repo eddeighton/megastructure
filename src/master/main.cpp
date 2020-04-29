@@ -88,6 +88,12 @@ int main( int argc, const char* argv[] )
 			{
 				master.startActivity( new master::ListClientsActivity( master ) );
 			}
+			else if( inputString == "load" )
+			{
+				std::string programName;
+				std::cin >> programName;
+				master.startActivity( new master::LoadProgram( master, programName ) );
+			}
 			else if( inputString == "quit" )
 			{
 				break;
@@ -95,6 +101,5 @@ int main( int argc, const char* argv[] )
 		}
 	}
 	
-	std::cout << "io works!" << std::endl;
 	return 0;
 }

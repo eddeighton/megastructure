@@ -53,6 +53,15 @@ namespace master
 		}
 		const megastructure::ClientMap::ClientIDMap& getClients() const { return m_clients.getClients(); }
 		
+		void setActiveProgramName( const std::string& strActiveProgramName )
+		{
+			m_strActiveProgramName = strActiveProgramName;
+		}
+		const std::string& getActiveProgramName() const
+		{
+			return m_strActiveProgramName;
+		}
+		
 	private:
 		
 		megastructure::ClientMap m_clients;
@@ -61,6 +70,7 @@ namespace master
 		
 		std::thread m_zeromqServer;
 		
+		std::string m_strActiveProgramName;
 		
 	};
 	

@@ -4,6 +4,8 @@
 
 #include "master.hpp"
 
+#include "megastructure/activity.hpp"
+
 namespace master
 {
 	
@@ -93,7 +95,7 @@ private:
 
 //////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////
-class EnrollActivity : public megastructure::Activity
+class EnrollActivity : public megastructure::ExclusiveActivity< EnrollActivity >
 {
 public:
 	EnrollActivity( Master& master ) 
@@ -105,6 +107,27 @@ public:
 private:
 	Master& m_master;
 	std::map< std::shared_ptr< TestClientActivity >, std::uint32_t > m_testsMap;
+};
+
+
+//////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////
+class LoadProgram : public megastructure::ExclusiveActivity< LoadProgram >
+{
+public:
+	LoadProgram( Master& master, const std::string& strProgramName ) 
+		:	m_master( master ),
+			m_strProgramName( strProgramName )
+	{
+	}
+	
+	virtual void start();
+	virtual bool clientMessage( std::uint32_t uiClient, const megastructure::Message& message );
+private:
+	Master& m_master;
+	std::string m_strProgramName;
+	std::set< std::uint32_t > m_clientIDs;
+	bool m_clientFailed = false;
 };
 
 }

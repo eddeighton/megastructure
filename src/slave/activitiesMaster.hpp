@@ -4,6 +4,8 @@
 
 #include "slave.hpp"
 
+#include "megastructure/activity.hpp"
+
 namespace slave
 {
 	
@@ -21,7 +23,6 @@ namespace slave
 	private:
 		Slave& m_slave;
 	};
-
 		
 	class AliveTestActivity : public megastructure::Activity
 	{
@@ -37,6 +38,22 @@ namespace slave
 		Slave& m_slave;
 	};
 
+	class LoadProgramActivity : public megastructure::ExclusiveActivity< LoadProgramActivity >
+	{
+	public:
+		LoadProgramActivity( Slave& slave ) 
+			:	m_slave( slave )
+		{
+		}
+		
+		virtual bool serverMessage( const megastructure::Message& message );
+		virtual bool activityComplete( Activity::Ptr pActivity );
+		
+	private:
+		std::string m_currentlyLoadingProgramName;
+		Slave& m_slave;
+		Activity::Ptr m_pLoadHosts;
+	};
 }
 
 #endif //ACTIVITIES_MASTER_26_APRIL_2020

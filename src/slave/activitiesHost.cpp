@@ -1,6 +1,10 @@
 
 #include "activitiesHost.hpp"
 
+#include "schema/projectTree.hpp"
+
+#include <boost/optional.hpp>
+
 namespace slave
 {
 	
@@ -50,13 +54,11 @@ bool TestHostActivity::clientMessage( std::uint32_t uiClient, const megastructur
 //////////////////////////////////////////////////////////////////////////////////
 void TestHostsActivity::start()
 {
-	const megastructure::ClientMap::ClientIDMap& clients = m_slave.getClients();
-	for( megastructure::ClientMap::ClientIDMap::const_iterator 
-		i = clients.begin(), iEnd = clients.end();
-		i!=iEnd; ++i )
+	const auto& hosts = m_slave.getHosts().getEnrolledHosts();
+	for( auto i : hosts )
 	{
 		megastructure::Activity::Ptr pActivity( 
-			new TestHostActivity( m_slave, i->second, i->first ) );
+			new TestHostActivity( m_slave, i.second, i.first ) );
 		m_activities.push_back( pActivity );
 		m_slave.startActivity( pActivity );
 	}
@@ -104,7 +106,8 @@ bool HostEnrollActivity::clientMessage( std::uint32_t uiClient, const megastruct
 		}
 		else 
 		{
-			std::uint32_t uiExisting;
+			std::cout << "HostEnrollActivity error" << std::endl;
+			/*std::uint32_t uiExisting;
 			if( m_slave.getClientID( enroll.processname(), uiExisting ) )
 			{
 				std::cout << "Enroll attempting for: " << enroll.processname() << " which has existing client of: " << uiExisting << std::endl;
@@ -121,7 +124,7 @@ bool HostEnrollActivity::clientMessage( std::uint32_t uiClient, const megastruct
 				{
 					m_slave.removeClient( uiClient );
 				}
-			}
+			}*/
 		}
 		
 		return true;
@@ -174,5 +177,163 @@ bool HostEnrollActivity::activityComplete( Activity::Ptr pActivity )
 	}
 	return false;
 }
+
+//////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////
+
+void LoadHostProgramActivity::start()
+{
+}
+
+bool LoadHostProgramActivity::clientMessage( std::uint32_t uiClient, const megastructure::Message& message )
+{
+	return false;
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////
+bool LoadHostsProgramActivity::precondition( megastructure::Activity::PtrList& active )
+{
+	for( auto pActivity : active )
+	{
+		if( dynamic_cast< const LoadHostsProgramActivity* >( pActivity.get() ) )
+			return false;
+	}
+
+	return true;
+}
+
+void LoadHostsProgramActivity::start()
+{
+	
+	//first attempt to load the program tree for the program name
+	
+	Environment& environment = m_slave.getEnvironment();
+	
+	std::shared_ptr< ProjectTree > pProjectTree;
+	
+	try
+	{
+		pProjectTree = 
+			std::make_shared< ProjectTree >( 
+				environment, m_slave.getWorkspace(), m_programName );
+	}
+	catch( std::exception& ex )
+	{
+		std::cout << "Error attempting to load project tree for: " << 
+			m_programName << " : " << ex.what() << std::endl;
+	}
+	
+	if( pProjectTree )
+	{
+		
+		std::map< std::string, std::string > hostNameToProcessNameMap;
+		
+		const Coordinator::PtrVector& coordinators = pProjectTree->getCoordinators();
+		for( Coordinator::Ptr pCoordinator : coordinators )
+		{
+			//we are only interested in our slave coordinator
+			if( pCoordinator->name() == m_slave.getName() )
+			{
+				const HostName::PtrVector& hostNames = pCoordinator->getHostNames();
+				for( HostName::Ptr pHostName : hostNames )
+				{
+					//attempt to determine the process name for the host name
+					boost::optional< std::string > optProcessName;
+					{
+						const ProjectName::PtrVector& projectNames = pHostName->getProjectNames();
+						
+						VERIFY_RTE_MSG( projectNames.size() == 1U, 
+							"Host : " << pHostName->name() << 
+							" has incorrect number projects for projectName: " << m_programName );
+							
+						for( ProjectName::Ptr pProjectName : projectNames )
+						{
+							if( pProjectName->name() == m_programName )
+							{
+								const megaxml::Host& host = pProjectName->getProject().getHost();
+								VERIFY_RTE_MSG( host.Command().size() == 1U, 
+									"Host has incorrect number of commands in project: " << 
+									pProjectName->getProject().getProjectDir().string() );
+								for( const std::string& strCommand : host.Command() )
+								{
+									boost::filesystem::path commandPath = 
+										environment.expand( strCommand );
+									optProcessName = commandPath.filename().string();
+									break;
+								}
+							}
+							break;
+						}
+					}
+					if( optProcessName )
+					{
+						hostNameToProcessNameMap.insert( 
+							std::make_pair( pHostName->name(), optProcessName.get() ) );
+					}
+				}
+			}
+		}
+		
+		//given hostNameToProcessNameMap can now determine the new association of hosts to hostNames
+		std::cout << "Found host name to process name pairs:" << std::endl;
+		for( auto& i : hostNameToProcessNameMap )
+		{
+			std::cout << i.first << " : " << i.second << std::endl;
+		}
+		
+	}
+	
+	const auto& hosts = m_slave.getHosts().getEnrolledHosts();
+	for( auto i : hosts )
+	{
+		
+	}
+	
+	
+	
+	
+	/*;
+	for( )
+	{
+		megastructure::Activity::Ptr pActivity( 
+			new LoadHostProgramActivity( m_slave, i->second, m_programName ) );
+		m_loadActivities.insert( pActivity );
+		m_slave.startActivity( pActivity );
+	}*/
+	
+	if( m_loadActivities.empty() )
+	{
+		m_slave.activityComplete( shared_from_this() );
+	}
+}
+
+bool LoadHostsProgramActivity::activityComplete( Activity::Ptr pActivity )
+{
+	if( std::shared_ptr< LoadHostProgramActivity > pLoadActivity = 
+		std::dynamic_pointer_cast< LoadHostProgramActivity >( pActivity ) )
+	{
+		auto iFind = m_loadActivities.find( pActivity );
+		if( iFind != m_loadActivities.end() )
+		{
+			if( !pLoadActivity->Successful() )
+			{
+				m_bSuccess = false;
+			}
+			
+			m_loadActivities.erase( iFind );
+			if( m_loadActivities.empty() )
+			{
+				m_slave.activityComplete( shared_from_this() );
+			}
+		}
+	}
+	
+	return false;
+}
+
+
+
+
 
 }

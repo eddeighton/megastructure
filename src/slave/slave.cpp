@@ -26,15 +26,16 @@ namespace slave
 		strSlaveName = canonPath.stem().string();
 	}
 
-	Slave::Slave( const std::string& strMasterIP, const std::string strMasterPort, 
-		const std::string& strSlavePort, const boost::filesystem::path& strSlavePath )
-		:	m_server( strSlavePort ),
+	Slave::Slave( 	Environment& environment,
+					const std::string& strMasterIP, 
+					const std::string strMasterPort, 
+					const std::string& strSlavePort, 
+					const boost::filesystem::path& strSlavePath )
+		:	m_environment( environment ),
+			m_server( strSlavePort ),
 			m_client( strMasterIP, strMasterPort )
 	{
 		getWorkspaceAndSlaveNameFromPath( strSlavePath, m_workspacePath, m_strSlaveName );
-		
-		std::cout << "Workspace: " << m_workspacePath.string() << std::endl;
-		std::cout << "Slave: " << m_strSlaveName << std::endl;
 		
 		megastructure::Queue& queue = m_queue;
 		megastructure::Server& server = m_server;
@@ -55,6 +56,7 @@ namespace slave
 		m_queue.startActivity( new AliveTestActivity( *this ) );
 		m_queue.startActivity( new MasterEnrollActivity( *this ) );
 		m_queue.startActivity( new HostEnrollActivity( *this ) );
+		m_queue.startActivity( new LoadProgramActivity( *this ) );
 	}
 	
 	Slave::~Slave()

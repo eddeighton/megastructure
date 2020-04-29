@@ -125,6 +125,8 @@ public:
     std::vector< boost::filesystem::path > getCommands() const;
     std::vector< std::string > getPackages() const;
     boost::filesystem::path getProgramName() const;
+	
+	const megaxml::Host& getHost() const { return m_host; }
 private:
     const boost::filesystem::path m_projectDir;
     Environment m_environment;

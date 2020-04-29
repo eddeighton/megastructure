@@ -98,7 +98,7 @@ bool EnrollActivity::clientMessage( std::uint32_t uiClient, const megastructure:
 			
 		if( m_master.enroll( enroll.slavename(), uiClient ) )
 		{
-			if( !m_master.send( mss_enroll( true ), uiClient ) )
+			if( !m_master.send( mss_enroll( true, m_master.getActiveProgramName() ), uiClient ) )
 			{
 				m_master.removeClient( uiClient );
 			}
@@ -145,7 +145,8 @@ bool EnrollActivity::activityComplete( Activity::Ptr pActivity )
 			m_testsMap.erase( iFind );
 			if( pTest->isAlive() )
 			{
-				std::cout << "Existing client: " << clientID << " is alive as: " << pTest->getName() << std::endl;
+				std::cout << "Existing client: " << clientID << " is alive as: " << pTest->getName() << 
+					" so denying enroll request from new client: " << clientID << std::endl;
 				//existing client is alive so nothing we can do...
 				if( !m_master.send( mss_enroll( false ), clientID ) )
 				{
@@ -159,7 +160,7 @@ bool EnrollActivity::activityComplete( Activity::Ptr pActivity )
 				//testing the existing client indicated it was actually dead so can enroll the new one
 				if( m_master.enroll( pTest->getName(), clientID ) )
 				{
-					if( !m_master.send( mss_enroll( true ), clientID ) )
+					if( !m_master.send( mss_enroll( true, m_master.getActiveProgramName() ), clientID ) )
 					{
 						m_master.removeClient( clientID );
 					}
@@ -178,5 +179,64 @@ bool EnrollActivity::activityComplete( Activity::Ptr pActivity )
 	}
 	return false;
 }	
+
+//////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////
+
+void LoadProgram::start()
+{
+	//send all clients request to load the program
+	const megastructure::ClientMap::ClientIDMap& clients = m_master.getClients();
+	for( megastructure::ClientMap::ClientIDMap::const_iterator 
+		i = clients.begin(), iEnd = clients.end();
+		i!=iEnd; ++i )
+	{
+		using namespace megastructure;
+		Message message;
+		{
+			Message::MSQ_Load* pLoad = message.mutable_msq_load();
+			pLoad->set_programname( m_strProgramName );
+		}
+		if( !m_master.send( message, i->second ) )
+		{
+			m_master.removeClient( i->second );
+		}
+		else
+		{
+			m_clientIDs.insert( i->second );
+		}
+	}
+}
+
+bool LoadProgram::clientMessage( std::uint32_t uiClient, const megastructure::Message& message )
+{
+	using namespace megastructure;
+	
+	if( message.has_sms_load() )
+	{
+		const Message::SMS_Load& enroll = message.sms_load();
+		if( !enroll.success() )
+		{
+			m_clientFailed = true;
+		}
+		
+		m_clientIDs.erase( uiClient );
+		
+		if( m_clientIDs.empty() )
+		{
+			if( !m_clientFailed )
+			{
+				std::cout << "Successfully set active program to: " << m_strProgramName << std::endl;
+				m_master.setActiveProgramName( m_strProgramName );
+			}
+			
+			m_master.activityComplete( shared_from_this() );
+		}
+		
+		return true;
+	}
+	
+	return false;
+}
 
 } //namespace master

@@ -24,6 +24,7 @@ message Message
 	message MSS_Enroll
 	{
 		bool success = 1;
+		string programname = 2;
 	}
 	
 	message MSQ_Alive
@@ -34,6 +35,35 @@ message Message
 	{
 		bool success = 1;
 	}
+	
+	//message SMQ_Load
+	//{
+	//	string programname = 1;
+	//}
+	//message MSS_Load
+	//{
+	//	bool success = 1;
+	//}
+	
+	message MSQ_Load
+	{
+		string programname = 1;
+	}
+	message SMS_Load
+	{
+		bool success = 1;
+	}
+	
+	message HCQ_Load
+	{
+		string programname = 1;
+	}
+	message CHS_Load
+	{
+		bool success = 1;
+	}
+	
+	
 	
 	message HCQ_Enroll
 	{
@@ -69,6 +99,14 @@ message Message
 		
 		CHQ_Alive chq_alive = 8;
 		HCS_Alive hcs_alive = 9;
+		
+		//SMQ_Load smq_load = 10;
+		//MSS_Load mss_load = 11;
+		MSQ_Load msq_load = 12;
+		SMS_Load sms_load = 13;
+		
+		HCQ_Load hcq_load = 14;
+		CHS_Load chs_load = 15;
 	}
 	
 }

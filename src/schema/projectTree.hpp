@@ -26,6 +26,7 @@ public:
 	
 	std::string name() const { return m_path.filename().string(); }
 	const std::vector< boost::filesystem::path >& sourceFiles() const { return m_sourceFiles; }
+	const Project& getProject() const { return m_project; }
 	
 	void print( std::ostream& os );
 	void getSourceFilesMap( std::multimap< boost::filesystem::path, boost::filesystem::path >& pathMap ) const;
@@ -44,6 +45,7 @@ public:
 	HostName( const boost::filesystem::path& root );
 	
 	std::string name() const { return m_path.filename().string(); }
+	const ProjectName::PtrVector& getProjectNames() const { return m_projects; }
 	
 	void addProjectName( ProjectName::Ptr pProjectName )
 	{
@@ -67,6 +69,7 @@ public:
 	Coordinator( const boost::filesystem::path& root );
 	
 	std::string name() const { return m_path.filename().string(); }
+	const HostName::PtrVector& getHostNames() const { return m_hostNames; }
 	
 	void addHostName( HostName::Ptr pHostName )
 	{
@@ -75,6 +78,7 @@ public:
 	
 	void print( std::ostream& os );
 	void getSourceFilesMap( std::multimap< boost::filesystem::path, boost::filesystem::path >& pathMap ) const;
+	
 private:
 	boost::filesystem::path m_path;
 	HostName::PtrVector m_hostNames;
@@ -326,6 +330,8 @@ public:
 				getInterfaceFolder() / os.str() ) );
 	}
 	
+	
+	const Coordinator::PtrVector& getCoordinators() const { return m_coordinators; }
 	
 private:
 	boost::filesystem::path m_path;
