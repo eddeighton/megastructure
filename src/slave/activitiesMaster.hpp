@@ -8,7 +8,6 @@
 
 namespace slave
 {
-	
 	class MasterEnrollActivity : public megastructure::Activity
 	{
 	public:
@@ -52,6 +51,7 @@ namespace slave
 	private:
 		std::string m_currentlyLoadingProgramName;
 		Slave& m_slave;
+		Activity::Ptr m_pTestHosts;
 		Activity::Ptr m_pLoadHosts;
 	};
 }

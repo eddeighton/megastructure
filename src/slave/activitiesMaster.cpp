@@ -97,9 +97,15 @@ bool LoadProgramActivity::serverMessage( const megastructure::Message& message )
 		if( m_currentlyLoadingProgramName.empty() )
 		{
 			m_currentlyLoadingProgramName = loadProgram.programname();
+			
+			//start by issuing a test hosts activity
+			m_pTestHosts = TestHostsActivity::Ptr( 
+				new TestHostsActivity( m_slave ) );
+			
 			m_pLoadHosts = LoadHostsProgramActivity::Ptr( 
 				new LoadHostsProgramActivity( m_slave, m_currentlyLoadingProgramName ) );
-			m_slave.startActivity( m_pLoadHosts );
+				
+			m_slave.startActivity( m_pTestHosts );
 		}
 		else
 		{
@@ -115,7 +121,12 @@ bool LoadProgramActivity::serverMessage( const megastructure::Message& message )
 
 bool LoadProgramActivity::activityComplete( Activity::Ptr pActivity )
 {
-	if( m_pLoadHosts == pActivity )
+	if( m_pTestHosts == pActivity )
+	{
+		m_slave.startActivity( m_pLoadHosts );
+		return true;
+	}
+	else if( m_pLoadHosts == pActivity )
 	{
 		using namespace megastructure;
 		

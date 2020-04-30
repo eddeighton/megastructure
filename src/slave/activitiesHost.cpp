@@ -62,6 +62,10 @@ void TestHostsActivity::start()
 		m_activities.push_back( pActivity );
 		m_slave.startActivity( pActivity );
 	}
+	if( m_activities.empty() )
+	{
+		m_slave.activityComplete( shared_from_this() );
+	}
 }
 
 bool TestHostsActivity::activityComplete( Activity::Ptr pActivity )
@@ -180,34 +184,53 @@ bool HostEnrollActivity::activityComplete( Activity::Ptr pActivity )
 
 //////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////
-
 void LoadHostProgramActivity::start()
 {
+	using namespace megastructure;
+	Message message;
+	{
+		Message::CHQ_Load* pLoad = message.mutable_chq_load();
+		pLoad->set_hostname( m_hostName );
+		pLoad->set_programname( m_programName );
+	}
+	if( !m_slave.sendHost( message, m_uiClientID ) )
+	{
+		m_slave.removeClient( m_uiClientID );
+		m_slave.activityComplete( shared_from_this() );
+	}
 }
 
 bool LoadHostProgramActivity::clientMessage( std::uint32_t uiClient, const megastructure::Message& message )
 {
+	if( m_uiClientID == uiClient )
+	{
+		if( message.has_hcs_load() )
+		{
+			const megastructure::Message::HCS_Load& load = message.hcs_load();
+			if( !load.success() )
+			{
+				std::cout << "Client: " << uiClient << " has NOT assumed host name: " << 
+					m_hostName << " with process name: " << m_programName << std::endl;
+				m_slave.removeClient( m_uiClientID );
+			}
+			else
+			{
+				std::cout << "Client: " << uiClient << " has assumed host name: " << 
+					m_hostName << " with process name: " << m_programName << std::endl;
+				m_bSuccess = true;
+			}
+			m_slave.activityComplete( shared_from_this() );
+			return true;
+		}
+	}
 	return false;
 }
 
 //////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////
-bool LoadHostsProgramActivity::precondition( megastructure::Activity::PtrList& active )
-{
-	for( auto pActivity : active )
-	{
-		if( dynamic_cast< const LoadHostsProgramActivity* >( pActivity.get() ) )
-			return false;
-	}
-
-	return true;
-}
-
 void LoadHostsProgramActivity::start()
 {
-	
 	//first attempt to load the program tree for the program name
-	
 	Environment& environment = m_slave.getEnvironment();
 	
 	std::shared_ptr< ProjectTree > pProjectTree;
@@ -226,8 +249,7 @@ void LoadHostsProgramActivity::start()
 	
 	if( pProjectTree )
 	{
-		
-		std::map< std::string, std::string > hostNameToProcessNameMap;
+		HostMap::ProcessNameToHostNameMap processNameToHostName;
 		
 		const Coordinator::PtrVector& coordinators = pProjectTree->getCoordinators();
 		for( Coordinator::Ptr pCoordinator : coordinators )
@@ -268,39 +290,46 @@ void LoadHostsProgramActivity::start()
 					}
 					if( optProcessName )
 					{
-						hostNameToProcessNameMap.insert( 
-							std::make_pair( pHostName->name(), optProcessName.get() ) );
+						processNameToHostName.insert( 
+							std::make_pair( optProcessName.get(), pHostName->name() ) );
 					}
 				}
 			}
 		}
 		
-		//given hostNameToProcessNameMap can now determine the new association of hosts to hostNames
-		std::cout << "Found host name to process name pairs:" << std::endl;
-		for( auto& i : hostNameToProcessNameMap )
+		//given processNameToHostName can now determine the new association of hosts to hostNames
+		std::cout << "Found process name to host name pairs:" << std::endl;
+		for( auto& i : processNameToHostName )
 		{
 			std::cout << i.first << " : " << i.second << std::endl;
 		}
 		
-	}
-	
-	const auto& hosts = m_slave.getHosts().getEnrolledHosts();
-	for( auto i : hosts )
-	{
+		std::vector< std::uint32_t > unmappedClients; 
+		std::vector< std::string > unmappedHostNames;
+		HostMap newMapping( m_slave.getHosts(), processNameToHostName, unmappedClients, unmappedHostNames );
+		
+		for( std::uint32_t uiClientID : unmappedClients )
+		{
+			//start unload program activity
+			megastructure::Activity::Ptr pActivity( 
+				new LoadHostProgramActivity( m_slave, uiClientID, "", "" ) );
+			m_loadActivities.insert( pActivity );
+			m_slave.startActivity( pActivity );
+		}
+		
+		for( auto& i : newMapping.getHostNameMapping() )
+		{
+			const std::string& strHostName = i.first;
+			std::uint32_t uiClientID = i.second;
+			
+			//start unload program activity
+			megastructure::Activity::Ptr pActivity( 
+				new LoadHostProgramActivity( m_slave, uiClientID, strHostName, m_programName ) );
+			m_loadActivities.insert( pActivity );
+			m_slave.startActivity( pActivity );
+		}
 		
 	}
-	
-	
-	
-	
-	/*;
-	for( )
-	{
-		megastructure::Activity::Ptr pActivity( 
-			new LoadHostProgramActivity( m_slave, i->second, m_programName ) );
-		m_loadActivities.insert( pActivity );
-		m_slave.startActivity( pActivity );
-	}*/
 	
 	if( m_loadActivities.empty() )
 	{
@@ -326,6 +355,7 @@ bool LoadHostsProgramActivity::activityComplete( Activity::Ptr pActivity )
 			{
 				m_slave.activityComplete( shared_from_this() );
 			}
+			return true;
 		}
 	}
 	

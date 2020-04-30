@@ -112,8 +112,10 @@ namespace slave
 	class LoadHostProgramActivity : public megastructure::Activity
 	{
 	public:
-		LoadHostProgramActivity( Slave& slave, std::uint32_t uiClient, const std::string& strProgramName ) 
+		LoadHostProgramActivity( Slave& slave, std::uint32_t uiClient, 
+					const std::string& strHostName, const std::string& strProgramName ) 
 			:	m_slave( slave ),
+				m_hostName( strHostName ),
 				m_programName( strProgramName ),
 				m_uiClientID( uiClient )
 		{
@@ -124,6 +126,7 @@ namespace slave
 		bool Successful() const { return m_bSuccess; }
 	private:
 		Slave& m_slave;
+		std::string m_hostName;
 		std::string m_programName;
 		std::uint32_t m_uiClientID;
 		bool m_bSuccess = true;
@@ -131,7 +134,7 @@ namespace slave
 	
 	//////////////////////////////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////////
-	class LoadHostsProgramActivity : public megastructure::Activity
+	class LoadHostsProgramActivity : public megastructure::ExclusiveActivity< LoadHostsProgramActivity >
 	{
 	public:
 		LoadHostsProgramActivity( Slave& slave, const std::string& strProgramName ) 
@@ -140,7 +143,6 @@ namespace slave
 		{
 		}
 		
-		bool precondition( megastructure::Activity::PtrList& active );
 		virtual void start();
 		virtual bool activityComplete( Activity::Ptr pActivity );
 		

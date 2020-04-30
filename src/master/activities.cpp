@@ -61,6 +61,10 @@ void TestClientsActivity::start()
 		m_activities.push_back( pActivity );
 		m_master.startActivity( pActivity );
 	}
+	if( m_activities.empty() )
+	{
+		m_master.activityComplete( shared_from_this() );
+	}
 }
 
 bool TestClientsActivity::activityComplete( Activity::Ptr pActivity )
@@ -187,23 +191,31 @@ void LoadProgram::start()
 {
 	//send all clients request to load the program
 	const megastructure::ClientMap::ClientIDMap& clients = m_master.getClients();
-	for( megastructure::ClientMap::ClientIDMap::const_iterator 
-		i = clients.begin(), iEnd = clients.end();
-		i!=iEnd; ++i )
+	if( clients.empty() )
 	{
-		using namespace megastructure;
-		Message message;
+		std::cout << "Master currently has no slaves so cannot load program" << std::endl;
+		m_master.activityComplete( shared_from_this() );
+	}
+	else
+	{
+		for( megastructure::ClientMap::ClientIDMap::const_iterator 
+			i = clients.begin(), iEnd = clients.end();
+			i!=iEnd; ++i )
 		{
-			Message::MSQ_Load* pLoad = message.mutable_msq_load();
-			pLoad->set_programname( m_strProgramName );
-		}
-		if( !m_master.send( message, i->second ) )
-		{
-			m_master.removeClient( i->second );
-		}
-		else
-		{
-			m_clientIDs.insert( i->second );
+			using namespace megastructure;
+			Message message;
+			{
+				Message::MSQ_Load* pLoad = message.mutable_msq_load();
+				pLoad->set_programname( m_strProgramName );
+			}
+			if( !m_master.send( message, i->second ) )
+			{
+				m_master.removeClient( i->second );
+			}
+			else
+			{
+				m_clientIDs.insert( i->second );
+			}
 		}
 	}
 }
@@ -214,9 +226,10 @@ bool LoadProgram::clientMessage( std::uint32_t uiClient, const megastructure::Me
 	
 	if( message.has_sms_load() )
 	{
-		const Message::SMS_Load& enroll = message.sms_load();
-		if( !enroll.success() )
+		const Message::SMS_Load& loadProgramResponse = message.sms_load();
+		if( !loadProgramResponse.success() )
 		{
+			std::cout << "Client: " << uiClient << " failed to load program: " << m_strProgramName << std::endl;
 			m_clientFailed = true;
 		}
 		
@@ -226,10 +239,10 @@ bool LoadProgram::clientMessage( std::uint32_t uiClient, const megastructure::Me
 		{
 			if( !m_clientFailed )
 			{
-				std::cout << "Successfully set active program to: " << m_strProgramName << std::endl;
-				m_master.setActiveProgramName( m_strProgramName );
+				std::cout << "No clients failed while loading program: " << m_strProgramName << std::endl;
 			}
 			
+			m_master.setActiveProgramName( m_strProgramName );
 			m_master.activityComplete( shared_from_this() );
 		}
 		
