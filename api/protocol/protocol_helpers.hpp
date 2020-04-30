@@ -4,6 +4,10 @@
 
 #include "protocol/megastructure.pb.h"
 
+#include "boost/filesystem/path.hpp"
+
+#include <string>
+
 namespace megastructure
 {
 	inline Message mss_enroll( bool bSuccess )
@@ -35,19 +39,16 @@ namespace megastructure
 		{
 			Message::CHS_Enroll* pEnroll = message.mutable_chs_enroll();
 			pEnroll->set_success( bSuccess );
-			pEnroll->set_hostpath( "" );
-			pEnroll->set_program( "" );
 		}
 		return message;
 	}
-	inline Message chs_enroll( bool bSuccess, const std::string& strHostPath, const std::string& strProgram )
+	inline Message chs_enroll( bool bSuccess, const boost::filesystem::path& workspacePath )
 	{
 		Message message;
 		{
 			Message::CHS_Enroll* pEnroll = message.mutable_chs_enroll();
 			pEnroll->set_success( bSuccess );
-			pEnroll->set_hostpath( strHostPath );
-			pEnroll->set_program( strProgram );
+			pEnroll->set_hostpath( workspacePath.string() );
 		}
 		return message;
 	}

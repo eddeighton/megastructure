@@ -61,6 +61,21 @@ namespace megastructure
 	};
 
 	
+	////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////
+	class LoadProgramActivity : public Activity
+	{
+	public:
+		LoadProgramActivity( Component& component ) 
+			:	m_component( component )
+		{
+		}
+		
+		virtual bool serverMessage( const Message& message );
+		
+	private:
+		Component& m_component;
+	};
 	
 	
 }

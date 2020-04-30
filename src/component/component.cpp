@@ -30,10 +30,13 @@ namespace megastructure
 				
 		m_queue.startActivity( new EnrollHostActivity( *this, m_strHostProgram ) );
 		m_queue.startActivity( new AliveTestActivity( *this ) );
+		m_queue.startActivity( new LoadProgramActivity( *this ) );
 	}
 	
 	Component::~Component()
 	{
 		m_queue.stop();
+		m_client.stop();
+		m_zeromq.join();
 	}
 }

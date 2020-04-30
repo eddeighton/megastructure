@@ -11,6 +11,8 @@
 
 #include "protocol/megastructure.pb.h"
 
+#include "boost/filesystem/path.hpp"
+
 namespace megastructure
 {
 	std::string getHostProgramName();
@@ -22,6 +24,9 @@ namespace megastructure
 		virtual ~Component();
 		
 		const std::string& getHostProgramName() const { return m_strHostProgram; }
+		const boost::filesystem::path& getSlaveWorkspacePath() const { return m_slaveWorkspacePath; }
+		
+		void setSlaveWorkspacePath( const boost::filesystem::path& slaveWorkspacePath ) { m_slaveWorkspacePath = slaveWorkspacePath; }
 		
 		void startActivity( megastructure::Activity::Ptr pActivity )
 		{
@@ -43,6 +48,7 @@ namespace megastructure
 		
 	private:
 		std::string m_strHostProgram;
+		boost::filesystem::path m_slaveWorkspacePath;
 		megastructure::Queue m_queue;
 		megastructure::Client m_client;
 		std::thread m_zeromq;

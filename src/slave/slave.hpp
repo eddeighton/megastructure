@@ -42,128 +42,21 @@ namespace slave
 	public:
 		using HostProcessNameMap = std::multimap< std::string, std::uint32_t >;
 		using HostNameMap = std::map< std::string, std::uint32_t >;
-	
-		void removeClient( std::uint32_t uiClient )
-		{
-			eraseByMapSecond( m_clientProcessNameMap, uiClient );
-			eraseByMapSecond( m_hostnameMapping, uiClient );
-		}
-		bool enroll( const std::string& strProcessName, std::uint32_t clientID )
-		{
-			m_clientProcessNameMap.insert( std::make_pair( strProcessName, clientID ) );
-			return true;
-		}
-		
-		void listClients( std::ostream& os )
-		{
-			for( auto i : m_clientProcessNameMap )
-			{
-				std::cout << "Client Process Name: " << i.first << " id: " << i.second << std::endl;
-			}
-		}
-	
-		const HostProcessNameMap& getEnrolledHosts() const { return m_clientProcessNameMap; }
-		const HostNameMap& getHostNameMapping() const { return m_hostnameMapping; }
-		
-		HostMap()
-		{
-			
-		}
-		
 		using ProcessNameToHostNameMap = std::multimap< std::string, std::string >;
+	
+		HostMap();
 		
 		HostMap( const HostMap& oldHostMapping, 
 			ProcessNameToHostNameMap processNameToHostNameMap, 
 			std::vector< std::uint32_t >& unmappedClients, 
-			std::vector< std::string >& unmappedHostNames )
-		{
-			HostProcessNameMap 	oldEnrolledHosts 	= oldHostMapping.getEnrolledHosts();
-			HostNameMap 		oldHostNames 		= oldHostMapping.getHostNameMapping();
+			std::vector< std::string >& unmappedHostNames );
 			
-			//The goal is to best preserve existing hostname mappings where possible.  The new ProcessNameToHostNameMap 
-			//defines the set of pairs of process name host names that the new program is to use.  
-			
-			//map the remaining new host namespace
-			for( ProcessNameToHostNameMap::iterator 
-				i = processNameToHostNameMap.begin(),
-				iEnd = processNameToHostNameMap.end(); 
-				i!=iEnd; )
-			{
-				const std::string& strProcessName 	= i->first;
-				const std::string& strHostName 		= i->second;
-				
-				bool bReUsedExistingHostName = false;
-				//host names should be unique - see if the hostname is in the old list
-				HostNameMap::iterator iFind = oldHostNames.find( strHostName );
-				if( iFind != oldHostNames.end() )
-				{
-					HostProcessNameMap::const_iterator 
-						iLower = oldEnrolledHosts.lower_bound( strProcessName ),
-						iUpper = oldEnrolledHosts.upper_bound( strProcessName );
-					//found a match - but it may now have the correct process name so check
-					//so iterate through ALL matching process names to see if the host is there
-					for( HostProcessNameMap::const_iterator iIterator = iLower; iIterator != iUpper; ++iIterator )
-					{
-						const std::uint32_t uiClientID = iIterator->second;
-						if( uiClientID == iFind->second )
-						{
-							m_clientProcessNameMap.insert( std::make_pair( strProcessName, uiClientID ) );
-							m_hostnameMapping.insert( std::make_pair( strHostName, uiClientID ) );
-							
-							i = processNameToHostNameMap.erase( i );
-							oldHostNames.erase( iFind );
-							oldEnrolledHosts.erase( iIterator );
-							
-							bReUsedExistingHostName = true;
-							break;
-						}
-					}
-				}
-				if( !bReUsedExistingHostName )
-				{
-					++i;
-				}
-			}
-			
-			//now simply attempt to use the existing correct process names
-			for( ProcessNameToHostNameMap::iterator 
-				i = processNameToHostNameMap.begin(),
-				iEnd = processNameToHostNameMap.end(); 
-				i!=iEnd;  )
-			{
-				const std::string& strProcessName 	= i->first;
-				const std::string& strHostName 		= i->second;
-				
-				HostProcessNameMap::const_iterator 
-						iLower = oldEnrolledHosts.lower_bound( strProcessName ),
-						iUpper = oldEnrolledHosts.upper_bound( strProcessName );
-				if( iLower != iUpper )
-				{
-					const std::uint32_t uiClientID = iLower->second;
-					
-					m_clientProcessNameMap.insert( std::make_pair( strProcessName, uiClientID ) );
-					m_hostnameMapping.insert( std::make_pair( strHostName, uiClientID ) );
-					
-					oldEnrolledHosts.erase( iLower );
-					i = processNameToHostNameMap.erase( i );
-				}
-				else
-				{
-					unmappedHostNames.push_back( strHostName );
-					++i;
-				}
-			}
-			
-			//finally collate the old enrolled hosts that could not help
-			for( HostProcessNameMap::const_iterator 
-					i = oldEnrolledHosts.begin(),
-					iEnd = oldEnrolledHosts.end(); i!=iEnd; ++i )
-			{
-				unmappedClients.push_back( i->second );
-			}
-		}
-		
-		
+		const HostProcessNameMap& getEnrolledHosts() const { return m_clientProcessNameMap; }
+		const HostNameMap& getHostNameMapping() const { return m_hostnameMapping; }
+				void removeClient( std::uint32_t uiClient );
+		void listClients( std::ostream& os ) const;
+		bool enroll( const std::string& strProcessName, std::uint32_t clientID );
+	
 	private:
 		std::multimap< std::string, std::uint32_t > m_clientProcessNameMap;
 		std::map< std::string, std::uint32_t > m_hostnameMapping;
@@ -180,6 +73,23 @@ namespace slave
 			const std::string& strSlavePort, 
 			const boost::filesystem::path& strSlavePath );
 		~Slave();
+		
+		const std::string& getName() const { return m_strSlaveName; }
+		const boost::filesystem::path& getWorkspace() const { return m_workspacePath; }
+		Environment& getEnvironment() const { return m_environment; }
+		const HostMap& getHosts() const { return m_hostMap; }
+		
+		std::future< bool > getEnrollment() { return m_masterEnrollPromise.get_future(); }
+		const std::string& getActiveProgramName() const { return m_strActiveProgramName; }
+		
+		void listClients( std::ostream& os ) const
+		{
+			m_hostMap.listClients( os );
+		}
+		
+		void setEnrollment( bool bEnrolledWithMaster ) { m_masterEnrollPromise.set_value( bEnrolledWithMaster ); }
+		void setActiveProgramName( const std::string& strActiveProgramName ) { m_strActiveProgramName = strActiveProgramName; }
+		void setHostMap( const HostMap& newHostMap ) { m_hostMap = newHostMap; }
 		
 		bool sendMaster( megastructure::Message& message )
 		{
@@ -212,35 +122,6 @@ namespace slave
 		{
 			return m_hostMap.enroll( strName, clientID );
 		}
-		void listClients( std::ostream& os )
-		{
-			m_hostMap.listClients( os );
-		}
-		
-		const std::string& getName() const { return m_strSlaveName; }
-		const boost::filesystem::path& getWorkspace() const { return m_workspacePath; }
-		
-		std::future< bool > getEnrollment()
-		{
-			return m_masterEnrollPromise.get_future();
-		}
-		void setEnrollment( bool bEnrolledWithMaster )
-		{
-			m_masterEnrollPromise.set_value( bEnrolledWithMaster );
-		}
-		
-		void setActiveProgramName( const std::string& strActiveProgramName )
-		{
-			m_strActiveProgramName = strActiveProgramName;
-		}
-		const std::string& getActiveProgramName() const
-		{
-			return m_strActiveProgramName;
-		}
-		
-		
-		Environment& getEnvironment() const { return m_environment; }
-		const HostMap& getHosts() const { return m_hostMap; }
 		
 	private:
 		Environment& m_environment;

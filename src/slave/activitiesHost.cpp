@@ -103,7 +103,7 @@ bool HostEnrollActivity::clientMessage( std::uint32_t uiClient, const megastruct
 			
 		if( m_slave.enroll( enroll.processname(), uiClient ) )
 		{
-			if( !m_slave.sendHost( chs_enroll( true, "", "" ), uiClient ) )
+			if( !m_slave.sendHost( chs_enroll( true, m_slave.getWorkspace() ), uiClient ) )
 			{
 				m_slave.removeClient( uiClient );
 			}
@@ -165,7 +165,7 @@ bool HostEnrollActivity::activityComplete( Activity::Ptr pActivity )
 				//testing the existing client indicated it was actually dead so can enroll the new one
 				if( m_slave.enroll( pTest->getName(), clientID ) )
 				{
-					if( !m_slave.sendHost( chs_enroll( true, "/someplace", "AProgramFolderName" ), clientID ) )
+					if( !m_slave.sendHost( chs_enroll( true, m_slave.getWorkspace() ), clientID ) )
 					{
 						m_slave.removeClient( clientID );
 					}
@@ -329,6 +329,8 @@ void LoadHostsProgramActivity::start()
 			m_slave.startActivity( pActivity );
 		}
 		
+		//TODO - actually use the return values to track the result of the program load
+		m_slave.setHostMap( newMapping );
 	}
 	
 	if( m_loadActivities.empty() )

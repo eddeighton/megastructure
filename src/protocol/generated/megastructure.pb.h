@@ -988,7 +988,6 @@ class Message_CHS_Enroll PROTOBUF_FINAL :
 
   enum : int {
     kHostpathFieldNumber = 2,
-    kProgramFieldNumber = 3,
     kSuccessFieldNumber = 1,
   };
   // string hostpath = 2;
@@ -1016,31 +1015,6 @@ class Message_CHS_Enroll PROTOBUF_FINAL :
   std::string* _internal_mutable_hostpath();
   public:
 
-  // string program = 3;
-  void clear_program();
-  const std::string& program() const;
-  void set_program(const std::string& value);
-  void set_program(std::string&& value);
-  void set_program(const char* value);
-  void set_program(const char* value, size_t size);
-  std::string* mutable_program();
-  std::string* release_program();
-  void set_allocated_program(std::string* program);
-  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
-  "    string fields are deprecated and will be removed in a"
-  "    future release.")
-  std::string* unsafe_arena_release_program();
-  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
-  "    string fields are deprecated and will be removed in a"
-  "    future release.")
-  void unsafe_arena_set_allocated_program(
-      std::string* program);
-  private:
-  const std::string& _internal_program() const;
-  void _internal_set_program(const std::string& value);
-  std::string* _internal_mutable_program();
-  public:
-
   // bool success = 1;
   void clear_success();
   bool success() const;
@@ -1058,7 +1032,6 @@ class Message_CHS_Enroll PROTOBUF_FINAL :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr hostpath_;
-  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr program_;
   bool success_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_megastructure_2eproto;
@@ -2882,87 +2855,6 @@ inline void Message_CHS_Enroll::unsafe_arena_set_allocated_hostpath(
   hostpath_.UnsafeArenaSetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
       hostpath, GetArena());
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:megastructure.Message.CHS_Enroll.hostpath)
-}
-
-// string program = 3;
-inline void Message_CHS_Enroll::clear_program() {
-  program_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
-}
-inline const std::string& Message_CHS_Enroll::program() const {
-  // @@protoc_insertion_point(field_get:megastructure.Message.CHS_Enroll.program)
-  return _internal_program();
-}
-inline void Message_CHS_Enroll::set_program(const std::string& value) {
-  _internal_set_program(value);
-  // @@protoc_insertion_point(field_set:megastructure.Message.CHS_Enroll.program)
-}
-inline std::string* Message_CHS_Enroll::mutable_program() {
-  // @@protoc_insertion_point(field_mutable:megastructure.Message.CHS_Enroll.program)
-  return _internal_mutable_program();
-}
-inline const std::string& Message_CHS_Enroll::_internal_program() const {
-  return program_.Get();
-}
-inline void Message_CHS_Enroll::_internal_set_program(const std::string& value) {
-  
-  program_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
-}
-inline void Message_CHS_Enroll::set_program(std::string&& value) {
-  
-  program_.Set(
-    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
-  // @@protoc_insertion_point(field_set_rvalue:megastructure.Message.CHS_Enroll.program)
-}
-inline void Message_CHS_Enroll::set_program(const char* value) {
-  GOOGLE_DCHECK(value != nullptr);
-  
-  program_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
-              GetArena());
-  // @@protoc_insertion_point(field_set_char:megastructure.Message.CHS_Enroll.program)
-}
-inline void Message_CHS_Enroll::set_program(const char* value,
-    size_t size) {
-  
-  program_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
-      reinterpret_cast<const char*>(value), size), GetArena());
-  // @@protoc_insertion_point(field_set_pointer:megastructure.Message.CHS_Enroll.program)
-}
-inline std::string* Message_CHS_Enroll::_internal_mutable_program() {
-  
-  return program_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
-}
-inline std::string* Message_CHS_Enroll::release_program() {
-  // @@protoc_insertion_point(field_release:megastructure.Message.CHS_Enroll.program)
-  return program_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
-}
-inline void Message_CHS_Enroll::set_allocated_program(std::string* program) {
-  if (program != nullptr) {
-    
-  } else {
-    
-  }
-  program_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), program,
-      GetArena());
-  // @@protoc_insertion_point(field_set_allocated:megastructure.Message.CHS_Enroll.program)
-}
-inline std::string* Message_CHS_Enroll::unsafe_arena_release_program() {
-  // @@protoc_insertion_point(field_unsafe_arena_release:megastructure.Message.CHS_Enroll.program)
-  GOOGLE_DCHECK(GetArena() != nullptr);
-  
-  return program_.UnsafeArenaRelease(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
-      GetArena());
-}
-inline void Message_CHS_Enroll::unsafe_arena_set_allocated_program(
-    std::string* program) {
-  GOOGLE_DCHECK(GetArena() != nullptr);
-  if (program != nullptr) {
-    
-  } else {
-    
-  }
-  program_.UnsafeArenaSetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
-      program, GetArena());
-  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:megastructure.Message.CHS_Enroll.program)
 }
 
 // -------------------------------------------------------------------

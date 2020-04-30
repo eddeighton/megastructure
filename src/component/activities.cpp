@@ -24,28 +24,51 @@ bool EnrollHostActivity::serverMessage( const Message& message )
 	if( message.has_chs_enroll() )
 	{
 		const Message::CHS_Enroll& enroll = message.chs_enroll();
-		std::cout << 
-			"Enroll response success : " << enroll.success() << "\n" <<
-			"host path: " << enroll.hostpath() << "\n" <<
-			"program: " << enroll.program() << std::endl;
 		m_component.activityComplete( shared_from_this() );
 		
 		if( enroll.success() )
 		{
-			
-			
+			m_component.setSlaveWorkspacePath( enroll.hostpath() );
+			std::cout << "Enroll succeeded.  Slave workspace: " << enroll.hostpath() << std::endl;
 		}
 		else
 		{
 			std::cout << "Enroll failed" << std::endl;
 		}
-		
-		
 		return true;
 	}
 	return false;
 }
 	
+////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
+bool LoadProgramActivity::serverMessage( const Message& message )
+{
+	if( message.has_chq_load() )
+	{
+		const Message::CHQ_Load& loadProgramRequest = message.chq_load();
+		
+		if( loadProgramRequest.hostname().empty() )
+		{
+			std::cout << "Received load program request to unload" << std::endl;
+		}
+		else
+		{
+			std::cout << "Received load program request for host name: " << 
+				loadProgramRequest.hostname() << 
+				" program name: " << loadProgramRequest.programname() << std::endl;
+		}
+			
+		Message response;
+		{
+			Message::HCS_Load* pLoadResponse = response.mutable_hcs_load();
+			pLoadResponse->set_success( true );
+		}
+		m_component.send( response );
+		return true;
+	}
+	return false;
+}
 	
 	
 }

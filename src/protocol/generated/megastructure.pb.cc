@@ -329,7 +329,6 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_megastructure_2eproto::offsets
   ~0u,  // no _weak_field_map_
   PROTOBUF_FIELD_OFFSET(::megastructure::Message_CHS_Enroll, success_),
   PROTOBUF_FIELD_OFFSET(::megastructure::Message_CHS_Enroll, hostpath_),
-  PROTOBUF_FIELD_OFFSET(::megastructure::Message_CHS_Enroll, program_),
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::megastructure::Message_CHQ_Alive, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -394,13 +393,13 @@ static const ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema schemas[] PROTOB
   { 19, -1, sizeof(::megastructure::Message_SMS_Alive)},
   { 25, -1, sizeof(::megastructure::Message_HCQ_Enroll)},
   { 31, -1, sizeof(::megastructure::Message_CHS_Enroll)},
-  { 39, -1, sizeof(::megastructure::Message_CHQ_Alive)},
-  { 45, -1, sizeof(::megastructure::Message_HCS_Alive)},
-  { 51, -1, sizeof(::megastructure::Message_MSQ_Load)},
-  { 57, -1, sizeof(::megastructure::Message_SMS_Load)},
-  { 63, -1, sizeof(::megastructure::Message_CHQ_Load)},
-  { 70, -1, sizeof(::megastructure::Message_HCS_Load)},
-  { 76, -1, sizeof(::megastructure::Message)},
+  { 38, -1, sizeof(::megastructure::Message_CHQ_Alive)},
+  { 44, -1, sizeof(::megastructure::Message_HCS_Alive)},
+  { 50, -1, sizeof(::megastructure::Message_MSQ_Load)},
+  { 56, -1, sizeof(::megastructure::Message_SMS_Load)},
+  { 62, -1, sizeof(::megastructure::Message_CHQ_Load)},
+  { 69, -1, sizeof(::megastructure::Message_HCS_Load)},
+  { 75, -1, sizeof(::megastructure::Message)},
 };
 
 static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] = {
@@ -420,7 +419,7 @@ static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] =
 };
 
 const char descriptor_table_protodef_megastructure_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
-  "\n\023megastructure.proto\022\rmegastructure\"\371\010\n"
+  "\n\023megastructure.proto\022\rmegastructure\"\350\010\n"
   "\007Message\022\n\n\002id\030\001 \001(\005\0227\n\nsmq_enroll\030\002 \001(\013"
   "2!.megastructure.Message.SMQ_EnrollH\000\0227\n"
   "\nmss_enroll\030\003 \001(\0132!.megastructure.Messag"
@@ -442,14 +441,14 @@ const char descriptor_table_protodef_megastructure_2eproto[] PROTOBUF_SECTION_VA
   "_Enroll\022\017\n\007success\030\001 \001(\010\022\023\n\013programname\030"
   "\002 \001(\t\032\036\n\tMSQ_Alive\022\021\n\tslavename\030\001 \001(\t\032\034\n"
   "\tSMS_Alive\022\017\n\007success\030\001 \001(\010\032!\n\nHCQ_Enrol"
-  "l\022\023\n\013processname\030\001 \001(\t\032@\n\nCHS_Enroll\022\017\n\007"
-  "success\030\001 \001(\010\022\020\n\010hostpath\030\002 \001(\t\022\017\n\007progr"
-  "am\030\003 \001(\t\032 \n\tCHQ_Alive\022\023\n\013processname\030\001 \001"
-  "(\t\032\034\n\tHCS_Alive\022\017\n\007success\030\001 \001(\010\032\037\n\010MSQ_"
-  "Load\022\023\n\013programname\030\001 \001(\t\032\033\n\010SMS_Load\022\017\n"
-  "\007success\030\001 \001(\010\0321\n\010CHQ_Load\022\020\n\010hostname\030\001"
-  " \001(\t\022\023\n\013programname\030\002 \001(\t\032\033\n\010HCS_Load\022\017\n"
-  "\007success\030\001 \001(\010B\010\n\006foobarb\006proto3"
+  "l\022\023\n\013processname\030\001 \001(\t\032/\n\nCHS_Enroll\022\017\n\007"
+  "success\030\001 \001(\010\022\020\n\010hostpath\030\002 \001(\t\032 \n\tCHQ_A"
+  "live\022\023\n\013processname\030\001 \001(\t\032\034\n\tHCS_Alive\022\017"
+  "\n\007success\030\001 \001(\010\032\037\n\010MSQ_Load\022\023\n\013programna"
+  "me\030\001 \001(\t\032\033\n\010SMS_Load\022\017\n\007success\030\001 \001(\010\0321\n"
+  "\010CHQ_Load\022\020\n\010hostname\030\001 \001(\t\022\023\n\013programna"
+  "me\030\002 \001(\t\032\033\n\010HCS_Load\022\017\n\007success\030\001 \001(\010B\010\n"
+  "\006foobarb\006proto3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_megastructure_2eproto_deps[1] = {
 };
@@ -470,7 +469,7 @@ static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_meg
 };
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_megastructure_2eproto_once;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_megastructure_2eproto = {
-  false, false, descriptor_table_protodef_megastructure_2eproto, "megastructure.proto", 1192,
+  false, false, descriptor_table_protodef_megastructure_2eproto, "megastructure.proto", 1175,
   &descriptor_table_megastructure_2eproto_once, descriptor_table_megastructure_2eproto_sccs, descriptor_table_megastructure_2eproto_deps, 13, 0,
   schemas, file_default_instances, TableStruct_megastructure_2eproto::offsets,
   file_level_metadata_megastructure_2eproto, 13, file_level_enum_descriptors_megastructure_2eproto, file_level_service_descriptors_megastructure_2eproto,
@@ -1558,11 +1557,6 @@ Message_CHS_Enroll::Message_CHS_Enroll(const Message_CHS_Enroll& from)
     hostpath_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from._internal_hostpath(),
       GetArena());
   }
-  program_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  if (!from._internal_program().empty()) {
-    program_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from._internal_program(),
-      GetArena());
-  }
   success_ = from.success_;
   // @@protoc_insertion_point(copy_constructor:megastructure.Message.CHS_Enroll)
 }
@@ -1570,7 +1564,6 @@ Message_CHS_Enroll::Message_CHS_Enroll(const Message_CHS_Enroll& from)
 void Message_CHS_Enroll::SharedCtor() {
   ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_Message_CHS_Enroll_megastructure_2eproto.base);
   hostpath_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  program_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   success_ = false;
 }
 
@@ -1583,7 +1576,6 @@ Message_CHS_Enroll::~Message_CHS_Enroll() {
 void Message_CHS_Enroll::SharedDtor() {
   GOOGLE_DCHECK(GetArena() == nullptr);
   hostpath_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  program_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
 
 void Message_CHS_Enroll::ArenaDtor(void* object) {
@@ -1608,7 +1600,6 @@ void Message_CHS_Enroll::Clear() {
   (void) cached_has_bits;
 
   hostpath_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
-  program_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
   success_ = false;
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
@@ -1634,15 +1625,6 @@ const char* Message_CHS_Enroll::_InternalParse(const char* ptr, ::PROTOBUF_NAMES
           auto str = _internal_mutable_hostpath();
           ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
           CHK_(::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, "megastructure.Message.CHS_Enroll.hostpath"));
-          CHK_(ptr);
-        } else goto handle_unusual;
-        continue;
-      // string program = 3;
-      case 3:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 26)) {
-          auto str = _internal_mutable_program();
-          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
-          CHK_(::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, "megastructure.Message.CHS_Enroll.program"));
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -1690,16 +1672,6 @@ failure:
         2, this->_internal_hostpath(), target);
   }
 
-  // string program = 3;
-  if (this->program().size() > 0) {
-    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
-      this->_internal_program().data(), static_cast<int>(this->_internal_program().length()),
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
-      "megastructure.Message.CHS_Enroll.program");
-    target = stream->WriteStringMaybeAliased(
-        3, this->_internal_program(), target);
-  }
-
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
@@ -1721,13 +1693,6 @@ size_t Message_CHS_Enroll::ByteSizeLong() const {
     total_size += 1 +
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
         this->_internal_hostpath());
-  }
-
-  // string program = 3;
-  if (this->program().size() > 0) {
-    total_size += 1 +
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
-        this->_internal_program());
   }
 
   // bool success = 1;
@@ -1769,9 +1734,6 @@ void Message_CHS_Enroll::MergeFrom(const Message_CHS_Enroll& from) {
   if (from.hostpath().size() > 0) {
     _internal_set_hostpath(from._internal_hostpath());
   }
-  if (from.program().size() > 0) {
-    _internal_set_program(from._internal_program());
-  }
   if (from.success() != 0) {
     _internal_set_success(from._internal_success());
   }
@@ -1799,7 +1761,6 @@ void Message_CHS_Enroll::InternalSwap(Message_CHS_Enroll* other) {
   using std::swap;
   _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
   hostpath_.Swap(&other->hostpath_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
-  program_.Swap(&other->program_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
   swap(success_, other->success_);
 }
 

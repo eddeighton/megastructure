@@ -45,7 +45,6 @@ message Message
 	{
 		bool success = 1;
 		string hostpath = 2;
-		string program = 3;
 	}
 	
 	message CHQ_Alive
