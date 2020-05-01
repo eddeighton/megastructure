@@ -433,7 +433,7 @@ void objectCompilationCommand( std::string strMsg, std::string strCommand,
     const int iResult = boost::process::system( strCommand );
     if( iResult )
     {
-        THROW_RTE( "Error invoking clang++ " << iResult );
+        THROW_RTE( "Error invoking clang++ with command: " << strCommand << "\n Error code: " << iResult );
     }
     if( bBenchCommands )
     {
@@ -454,8 +454,7 @@ void objectCompilationCommandSetFileTIme( std::string strMsg, std::string strCom
 }
 
 void build_component( const eg::ReadSession& session, const Environment& environment,
-    const ProjectTree& project, const std::string& strCoordinator, const std::string& strHost, const boost::filesystem::path& binPath
-	/*, FileWriteTracker& fileTracker, bool bBenchCommands, bool bLogCommands*/ )
+    const ProjectTree& project, const boost::filesystem::path& binPath )
 {
 	bool bBenchCommands = false;
 	
@@ -464,6 +463,7 @@ void build_component( const eg::ReadSession& session, const Environment& environ
 	
 	std::vector< boost::filesystem::path > sourceFiles;
 	
+	//generate the structures
 	{
 		//LogEntry log( std::cout, "Compiling data structures", bBenchCommands );
 		std::ostringstream osStructures;
@@ -489,6 +489,7 @@ void build_component( const eg::ReadSession& session, const Environment& environ
 		osCmd << "--name " << project.getProjectName() << " ";
 		osCmd << "--database " << project.getAnalysisFileName() << " ";
 		osCmd << "--dir " << project.getInterfaceFolder().generic_string() << " ";
+		osCmd << "--target " << project.getPythonFileName().generic_string() << " ";
 		
 		{
 			std::cout << "\n" << osCmd.str() << std::endl;
@@ -505,9 +506,8 @@ void build_component( const eg::ReadSession& session, const Environment& environ
 	//generate the eg component interface implementation
 	{
 		std::ostringstream osEGComponent;
-		generate_eg_component( osEGComponent, project.getProjectName(), strCoordinator, strHost, session );
-		const boost::filesystem::path egComponentSourceFilePath = 
-			project.getEGComponentSource( strCoordinator, strHost, project.getProjectName() );
+		generate_eg_component( osEGComponent, project.getProjectName(), project.getCoordinatorName(), project.getHostName(), session );
+		const boost::filesystem::path egComponentSourceFilePath = project.getEGComponentSource();
 		boost::filesystem::updateFileIfChanged( egComponentSourceFilePath, osEGComponent.str() );
 		sourceFiles.push_back( egComponentSourceFilePath );
 	}
@@ -564,7 +564,7 @@ void build_component( const eg::ReadSession& session, const Environment& environ
 	//generate the implementation files for the coordinator host
     for( const eg::TranslationUnit* pTranslationUnit : translationUnits.getTranslationUnits() )
     {
-		if( pTranslationUnit->getCoordinatorHostnameDefinitionFile().isHost( strHost ) )
+		if( pTranslationUnit->getCoordinatorHostnameDefinitionFile().isHost( project.getHostName() ) )
 		{
 			//generate the implementation source code
 			{
@@ -690,19 +690,20 @@ void command_build( bool bHelp, const std::string& strBuildCommand, const std::v
             THROW_RTE( "Specified path is not a directory: " << projectDirectory.generic_string() );
         }
 		
-        Environment environment;
+		//if( bFullRebuild && boost::filesystem::exists( project.getIntermediateFolder() ) )
+		//{
+		//    std::cout << "Removing: " << project.getIntermediateFolder().generic_string() << std::endl;
+		//    boost::filesystem::remove_all( project.getIntermediateFolder() );
+		//}
 		
-		ProjectTree projectTree( environment, projectDirectory, strProject );
+		//FileWriteTracker fileTracker( project ); 
+		
+			
+        Environment environment;
 		
 		if( strCoordinator.empty() && strHost.empty() )
 		{
-			//if( bFullRebuild && boost::filesystem::exists( project.getIntermediateFolder() ) )
-			//{
-			//    std::cout << "Removing: " << project.getIntermediateFolder().generic_string() << std::endl;
-			//    boost::filesystem::remove_all( project.getIntermediateFolder() );
-			//}
-			
-			//FileWriteTracker fileTracker( project ); 
+			ProjectTree projectTree( environment, projectDirectory, strProject );
 			
 			projectTree.print( std::cout );
 			
@@ -721,11 +722,13 @@ void command_build( bool bHelp, const std::string& strBuildCommand, const std::v
 			VERIFY_RTE_MSG( !strCoordinator.empty(), "Missing Coordinator" );
 			VERIFY_RTE_MSG( !strHost.empty(), "Missing Host Name" );
 			
+			std::cout << "building component: " << strCoordinator << " " << strHost << " " << strProject << std::endl;
+			
+			ProjectTree projectTree( environment, projectDirectory, strCoordinator, strHost, strProject );
+			
 			eg::ReadSession session( projectDirectory / "interface" / projectTree.getProjectName() / "database.db" );
 			
-			std::cout << "building component: " << strCoordinator << " " << strHost << " " << projectTree.getProjectName() << std::endl;
-			build_component( session, environment, projectTree, strCoordinator, strHost, binPath );
-			//	/*, FileWriteTracker& fileTracker, bool bBenchCommands, bool bLogCommands*/ )
+			build_component( session, environment, projectTree, binPath );
 					
 		}
     }

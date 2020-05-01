@@ -5,8 +5,10 @@
 #include "project.hpp"
 
 #include "common/file.hpp"
+#include "common/assert_verify.hpp"
 
-#include <boost/filesystem.hpp>
+#include "boost/filesystem.hpp"
+#include "boost/optional.hpp"
 
 #include <string>
 #include <memory>
@@ -89,9 +91,13 @@ class ProjectTree
 {
 public:
 	ProjectTree( Environment& environment, const boost::filesystem::path& root, const std::string& projectName );
+	ProjectTree( Environment& environment, const boost::filesystem::path& root, 
+		const std::string& coordinatorName, const std::string& hostName, const std::string& projectName );
 	
 	void print( std::ostream& os );
 	
+	const std::string& getCoordinatorName() const { return m_coordinatorName.get(); }
+	const std::string& getHostName() const { return m_hostName.get(); }
 	const std::string& getProjectName() const { return m_projectName; }
 	
 	const boost::filesystem::path& getRootPath() const { return m_path; }
@@ -276,24 +282,32 @@ public:
 	
 	boost::filesystem::path getRuntimeSource() const
 	{
+		VERIFY_RTE( m_coordinatorName && m_hostName );
 		std::ostringstream os;
-		os << "runtime.cpp";
+		os << m_coordinatorName.get() << '_' << m_hostName.get() << '_' << m_projectName << "_runtime.cpp";
 		return boost::filesystem::edsCannonicalise(
 					boost::filesystem::absolute( 
 						getInterfaceFolder() / os.str() ) );
 	}
 	
+	boost::filesystem::path getPythonFileName() const
+	{
+		VERIFY_RTE( m_coordinatorName && m_hostName );
+		std::ostringstream os;
+		os << m_coordinatorName.get() << '_' << m_hostName.get() << '_' << m_projectName << "_python_bindings.cpp";
+		return os.str();
+	}
 	boost::filesystem::path getPythonSource() const
 	{
-		std::ostringstream os;
-		os << "python_bindings.cpp";
+		VERIFY_RTE( m_coordinatorName && m_hostName );
 		return boost::filesystem::edsCannonicalise(
 					boost::filesystem::absolute( 
-						getInterfaceFolder() / os.str() ) );
+						getInterfaceFolder() / getPythonFileName() ) );
 	}
 	
 	boost::filesystem::path getAnalysisFileName() const
 	{
+		//VERIFY_RTE( m_coordinatorName && m_hostName );
 		std::ostringstream os;
 		os << "database.db";
 		return boost::filesystem::edsCannonicalise(
@@ -320,11 +334,11 @@ public:
 	}
 	
 
-	boost::filesystem::path getEGComponentSource( const std::string& strCoordinator, 
-		const std::string& strHostName, const std::string& strProjectName ) const
+	boost::filesystem::path getEGComponentSource() const
 	{
+		VERIFY_RTE( m_coordinatorName && m_hostName );
 		std::ostringstream os;
-		os << strCoordinator << '_' << strHostName << '_' << strProjectName << "_component.cpp";
+		os << m_coordinatorName.get() << '_' << m_hostName.get() << '_' << m_projectName << "_component.cpp";
 		return boost::filesystem::edsCannonicalise(
 			boost::filesystem::absolute( 
 				getInterfaceFolder() / os.str() ) );
@@ -335,6 +349,8 @@ public:
 	
 private:
 	boost::filesystem::path m_path;
+	boost::optional< std::string > m_coordinatorName;
+	boost::optional< std::string > m_hostName;
 	std::string m_projectName;
 	Coordinator::PtrVector m_coordinators;
 };

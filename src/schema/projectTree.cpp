@@ -188,9 +188,24 @@ ProjectTree::ProjectTree( Environment& environment, const boost::filesystem::pat
 				m_coordinators.push_back( pCoordinator );
 			}
 		}
-		else
+	}
+}
+
+ProjectTree::ProjectTree( Environment& environment, const boost::filesystem::path& root, 
+	const std::string& coordinatorName, const std::string& hostName, const std::string& projectName )
+	:	m_path( root ),
+		m_coordinatorName( coordinatorName ),
+		m_hostName( hostName ),
+		m_projectName( projectName )
+{
+	for( auto& directoryItem : boost::filesystem::directory_iterator( m_path ) )
+	{
+		if( boost::filesystem::is_directory( directoryItem ) )
 		{
-			
+			if( Coordinator::Ptr pCoordinator = recurseCoordinatorFolder( environment, directoryItem, m_projectName ) )
+			{
+				m_coordinators.push_back( pCoordinator );
+			}
 		}
 	}
 }
