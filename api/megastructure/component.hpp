@@ -20,6 +20,8 @@ namespace megastructure
 {
 	std::string getHostProgramName();
 	
+	class Program;
+	
 	class Component
 	{
 		friend class EnrollHostActivity;
@@ -32,12 +34,13 @@ namespace megastructure
 		virtual ~Component();
 		
 		const std::string& getHostProgramName() const { return m_strHostProgram; }
+		const std::string& getSlaveName() const { return m_strSlaveName; }
 		const boost::filesystem::path& getSlaveWorkspacePath() const { return m_slaveWorkspacePath; }
-		
 		
 		void runCycle();
 		
 	private:
+		void setSlaveName( const std::string& strSlaveName ) { m_strSlaveName = strSlaveName; }
 		void setSlaveWorkspacePath( const boost::filesystem::path& slaveWorkspacePath ) { m_slaveWorkspacePath = slaveWorkspacePath; }
 		
 		//activities
@@ -58,6 +61,9 @@ namespace megastructure
 		void startJob( Job::Ptr pJob );
 		void jobComplete( Job::Ptr pJob );
 		
+		//program
+		void setProgram( std::shared_ptr< Program > pProgram );
+		
 		//megastructure protocol
 		bool send( megastructure::Message& message )
 		{
@@ -66,6 +72,7 @@ namespace megastructure
 		
 	private:
 		std::string m_strHostProgram;
+		std::string m_strSlaveName;
 		boost::filesystem::path m_slaveWorkspacePath;
 		megastructure::Queue m_queue;
 		megastructure::Client m_client;
@@ -73,6 +80,8 @@ namespace megastructure
 		
 		std::mutex m_simThreadMutex;
 		std::list< Job::Ptr > m_jobs;
+		
+		std::shared_ptr< Program > m_pProgram;
 	};
 	
 }

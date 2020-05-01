@@ -9,6 +9,7 @@
 #include <functional>
 
 #include "activities.hpp"
+#include "program.hpp"
 
 namespace megastructure
 {
@@ -57,8 +58,13 @@ namespace megastructure
 			pJob->run();
 		}
 		
+		if( m_pProgram )
+		{
+			m_pProgram->run();
+		}
+		
 	}
-	
+		
 	void Component::startJob( Job::Ptr pJob )
 	{
 		std::lock_guard< std::mutex > lock( m_simThreadMutex );
@@ -80,5 +86,11 @@ namespace megastructure
 			}
 		}
 		m_queue.jobComplete( pJob );
+	}
+	
+	//only called in main thread
+	void Component::setProgram( Program::Ptr pProgram )
+	{
+		m_pProgram = pProgram;
 	}
 }

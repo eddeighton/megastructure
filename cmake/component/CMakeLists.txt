@@ -18,6 +18,8 @@ set( MEGA_COMPONENT_SOURCES
 	${MEGA_SRC_DIR}/component/activities.cpp
 	${MEGA_SRC_DIR}/component/jobs.hpp
 	${MEGA_SRC_DIR}/component/jobs.cpp
+	${MEGA_SRC_DIR}/component/program.hpp
+	${MEGA_SRC_DIR}/component/program.cpp
     )
 
 add_library( componentlib STATIC

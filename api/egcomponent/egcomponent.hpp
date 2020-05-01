@@ -5,19 +5,20 @@
 //corona virus was here!!
 
 #include "boost/fiber/all.hpp"
+#include "boost/config.hpp"
 
 #include <string>
 
-#ifdef MEGASTRUCTURE_EG_COMPONENT
-#define MEGASTRUCTURE_EG_API __declspec( dllexport )
-#else
-#define MEGASTRUCTURE_EG_API __declspec( dllimport )
-#endif
+//#ifdef MEGASTRUCTURE_EG_COMPONENT
+//#define MEGASTRUCTURE_EG_API __declspec( dllexport )
+//#else
+//#define MEGASTRUCTURE_EG_API __declspec( dllimport )
+//#endif
 	
 namespace megastructure
 {
 	
-	class Buffer
+	class BOOST_SYMBOL_VISIBLE Buffer
 	{
 	public:
 		virtual void Release() = 0;
@@ -27,24 +28,24 @@ namespace megastructure
 		virtual std::size_t getSize() = 0;
 	};
 	
-	class SharedBuffer : public Buffer
+	class BOOST_SYMBOL_VISIBLE SharedBuffer : public Buffer
 	{
 	public:
 	};
 	
-	class LocalBuffer : public Buffer
+	class BOOST_SYMBOL_VISIBLE LocalBuffer : public Buffer
 	{
 	public:
 	};
 	
-	class MemorySystem
+	class BOOST_SYMBOL_VISIBLE MemorySystem
 	{
 	public:
 		virtual SharedBuffer* getSharedBuffer( const char* pszName, std::size_t szSize ) = 0;
 		virtual LocalBuffer* getLocalBuffer( const char* pszName, std::size_t szSize ) = 0;
 	};
 	
-	class MegaProtocol
+	class BOOST_SYMBOL_VISIBLE MegaProtocol
 	{
 	public:
 		virtual boost::fibers::future< std::string > Read( std::uint32_t uiDimensionType, std::uint32_t uiInstance ) = 0;
@@ -57,8 +58,7 @@ namespace megastructure
 		
 	};
 	
-	
-	class EGComponent
+	class BOOST_SYMBOL_VISIBLE EGComponent
 	{
 	public:
 		virtual void Initialise( MemorySystem* pMemorySystem, MegaProtocol* pMegaProtocol ) = 0;

@@ -987,32 +987,58 @@ class Message_CHS_Enroll PROTOBUF_FINAL :
   // accessors -------------------------------------------------------
 
   enum : int {
-    kHostpathFieldNumber = 2,
+    kWorkspacepathFieldNumber = 2,
+    kSlavenameFieldNumber = 3,
     kSuccessFieldNumber = 1,
   };
-  // string hostpath = 2;
-  void clear_hostpath();
-  const std::string& hostpath() const;
-  void set_hostpath(const std::string& value);
-  void set_hostpath(std::string&& value);
-  void set_hostpath(const char* value);
-  void set_hostpath(const char* value, size_t size);
-  std::string* mutable_hostpath();
-  std::string* release_hostpath();
-  void set_allocated_hostpath(std::string* hostpath);
+  // string workspacepath = 2;
+  void clear_workspacepath();
+  const std::string& workspacepath() const;
+  void set_workspacepath(const std::string& value);
+  void set_workspacepath(std::string&& value);
+  void set_workspacepath(const char* value);
+  void set_workspacepath(const char* value, size_t size);
+  std::string* mutable_workspacepath();
+  std::string* release_workspacepath();
+  void set_allocated_workspacepath(std::string* workspacepath);
   GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
   "    string fields are deprecated and will be removed in a"
   "    future release.")
-  std::string* unsafe_arena_release_hostpath();
+  std::string* unsafe_arena_release_workspacepath();
   GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
   "    string fields are deprecated and will be removed in a"
   "    future release.")
-  void unsafe_arena_set_allocated_hostpath(
-      std::string* hostpath);
+  void unsafe_arena_set_allocated_workspacepath(
+      std::string* workspacepath);
   private:
-  const std::string& _internal_hostpath() const;
-  void _internal_set_hostpath(const std::string& value);
-  std::string* _internal_mutable_hostpath();
+  const std::string& _internal_workspacepath() const;
+  void _internal_set_workspacepath(const std::string& value);
+  std::string* _internal_mutable_workspacepath();
+  public:
+
+  // string slavename = 3;
+  void clear_slavename();
+  const std::string& slavename() const;
+  void set_slavename(const std::string& value);
+  void set_slavename(std::string&& value);
+  void set_slavename(const char* value);
+  void set_slavename(const char* value, size_t size);
+  std::string* mutable_slavename();
+  std::string* release_slavename();
+  void set_allocated_slavename(std::string* slavename);
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  std::string* unsafe_arena_release_slavename();
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  void unsafe_arena_set_allocated_slavename(
+      std::string* slavename);
+  private:
+  const std::string& _internal_slavename() const;
+  void _internal_set_slavename(const std::string& value);
+  std::string* _internal_mutable_slavename();
   public:
 
   // bool success = 1;
@@ -1031,7 +1057,8 @@ class Message_CHS_Enroll PROTOBUF_FINAL :
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr hostpath_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr workspacepath_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr slavename_;
   bool success_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_megastructure_2eproto;
@@ -2776,85 +2803,166 @@ inline void Message_CHS_Enroll::set_success(bool value) {
   // @@protoc_insertion_point(field_set:megastructure.Message.CHS_Enroll.success)
 }
 
-// string hostpath = 2;
-inline void Message_CHS_Enroll::clear_hostpath() {
-  hostpath_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+// string workspacepath = 2;
+inline void Message_CHS_Enroll::clear_workspacepath() {
+  workspacepath_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
-inline const std::string& Message_CHS_Enroll::hostpath() const {
-  // @@protoc_insertion_point(field_get:megastructure.Message.CHS_Enroll.hostpath)
-  return _internal_hostpath();
+inline const std::string& Message_CHS_Enroll::workspacepath() const {
+  // @@protoc_insertion_point(field_get:megastructure.Message.CHS_Enroll.workspacepath)
+  return _internal_workspacepath();
 }
-inline void Message_CHS_Enroll::set_hostpath(const std::string& value) {
-  _internal_set_hostpath(value);
-  // @@protoc_insertion_point(field_set:megastructure.Message.CHS_Enroll.hostpath)
+inline void Message_CHS_Enroll::set_workspacepath(const std::string& value) {
+  _internal_set_workspacepath(value);
+  // @@protoc_insertion_point(field_set:megastructure.Message.CHS_Enroll.workspacepath)
 }
-inline std::string* Message_CHS_Enroll::mutable_hostpath() {
-  // @@protoc_insertion_point(field_mutable:megastructure.Message.CHS_Enroll.hostpath)
-  return _internal_mutable_hostpath();
+inline std::string* Message_CHS_Enroll::mutable_workspacepath() {
+  // @@protoc_insertion_point(field_mutable:megastructure.Message.CHS_Enroll.workspacepath)
+  return _internal_mutable_workspacepath();
 }
-inline const std::string& Message_CHS_Enroll::_internal_hostpath() const {
-  return hostpath_.Get();
+inline const std::string& Message_CHS_Enroll::_internal_workspacepath() const {
+  return workspacepath_.Get();
 }
-inline void Message_CHS_Enroll::_internal_set_hostpath(const std::string& value) {
+inline void Message_CHS_Enroll::_internal_set_workspacepath(const std::string& value) {
   
-  hostpath_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+  workspacepath_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
 }
-inline void Message_CHS_Enroll::set_hostpath(std::string&& value) {
+inline void Message_CHS_Enroll::set_workspacepath(std::string&& value) {
   
-  hostpath_.Set(
+  workspacepath_.Set(
     &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
-  // @@protoc_insertion_point(field_set_rvalue:megastructure.Message.CHS_Enroll.hostpath)
+  // @@protoc_insertion_point(field_set_rvalue:megastructure.Message.CHS_Enroll.workspacepath)
 }
-inline void Message_CHS_Enroll::set_hostpath(const char* value) {
+inline void Message_CHS_Enroll::set_workspacepath(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
   
-  hostpath_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
+  workspacepath_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
               GetArena());
-  // @@protoc_insertion_point(field_set_char:megastructure.Message.CHS_Enroll.hostpath)
+  // @@protoc_insertion_point(field_set_char:megastructure.Message.CHS_Enroll.workspacepath)
 }
-inline void Message_CHS_Enroll::set_hostpath(const char* value,
+inline void Message_CHS_Enroll::set_workspacepath(const char* value,
     size_t size) {
   
-  hostpath_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+  workspacepath_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
       reinterpret_cast<const char*>(value), size), GetArena());
-  // @@protoc_insertion_point(field_set_pointer:megastructure.Message.CHS_Enroll.hostpath)
+  // @@protoc_insertion_point(field_set_pointer:megastructure.Message.CHS_Enroll.workspacepath)
 }
-inline std::string* Message_CHS_Enroll::_internal_mutable_hostpath() {
+inline std::string* Message_CHS_Enroll::_internal_mutable_workspacepath() {
   
-  return hostpath_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  return workspacepath_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
-inline std::string* Message_CHS_Enroll::release_hostpath() {
-  // @@protoc_insertion_point(field_release:megastructure.Message.CHS_Enroll.hostpath)
-  return hostpath_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+inline std::string* Message_CHS_Enroll::release_workspacepath() {
+  // @@protoc_insertion_point(field_release:megastructure.Message.CHS_Enroll.workspacepath)
+  return workspacepath_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
-inline void Message_CHS_Enroll::set_allocated_hostpath(std::string* hostpath) {
-  if (hostpath != nullptr) {
+inline void Message_CHS_Enroll::set_allocated_workspacepath(std::string* workspacepath) {
+  if (workspacepath != nullptr) {
     
   } else {
     
   }
-  hostpath_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), hostpath,
+  workspacepath_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), workspacepath,
       GetArena());
-  // @@protoc_insertion_point(field_set_allocated:megastructure.Message.CHS_Enroll.hostpath)
+  // @@protoc_insertion_point(field_set_allocated:megastructure.Message.CHS_Enroll.workspacepath)
 }
-inline std::string* Message_CHS_Enroll::unsafe_arena_release_hostpath() {
-  // @@protoc_insertion_point(field_unsafe_arena_release:megastructure.Message.CHS_Enroll.hostpath)
+inline std::string* Message_CHS_Enroll::unsafe_arena_release_workspacepath() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:megastructure.Message.CHS_Enroll.workspacepath)
   GOOGLE_DCHECK(GetArena() != nullptr);
   
-  return hostpath_.UnsafeArenaRelease(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+  return workspacepath_.UnsafeArenaRelease(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
       GetArena());
 }
-inline void Message_CHS_Enroll::unsafe_arena_set_allocated_hostpath(
-    std::string* hostpath) {
+inline void Message_CHS_Enroll::unsafe_arena_set_allocated_workspacepath(
+    std::string* workspacepath) {
   GOOGLE_DCHECK(GetArena() != nullptr);
-  if (hostpath != nullptr) {
+  if (workspacepath != nullptr) {
     
   } else {
     
   }
-  hostpath_.UnsafeArenaSetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
-      hostpath, GetArena());
-  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:megastructure.Message.CHS_Enroll.hostpath)
+  workspacepath_.UnsafeArenaSetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      workspacepath, GetArena());
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:megastructure.Message.CHS_Enroll.workspacepath)
+}
+
+// string slavename = 3;
+inline void Message_CHS_Enroll::clear_slavename() {
+  slavename_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline const std::string& Message_CHS_Enroll::slavename() const {
+  // @@protoc_insertion_point(field_get:megastructure.Message.CHS_Enroll.slavename)
+  return _internal_slavename();
+}
+inline void Message_CHS_Enroll::set_slavename(const std::string& value) {
+  _internal_set_slavename(value);
+  // @@protoc_insertion_point(field_set:megastructure.Message.CHS_Enroll.slavename)
+}
+inline std::string* Message_CHS_Enroll::mutable_slavename() {
+  // @@protoc_insertion_point(field_mutable:megastructure.Message.CHS_Enroll.slavename)
+  return _internal_mutable_slavename();
+}
+inline const std::string& Message_CHS_Enroll::_internal_slavename() const {
+  return slavename_.Get();
+}
+inline void Message_CHS_Enroll::_internal_set_slavename(const std::string& value) {
+  
+  slavename_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+}
+inline void Message_CHS_Enroll::set_slavename(std::string&& value) {
+  
+  slavename_.Set(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+  // @@protoc_insertion_point(field_set_rvalue:megastructure.Message.CHS_Enroll.slavename)
+}
+inline void Message_CHS_Enroll::set_slavename(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  
+  slavename_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
+              GetArena());
+  // @@protoc_insertion_point(field_set_char:megastructure.Message.CHS_Enroll.slavename)
+}
+inline void Message_CHS_Enroll::set_slavename(const char* value,
+    size_t size) {
+  
+  slavename_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
+  // @@protoc_insertion_point(field_set_pointer:megastructure.Message.CHS_Enroll.slavename)
+}
+inline std::string* Message_CHS_Enroll::_internal_mutable_slavename() {
+  
+  return slavename_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline std::string* Message_CHS_Enroll::release_slavename() {
+  // @@protoc_insertion_point(field_release:megastructure.Message.CHS_Enroll.slavename)
+  return slavename_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline void Message_CHS_Enroll::set_allocated_slavename(std::string* slavename) {
+  if (slavename != nullptr) {
+    
+  } else {
+    
+  }
+  slavename_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), slavename,
+      GetArena());
+  // @@protoc_insertion_point(field_set_allocated:megastructure.Message.CHS_Enroll.slavename)
+}
+inline std::string* Message_CHS_Enroll::unsafe_arena_release_slavename() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:megastructure.Message.CHS_Enroll.slavename)
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  
+  return slavename_.UnsafeArenaRelease(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      GetArena());
+}
+inline void Message_CHS_Enroll::unsafe_arena_set_allocated_slavename(
+    std::string* slavename) {
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  if (slavename != nullptr) {
+    
+  } else {
+    
+  }
+  slavename_.UnsafeArenaSetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      slavename, GetArena());
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:megastructure.Message.CHS_Enroll.slavename)
 }
 
 // -------------------------------------------------------------------

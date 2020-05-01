@@ -2,8 +2,9 @@
 #ifndef COMPONENT_JOBS_01_MAY_2020
 #define COMPONENT_JOBS_01_MAY_2020
 
-#include "megastructure/component.hpp"
+#include "program.hpp"
 
+#include "megastructure/component.hpp"
 
 namespace megastructure
 {
@@ -12,15 +13,13 @@ namespace megastructure
 	{
 	public:
 		LoadProgramJob( Component& component, 
-			const std::string& strHostName, 
-			const std::string& strProgramName );
+			Program::Ptr pNewProgram );
 			
 		void run();
 		
 	private:
 		Component& m_component;
-		std::string m_strHostName;
-		std::string m_strProgramName ;
+		Program::Ptr m_pNewProgram;
 	};
 
 

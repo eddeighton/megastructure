@@ -42,13 +42,14 @@ namespace megastructure
 		}
 		return message;
 	}
-	inline Message chs_enroll( bool bSuccess, const boost::filesystem::path& workspacePath )
+	inline Message chs_enroll( bool bSuccess, const boost::filesystem::path& workspacePath, const std::string& strSlaveName )
 	{
 		Message message;
 		{
 			Message::CHS_Enroll* pEnroll = message.mutable_chs_enroll();
 			pEnroll->set_success( bSuccess );
-			pEnroll->set_hostpath( workspacePath.string() );
+			pEnroll->set_workspacepath( workspacePath.string() );
+			pEnroll->set_slavename( strSlaveName );
 		}
 		return message;
 	}

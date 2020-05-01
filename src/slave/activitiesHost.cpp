@@ -103,7 +103,7 @@ bool HostEnrollActivity::clientMessage( std::uint32_t uiClient, const megastruct
 			
 		if( m_slave.enroll( enroll.processname(), uiClient ) )
 		{
-			if( !m_slave.sendHost( chs_enroll( true, m_slave.getWorkspace() ), uiClient ) )
+			if( !m_slave.sendHost( chs_enroll( true, m_slave.getWorkspace(), m_slave.getName() ), uiClient ) )
 			{
 				m_slave.removeClient( uiClient );
 			}
@@ -111,73 +111,9 @@ bool HostEnrollActivity::clientMessage( std::uint32_t uiClient, const megastruct
 		else 
 		{
 			std::cout << "HostEnrollActivity error" << std::endl;
-			/*std::uint32_t uiExisting;
-			if( m_slave.getClientID( enroll.processname(), uiExisting ) )
-			{
-				std::cout << "Enroll attempting for: " << enroll.processname() << " which has existing client of: " << uiExisting << std::endl;
-				std::shared_ptr< TestHostActivity > pTest = 
-					std::make_shared< TestHostActivity >( m_slave, uiExisting, enroll.processname() );
-				m_testsMap.insert( std::make_pair( pTest, uiClient ) );
-				m_slave.startActivity( pTest );
-				return true;
-			}
-			else
-			{
-				std::cout << "Enroll denied for: " << enroll.processname() << " for client: " << uiClient << std::endl;
-				if( !m_slave.sendHost( chs_enroll( false ), uiClient ) )
-				{
-					m_slave.removeClient( uiClient );
-				}
-			}*/
 		}
 		
 		return true;
-	}
-	return false;
-}
-
-bool HostEnrollActivity::activityComplete( Activity::Ptr pActivity )
-{
-	using namespace megastructure;
-	if( std::shared_ptr< TestHostActivity > pTest = 
-			std::dynamic_pointer_cast< TestHostActivity >( pActivity ) )
-	{
-		std::map< std::shared_ptr< TestHostActivity >, std::uint32_t >::iterator 
-			iFind = m_testsMap.find( pTest );
-		if( iFind != m_testsMap.end() )
-		{
-			const std::uint32_t testedID = pTest->getClientID();
-			const std::uint32_t clientID = iFind->second;
-			m_testsMap.erase( iFind );
-			if( pTest->isAlive() )
-			{
-				std::cout << "Existing client: " << clientID << " is alive as: " << pTest->getName() << std::endl;
-				//existing client is alive so nothing we can do...
-				if( !m_slave.sendHost( chs_enroll( false ), clientID ) )
-				{
-					m_slave.removeClient( clientID );
-				}
-			}
-			else
-			{
-				std::cout << "Existing client: " << testedID << " is not alive so allowing enrollment of new client: " << 
-					clientID << " as: " << pTest->getName() << std::endl;
-				//testing the existing client indicated it was actually dead so can enroll the new one
-				if( m_slave.enroll( pTest->getName(), clientID ) )
-				{
-					if( !m_slave.sendHost( chs_enroll( true, m_slave.getWorkspace() ), clientID ) )
-					{
-						m_slave.removeClient( clientID );
-					}
-				}
-				else
-				{
-					std::cout << "Enroll denied after retry for: " << pTest->getName() << " for client: " << clientID << std::endl;
-					m_slave.sendHost( chs_enroll( false ), clientID );
-				}
-			}
-			return true;
-		}
 	}
 	return false;
 }

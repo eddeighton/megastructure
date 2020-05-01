@@ -66,6 +66,7 @@ void generate_eg_component( std::ostream& os,
 	os << "//ed was here\n";
 	os << "#include <iostream>\n";
 	os << "#include <boost/fiber/all.hpp>\n";
+	os << "#include <boost/config.hpp>\n";
 	os << "\n";
 	
 	os << "#include \"egcomponent/egcomponent.hpp\"\n";
@@ -223,21 +224,8 @@ public:
 	}
 };
 
-std::unique_ptr< EGComponentImpl > g_pComponent;
-
-}
-
-extern "C"
-{
-	
-MEGASTRUCTURE_EG_API megastructure::EGComponent* GET_EG_COMPONENT()
-{
-	if( !megastructure::g_pComponent )
-	{
-		megastructure::g_pComponent.reset( new megastructure::EGComponentImpl );
-	}
-	return megastructure::g_pComponent.get();
-}
+extern "C" BOOST_SYMBOL_EXPORT EGComponentImpl g_pluginSymbol;
+EGComponentImpl g_pluginSymbol;
 
 }
 	

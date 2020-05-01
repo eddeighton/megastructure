@@ -100,7 +100,6 @@ namespace slave
 		}
 		
 		virtual bool clientMessage( std::uint32_t uiClient, const megastructure::Message& message );
-		virtual bool activityComplete( Activity::Ptr pActivity );
 		
 	private:
 		Slave& m_slave;

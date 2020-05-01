@@ -540,8 +540,6 @@ void build_component( const eg::ReadSession& session, const Environment& environ
 		
 		osCmd << "-Xclang -include-pch ";
 		osCmd << "-Xclang " << environment.printPath( project.getInterfacePCH() ) << " ";
-		
-		osCmd << " -DMEGASTRUCTURE_EG_COMPONENT ";
 	
 		osCmd << "-I " << environment.printPath( environment.getEGLibraryInclude() ) << " ";
 		osCmd << "-I " << environment.printPath( project.getInterfaceFolder() ) << " ";
