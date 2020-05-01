@@ -39,4 +39,46 @@ namespace megastructure
 		m_client.stop();
 		m_zeromq.join();
 	}
+	
+	
+	void Component::runCycle()
+	{
+		Job::Ptr pJob;
+		{
+			std::lock_guard< std::mutex > lock( m_simThreadMutex );
+			if( !m_jobs.empty() )
+			{
+				pJob = m_jobs.front();
+			}
+		}
+		
+		if( pJob )
+		{
+			pJob->run();
+		}
+		
+	}
+	
+	void Component::startJob( Job::Ptr pJob )
+	{
+		std::lock_guard< std::mutex > lock( m_simThreadMutex );
+		m_jobs.push_back( pJob );
+	}
+	
+	void Component::jobComplete( Job::Ptr pJob )
+	{
+		{
+			std::lock_guard< std::mutex > lock( m_simThreadMutex );
+			for( std::list< Job::Ptr >::iterator i = m_jobs.begin(),
+				iEnd = m_jobs.end(); i!=iEnd; ++i )
+			{
+				if( *i == pJob )
+				{
+					m_jobs.erase( i );
+					break;
+				}
+			}
+		}
+		m_queue.jobComplete( pJob );
+	}
 }

@@ -194,8 +194,7 @@ namespace megastructure
 		
 		if( m_pContext != nullptr )
 		{
-			zmq_ctx_term( m_pContext );
-			//zmq_ctx_shutdown( m_pContext );
+			zmq_ctx_shutdown( m_pContext );
 			m_pContext = nullptr;
 		}
 	}

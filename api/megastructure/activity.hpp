@@ -9,12 +9,14 @@
 namespace megastructure
 {
 
-	class Job
+	class Job : public std::enable_shared_from_this< Job >
 	{
 	public:
 		using Ptr = std::shared_ptr< Job >;
+		using PtrVector = std::vector< Ptr >;
 		
 		virtual ~Job();
+		virtual void run() = 0;
 	};
 	
 	class Activity : public std::enable_shared_from_this< Activity >

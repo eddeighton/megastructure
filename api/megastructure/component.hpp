@@ -13,12 +13,20 @@
 
 #include "boost/filesystem/path.hpp"
 
+#include <mutex>
+#include <list>
+
 namespace megastructure
 {
 	std::string getHostProgramName();
 	
 	class Component
 	{
+		friend class EnrollHostActivity;
+		friend class AliveTestActivity;
+		friend class LoadProgramActivity;
+		
+		friend class LoadProgramJob;
 	public:
 		Component( const std::string& strSlavePort, const std::string& strProgramName );
 		virtual ~Component();
@@ -26,8 +34,13 @@ namespace megastructure
 		const std::string& getHostProgramName() const { return m_strHostProgram; }
 		const boost::filesystem::path& getSlaveWorkspacePath() const { return m_slaveWorkspacePath; }
 		
+		
+		void runCycle();
+		
+	private:
 		void setSlaveWorkspacePath( const boost::filesystem::path& slaveWorkspacePath ) { m_slaveWorkspacePath = slaveWorkspacePath; }
 		
+		//activities
 		void startActivity( megastructure::Activity::Ptr pActivity )
 		{
 			m_queue.startActivity( pActivity );
@@ -41,6 +54,11 @@ namespace megastructure
 			m_queue.activityComplete( pActivity );
 		}
 		
+		//jobs
+		void startJob( Job::Ptr pJob );
+		void jobComplete( Job::Ptr pJob );
+		
+		//megastructure protocol
 		bool send( megastructure::Message& message )
 		{
 			return m_client.send( message);
@@ -52,6 +70,9 @@ namespace megastructure
 		megastructure::Queue m_queue;
 		megastructure::Client m_client;
 		std::thread m_zeromq;
+		
+		std::mutex m_simThreadMutex;
+		std::list< Job::Ptr > m_jobs;
 	};
 	
 }

@@ -2,7 +2,7 @@
 #include <iostream>
 #include <chrono>
 #include <thread>
-#include <signal.h>
+//#include <signal.h>
 
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
@@ -18,7 +18,6 @@
 
 struct Args
 {
-	//boost::filesystem::path componentPath;
 	std::string slavePort;
 };
 
@@ -31,7 +30,6 @@ bool parse_args( int argc, const char* argv[], Args& args )
 		boost::program_options::variables_map variables;
 		
 		options.add_options()
-           //("component", po::value< boost::filesystem::path >( &args.componentPath ), "Component" )
 			("port", po::value< std::string >( &args.slavePort ), "Slave Port" )
 			("help", "produce help message")
 		;
@@ -50,13 +48,6 @@ bool parse_args( int argc, const char* argv[], Args& args )
 			std::cout << options << "\n";
 			return false;
 		}
-		
-		/*if( args.componentPath.empty() )
-		{
-			std::cout << "Missing component specification" << std::endl;
-			return false;
-		}*/
-
 	}
 	catch( std::exception& e )
 	{
@@ -66,6 +57,12 @@ bool parse_args( int argc, const char* argv[], Args& args )
 	return true;
 }
 
+std::string readInput()
+{
+	std::string str;
+	std::getline( std::cin, str );
+	return str;
+}
 
 int main( int argc, const char* argv[] )
 {
@@ -76,16 +73,7 @@ int main( int argc, const char* argv[] )
 	}
 	
 	try
-	{
-		/*HMODULE hModule = LoadLibrary( args.componentPath.string().c_str() );
-		VERIFY_RTE_MSG( hModule, "Failed to load module: " << args.componentPath );
-		
-		typedef megastructure::EGComponent*(*GetComponentFunctionPtr)();
-		GetComponentFunctionPtr pFunction = (GetComponentFunctionPtr) GetProcAddress( hModule, "GET_EG_COMPONENT" );
-		VERIFY_RTE_MSG( pFunction, "Failed to find GET_EG_COMPONENT in module: " << args.componentPath );
-		
-		megastructure::EGComponent* pComponent = (*pFunction)();*/
-		
+	{		
 		std::cout << "Host: " << 
 			megastructure::getHostProgramName() << " : " << 
 			Common::getProcessID() << std::endl;
@@ -98,17 +86,36 @@ int main( int argc, const char* argv[] )
 			THROW_RTE( "Could not resolve Slave Port number - set MEGAPORT or pass port on command line" );
 		}
 		
+		std::future< std::string > inputStringFuture =
+			std::async( std::launch::async, readInput );
+		
 		megastructure::Component component( 
 			strSlavePort,
 			megastructure::getHostProgramName() );
 		
 		while( true )
 		{
-			std::string strInput;
-			std::cin >> strInput;
+			using namespace std::chrono_literals;
+			std::future_status status =
+				inputStringFuture.wait_for( 100ms );
+			if( status == std::future_status::deferred ||
+				status == std::future_status::ready )
+			{
+				std::string strInput = inputStringFuture.get();
+				if( strInput == "quit" )
+				{
+					break;
+				}
+				else
+				{
+					std::cout << "Unrecognised input: " << strInput << std::endl;
+				}
+				
+				inputStringFuture =
+					std::async( std::launch::async, readInput );
+			}
 			
-			if( strInput == "quit" )
-				break;
+			component.runCycle();
 		}
 		
 	}

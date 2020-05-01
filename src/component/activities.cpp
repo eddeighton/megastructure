@@ -2,6 +2,8 @@
 
 #include "activities.hpp"
 
+#include "jobs.hpp"
+
 namespace megastructure
 {
 	
@@ -58,7 +60,24 @@ bool LoadProgramActivity::serverMessage( const Message& message )
 				loadProgramRequest.hostname() << 
 				" program name: " << loadProgramRequest.programname() << std::endl;
 		}
+		
+		m_pLoadProgramJob.reset( new LoadProgramJob( 
+			m_component,
+			loadProgramRequest.hostname(),
+			loadProgramRequest.programname() ) );
 			
+		m_component.startJob( m_pLoadProgramJob );
+			
+		return true;
+	}
+	return false;
+}
+	
+bool LoadProgramActivity::jobComplete( Job::Ptr pJob )
+{
+	if( m_pLoadProgramJob == pJob )
+	{
+		m_pLoadProgramJob.reset();
 		Message response;
 		{
 			Message::HCS_Load* pLoadResponse = response.mutable_hcs_load();
@@ -69,6 +88,5 @@ bool LoadProgramActivity::serverMessage( const Message& message )
 	}
 	return false;
 }
-	
 	
 }

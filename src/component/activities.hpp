@@ -72,9 +72,11 @@ namespace megastructure
 		}
 		
 		virtual bool serverMessage( const Message& message );
+		virtual bool jobComplete( Job::Ptr pJob );
 		
 	private:
 		Component& m_component;
+		Job::Ptr m_pLoadProgramJob;
 	};
 	
 	
