@@ -79,6 +79,32 @@ namespace megastructure
 		Job::Ptr m_pLoadProgramJob;
 	};
 	
+    
+	////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////
+	class BufferActivity : public Activity
+	{
+	public:
+		BufferActivity( 
+					Component& component,
+					const std::string& bufferName,
+                    std::size_t szBufferSize ) 
+			:	m_component( component ),
+				m_bufferName( bufferName ),
+				m_bufferSize( szBufferSize )
+		{
+		}
+		
+		virtual void start();
+		virtual bool serverMessage( const Message& message );
+		
+        std::future< std::string > getSharedBufferName() { return m_result.get_future(); }
+	private:
+		Component& m_component;
+		std::string m_bufferName;
+        std::size_t m_bufferSize;
+        std::promise< std::string > m_result;
+	};
 	
 }
 

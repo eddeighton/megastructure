@@ -9,6 +9,8 @@
 #include "megastructure/clientServer.hpp"
 #include "megastructure/queue.hpp"
 
+#include "egcomponent/egcomponent.hpp"
+
 #include "protocol/megastructure.pb.h"
 
 #include "boost/filesystem/path.hpp"
@@ -27,8 +29,11 @@ namespace megastructure
 		friend class EnrollHostActivity;
 		friend class AliveTestActivity;
 		friend class LoadProgramActivity;
-		
+		friend class BufferActivity;
+        
 		friend class LoadProgramJob;
+        
+        friend class Program;
 	public:
 		Component( const std::string& strSlavePort, const std::string& strProgramName );
 		virtual ~Component();
@@ -63,6 +68,7 @@ namespace megastructure
 		
 		//program
 		void setProgram( std::shared_ptr< Program > pProgram );
+        std::future< std::string > getSharedBuffer( const std::string& strName, std::size_t szSize );
 		
 		//megastructure protocol
 		bool send( megastructure::Message& message )

@@ -91,6 +91,18 @@ namespace megastructure
 	//only called in main thread
 	void Component::setProgram( Program::Ptr pProgram )
 	{
+        //std::lock_guard< std::mutex > lock( m_simThreadMutex );
 		m_pProgram = pProgram;
 	}
+    
+    std::future< std::string > Component::getSharedBuffer( const std::string& strName, std::size_t szSize )
+    {
+        //std::cout << "Creating BufferActivity for buffer: " << strName << " size: " << szSize << std::endl;
+        BufferActivity* pBufferActivity = 
+            new BufferActivity( *this, strName, szSize );
+            
+        startActivity( pBufferActivity );
+        
+        return pBufferActivity->getSharedBufferName();
+    }
 }

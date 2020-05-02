@@ -17,6 +17,7 @@ namespace megastructure
 		
 		virtual ~Job();
 		virtual void run() = 0;
+		virtual bool successful() const = 0;
 	};
 	
 	class Activity : public std::enable_shared_from_this< Activity >

@@ -106,6 +106,10 @@ int main( int argc, const char* argv[] )
 				{
 					break;
 				}
+                else if( strInput == "" )
+                {
+                    //do nothing
+                }
 				else
 				{
 					std::cout << "Unrecognised input: " << strInput << std::endl;

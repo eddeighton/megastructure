@@ -86,6 +86,17 @@ message Message
 		bool success = 1;
 	}
 	
+	message HCQ_Buffer
+	{
+		string buffername = 1;
+		uint32 size = 2;
+	}
+	message CHS_Buffer
+	{
+		string buffername = 1;
+		string sharedname = 2;
+	}
+	
 	oneof foobar
 	{
 		SMQ_Enroll smq_enroll = 2;
@@ -107,6 +118,9 @@ message Message
 		
 		CHQ_Load chq_load = 14;
 		HCS_Load hcs_load = 15;
+		
+		HCQ_Buffer hcq_buffer = 16;
+		CHS_Buffer chs_buffer = 17;
 	}
 	
 }

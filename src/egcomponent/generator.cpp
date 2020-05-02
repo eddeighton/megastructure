@@ -102,12 +102,12 @@ void generate_eg_component( std::ostream& os,
         if( getBufferRelation( translationUnitAnalysis, strCoordinator, strHost, pBuffer ) == eComponent )
         {
             os << "    " << pBuffer->getVariableName() << "_mega = pMemorySystem->getSharedBuffer( \"" << 
-                pBuffer->getVariableName() << "\" , " <<  pBuffer->getSize() * pBuffer->getStride() << " );\n";
+                pBuffer->getVariableName() << "\" , " <<  pBuffer->getSize() << " * sizeof( " << pBuffer->getTypeName() << " ) );\n";
         }
         else
         {
             os << "    " << pBuffer->getVariableName() << "_mega = pMemorySystem->getLocalBuffer( \"" << 
-                pBuffer->getVariableName() << "\" , " <<  pBuffer->getSize() * pBuffer->getStride() << " );\n";
+                pBuffer->getVariableName() << "\" , " <<  pBuffer->getSize() << " * sizeof( " << pBuffer->getTypeName() << " ) );\n";
         }
 		os << "    " << pBuffer->getVariableName() << " = reinterpret_cast< " << pBuffer->getTypeName() << "* >( " << pBuffer->getVariableName() << "_mega->getData() );\n";
 
@@ -186,6 +186,8 @@ public:
 	
 	virtual void Initialise( MemorySystem* pMemorySystem, MegaProtocol* pMegaProtocol )
 	{
+		boost::fibers::use_scheduling_algorithm< eg::eg_algorithm >();
+		
 		m_pMemorySystem = pMemorySystem;
 		m_pMegaProtocol = pMegaProtocol;
 		

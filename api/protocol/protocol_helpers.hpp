@@ -64,6 +64,32 @@ namespace megastructure
 		}
 		return response;
 	}
+    
+    
+	inline Message chs_buffer( const std::string& strBufferName, const std::string& strSharedName )
+	{
+		Message response;
+		{
+			Message::CHS_Buffer* pBufferResponse =
+				response.mutable_chs_buffer();
+			pBufferResponse->set_buffername( strBufferName );
+			pBufferResponse->set_sharedname( strSharedName );
+		}
+		return response;
+	}
+    
+	
+	inline Message hcs_load( bool bSuccess )
+	{
+		Message response;
+		{
+			Message::HCS_Load* pLoadResponse =
+				response.mutable_hcs_load();
+			pLoadResponse->set_success( bSuccess );
+		}
+		return response;
+	}
+    
 }
 
 #endif //PROTOCOL_HELPERS_16_APRIL_2020

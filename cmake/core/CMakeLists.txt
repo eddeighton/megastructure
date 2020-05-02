@@ -15,6 +15,7 @@ set( MEGA_LIBRARY
 	${MEGA_API_DIR}/megastructure/clientServer.hpp
 	${MEGA_API_DIR}/megastructure/queue.hpp
 	${MEGA_API_DIR}/megastructure/activity.hpp
+	${MEGA_API_DIR}/megastructure/buffer.hpp
 	)
 
 set( MEGA_SOURCES
@@ -22,6 +23,7 @@ set( MEGA_SOURCES
 	${MEGA_SRC_DIR}/core/clientServer.cpp
 	${MEGA_SRC_DIR}/core/queue.cpp
 	${MEGA_SRC_DIR}/core/activity.cpp
+	${MEGA_SRC_DIR}/core/buffer.cpp
     )
     
 add_library( megastructurelib 

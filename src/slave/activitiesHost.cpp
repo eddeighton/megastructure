@@ -301,6 +301,29 @@ bool LoadHostsProgramActivity::activityComplete( Activity::Ptr pActivity )
 }
 
 
+//////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////
+bool HostBufferActivity::clientMessage( std::uint32_t uiClient, const megastructure::Message& message )
+{
+    if( message.has_hcq_buffer() )
+    {
+        const megastructure::Message::HCQ_Buffer& bufferRequest = message.hcq_buffer();
+        
+        std::cout << "Received request for shared buffer: " << bufferRequest.buffername() << 
+            " size: " << bufferRequest.size() << std::endl;
+        
+        const std::string strSharedBufferName =
+            m_slave.getSharedBufferName( bufferRequest.buffername(), bufferRequest.size() );
+        
+        if( !m_slave.sendHost( megastructure::chs_buffer( bufferRequest.buffername(), strSharedBufferName ), uiClient ) )
+        {
+            m_slave.removeClient( uiClient );
+        }
+        return true;
+    }
+    
+    return false;
+}
 
 
 

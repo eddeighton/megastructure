@@ -4,17 +4,11 @@
 #define EG_COMPONENT_23_APRIL_2020
 //corona virus was here!!
 
-#include "boost/fiber/all.hpp"
+//#include "boost/fiber/all.hpp"
 #include "boost/config.hpp"
 
 #include <string>
 
-//#ifdef MEGASTRUCTURE_EG_COMPONENT
-//#define MEGASTRUCTURE_EG_API __declspec( dllexport )
-//#else
-//#define MEGASTRUCTURE_EG_API __declspec( dllimport )
-//#endif
-	
 namespace megastructure
 {
 	
@@ -48,7 +42,7 @@ namespace megastructure
 	class BOOST_SYMBOL_VISIBLE MegaProtocol
 	{
 	public:
-		virtual boost::fibers::future< std::string > Read( std::uint32_t uiDimensionType, std::uint32_t uiInstance ) = 0;
+		//virtual boost::fibers::future< std::string > Read( std::uint32_t uiDimensionType, std::uint32_t uiInstance ) = 0;
 		
 		virtual void Write( std::uint32_t uiDimensionType, std::uint32_t uiInstance, const std::string& buffer ) = 0;
 		virtual void Invoke( std::uint32_t uiActionType, std::uint32_t uiInstance, const std::string& buffer ) = 0;

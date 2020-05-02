@@ -6,6 +6,7 @@
 #include "megastructure/clientServer.hpp"
 #include "megastructure/queue.hpp"
 #include "megastructure/clientMap.hpp"
+#include "megastructure/buffer.hpp"
 
 #include "protocol/megastructure.pb.h"
 #include "protocol/protocol_helpers.hpp"
@@ -66,6 +67,7 @@ namespace slave
 	class Slave
 	{
 	public:
+        using SharedBufferMap = std::map< std::string, megastructure::SharedBufferImpl::Ptr >;
 		
 		Slave( Environment& environment,
 			const std::string& strMasterIP, 
@@ -123,6 +125,8 @@ namespace slave
 			return m_hostMap.enroll( strName, clientID );
 		}
 		
+        std::string getSharedBufferName( const std::string& strBufferName, std::size_t szSize );
+        
 	private:
 		Environment& m_environment;
 	
@@ -132,6 +136,8 @@ namespace slave
 		boost::filesystem::path m_workspacePath;
 		std::string m_strSlaveName;
 		HostMap m_hostMap;
+        
+        SharedBufferMap m_sharedBuffers;
 		
 		megastructure::Queue m_queue;
 		megastructure::Server m_server;

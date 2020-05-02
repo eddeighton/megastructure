@@ -8,9 +8,20 @@
 #include "common/assert_verify.hpp"
 
 #include "boost/filesystem.hpp"
+#include "boost/uuid/uuid.hpp"            
+#include "boost/uuid/uuid_generators.hpp" 
+#include "boost/uuid/uuid_io.hpp"         
+#include "boost/lexical_cast.hpp"        
 
 namespace slave
 {
+    
+    inline std::string generateSharedBufferUniqueName()
+    {
+        const boost::uuids::uuid uuid = boost::uuids::random_generator()();
+        return boost::lexical_cast< std::string >( uuid );
+    }
+    
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 	HostMap::HostMap()
@@ -190,6 +201,7 @@ namespace slave
 		m_queue.startActivity( new MasterEnrollActivity( *this ) );
 		m_queue.startActivity( new HostEnrollActivity( *this ) );
 		m_queue.startActivity( new LoadProgramActivity( *this ) );
+		m_queue.startActivity( new HostBufferActivity( *this ) );
 	}
 	
 	Slave::~Slave()
@@ -201,5 +213,27 @@ namespace slave
 		m_zeromqServer.join();
 	}
 	
+    std::string Slave::getSharedBufferName( const std::string& strBufferName, std::size_t szSize )
+    {
+        SharedBufferMap::iterator iFind = m_sharedBuffers.find( strBufferName );
+        if( iFind != m_sharedBuffers.end() )
+        {
+            megastructure::SharedBufferImpl::Ptr pBuffer = iFind->second;
+            
+            //attempt to reuse existing buffer
+            if( pBuffer->getSize() == szSize )
+            {
+                return pBuffer->getSharedName();
+            }
+        }
+        
+        const std::string strSharedBufferName = generateSharedBufferUniqueName();
+        
+        m_sharedBuffers[ strBufferName ] = 
+            std::make_shared< megastructure::SharedBufferImpl >( strBufferName, strSharedBufferName, szSize );
+        std::cout << "Created shared buffer: " << strBufferName << " size: " << szSize << " " << strSharedBufferName << std::endl;
+        
+        return strSharedBufferName;
+    }
 	
 }

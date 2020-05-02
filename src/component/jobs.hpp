@@ -13,13 +13,18 @@ namespace megastructure
 	{
 	public:
 		LoadProgramJob( Component& component, 
-			Program::Ptr pNewProgram );
+            const std::string& strHostName,
+            const std::string& strProgramName );
 			
 		void run();
-		
+		bool successful() const { return m_bSuccess; }
 	private:
 		Component& m_component;
+        std::string m_strHostName;
+        std::string m_strProgramName;
+        
 		Program::Ptr m_pNewProgram;
+        bool m_bSuccess;
 	};
 
 

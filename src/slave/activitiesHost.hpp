@@ -153,6 +153,24 @@ namespace slave
 		std::set< Activity::Ptr > m_loadActivities;
 		bool m_bSuccess = true;
 	};
+    
+    
+	//////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////////////
+    class HostBufferActivity : public megastructure::ExclusiveActivity< HostBufferActivity >
+    {
+    public:
+		HostBufferActivity( Slave& slave ) 
+			:	m_slave( slave )
+		{
+		}
+    
+		virtual bool clientMessage( std::uint32_t uiClient, const megastructure::Message& message );
+        
+    private:
+		Slave& m_slave;
+        
+    };
 }
 
 #endif //ACTIVITIES_HOST_26_APRIL_2020
