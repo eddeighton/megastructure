@@ -53,6 +53,15 @@ namespace megastructure
 		}
 		return message;
 	}
+	inline Message chs_enrolleg( bool bSuccess )
+	{
+		Message message;
+		{
+			Message::CHS_EnrollEG* pEnrolleg = message.mutable_chs_enrolleg();
+			pEnrolleg->set_success( bSuccess );
+		}
+		return message;
+	}
 	
 	inline Message sms_load( bool bSuccess )
 	{

@@ -28,7 +28,8 @@ boost::filesystem::path getBinFolderForProject( const boost::filesystem::path& w
 Program::Program( Component& component, const std::string& strHostName, const std::string& strProjectName )
     :   m_component( component ),
         m_strHostName( strHostName ),
-        m_strProjectName( strProjectName )
+        m_strProjectName( strProjectName ),
+		m_pEncodeDecode( nullptr )
 {
     const boost::filesystem::path binDirectory = getBinFolderForProject( m_component.getSlaveWorkspacePath(), m_strProjectName );
     m_strComponentName = getComponentName( m_component.getSlaveName(), m_strHostName, m_strProjectName );
@@ -44,7 +45,9 @@ Program::Program( Component& component, const std::string& strHostName, const st
     
     std::cout << "Attempting initialisation" << std::endl;
 	//initialise the programs memory
-	m_pPlugin->Initialise( this, this );
+	m_pPlugin->Initialise( m_pEncodeDecode, this, this );
+	
+	VERIFY_RTE_MSG( m_pEncodeDecode, "Did not get encode decode interface from program: " << m_componentPath.string() );
     
     std::cout << "Initialisation complete" << std::endl;
 }

@@ -3,6 +3,8 @@
 #include "activitiesHost.hpp"
 #include "activitiesMaster.hpp"
 
+#include "megastructure/mega.hpp"
+
 #include "schema/project.hpp"
 
 #include "common/assert_verify.hpp"
@@ -19,7 +21,8 @@ struct Args
 {
 	std::string master_ip;
 	std::string master_port;
-	std::string slave_port;
+	std::string slave_mega_port = megastructure::MEGA_PORT;
+	std::string slave_eg_port = megastructure::EG_PORT;
 	boost::filesystem::path slave_path;
 	bool bWait;
 };
@@ -36,8 +39,9 @@ bool parse_args( int argc, const char* argv[], Args& args )
 			("help", "produce help message")
 			("mip",    po::value< std::string >( &args.master_ip ), "Master IP Address" )
 			("mport",  po::value< std::string >( &args.master_port ), "Master Port" )
-			("sport",  po::value< std::string >( &args.slave_port ), "Slave Port" )
-			("spath",  po::value< boost::filesystem::path >( &args.slave_path ), "Slave Path" )
+			("spath",  po::value< boost::filesystem::path >( &args.slave_path ), "Path to workspace coordinator folder for slave" )
+			("sport",  po::value< std::string >( &args.slave_mega_port ), "Slave Mega Port" )
+			("eport",  po::value< std::string >( &args.slave_eg_port ), "Slave EG Port" )
 			("wait",   po::bool_switch( &args.bWait ), "Wait at startup for attaching a debugger" )
 		;
 
@@ -68,22 +72,11 @@ bool parse_args( int argc, const char* argv[], Args& args )
 			return false;
 		}
 		
-		if( args.slave_port.empty() )
-		{
-			std::cout << "Slave Port not specified" << std::endl;
-			return false;
-		}
-		
 		if( args.slave_path.empty() )
 		{
 			std::cout << "Slave Path not specified" << std::endl;
 			return false;
 		}
-		//else if( !boost::filesystem::exists( args.slave_path ) )
-		//{
-		//	std::cout << "Invalid Slave Path specified: " << args.slave_path.string() << std::endl;
-		//	return false;
-		//}
 
 	}
 	catch( std::exception& e )
@@ -112,23 +105,32 @@ int main( int argc, const char* argv[] )
 	{
         Environment environment;
 		
+		boost::filesystem::path workspacePath;
+		std::string strSlaveName;
+		slave::getWorkspaceAndSlaveNameFromPath( 
+			args.slave_path, workspacePath, strSlaveName );
+		
 		slave::Slave slave( 
 			environment,
 			args.master_ip, 
 			args.master_port, 
-			args.slave_port, 
-			args.slave_path );
+			args.slave_mega_port,
+			args.slave_eg_port,
+			workspacePath,
+			strSlaveName );
 			
 		if( !slave.getEnrollment().get() )
 		{
 			std::cout << "Failed to enroll slave with master as: " << slave.getName() << 
-				" in workspace: " << slave.getWorkspace().string() << std::endl;
+				" in workspace: " << slave.getWorkspace().string() << 
+				" program: " << slave.getActiveProgramName() << std::endl;
 			return 0;
 		}
 		else
 		{
 			std::cout << "Slave successfully enrolled with master as: " << slave.getName() << 
-				" in workspace: " << slave.getWorkspace().string() << std::endl;
+				" in workspace: " << slave.getWorkspace().string() << 
+				" program: " << slave.getActiveProgramName() << std::endl;
 		}
 		
 		std::string str, strResponse;

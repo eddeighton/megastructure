@@ -463,19 +463,19 @@ namespace megaxml
     }
 
     public:
-    ::megaxml::Run_simpl Run_s_;
     ::megaxml::Defaults_simpl Defaults_s_;
-    ::xml_schema::unsigned_int_simpl unsigned_int_s_;
-    ::xml_schema::string_simpl string_s_;
-    ::megaxml::Package_simpl Package_s_;
-    ::megaxml::Directories_simpl Directories_s_;
     ::megaxml::Fibers_simpl Fibers_s_;
     ::megaxml::Stack_simpl Stack_s_;
     ::megaxml::Files_simpl Files_s_;
+    ::xml_schema::string_simpl string_s_;
+    ::xml_schema::unsigned_int_simpl unsigned_int_s_;
     ::megaxml::EG_simpl EG_s_;
+    ::megaxml::Package_simpl Package_s_;
+    ::megaxml::Directories_simpl Directories_s_;
     ::megaxml::Host_simpl Host_s_;
     ::megaxml::Project_simpl Project_s_;
     ::megaxml::Build_simpl Build_s_;
+    ::megaxml::Run_simpl Run_s_;
   };
 }
 

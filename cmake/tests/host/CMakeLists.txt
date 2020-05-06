@@ -4,8 +4,14 @@ cmake_minimum_required( VERSION 3.1...3.16 )
 #get boost
 include( ${MEGA_ROOT_DIR}/cmake/boost_include.cmake )
 
+#get clang
+include( ${MEGA_ROOT_DIR}/cmake/clang_include.cmake )
+
 #get common
 include( ${MEGA_ROOT_DIR}/cmake/common_include.cmake )
+
+#eg
+include( ${MEGA_ROOT_DIR}/cmake/eg_include.cmake )
 
 #get the sources
 set( MEGA_TEST_HOST_SOURCES
@@ -24,7 +30,9 @@ link_boost( test_host filesystem )
 link_boost( test_host system )
 link_boost( test_host date_time )
 link_boost( test_host fiber )
+link_clang( componentlib )
 link_common( test_host )
+link_eg( test_host )
 
 target_link_libraries( test_host megastructurelib )
 target_link_libraries( test_host megastructureprotocollib )

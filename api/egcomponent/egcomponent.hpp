@@ -4,13 +4,23 @@
 #define EG_COMPONENT_23_APRIL_2020
 //corona virus was here!!
 
+#include "traits.hpp"
+
 //#include "boost/fiber/all.hpp"
 #include "boost/config.hpp"
 
 #include <string>
+#include <vector>
 
 namespace megastructure
 {
+	
+	class BOOST_SYMBOL_VISIBLE EncodeDecode
+	{
+	public:
+		virtual void encode( std::uint32_t uiType, std::uint32_t uiInstance, eg::Encoder& encoder ) = 0;
+		virtual void decode( std::uint32_t uiType, std::uint32_t uiInstance, eg::Decoder& decoder ) = 0;
+	};
 	
 	class BOOST_SYMBOL_VISIBLE Buffer
 	{
@@ -55,17 +65,18 @@ namespace megastructure
 	class BOOST_SYMBOL_VISIBLE EGComponent
 	{
 	public:
-		virtual void Initialise( MemorySystem* pMemorySystem, MegaProtocol* pMegaProtocol ) = 0;
+		virtual void Initialise( EncodeDecode*& pEncodeDecode, MemorySystem* pMemorySystem, MegaProtocol* pMegaProtocol ) = 0;
 		virtual void Uninitialise() = 0 ;
 		
 		virtual void Cycle() = 0;
-		
+		/*
 		virtual void Read( std::uint32_t uiDimensionType, std::uint32_t uiInstance, std::string& buffer ) = 0;
 		virtual void Write( std::uint32_t uiDimensionType, std::uint32_t uiInstance, const std::string& buffer ) = 0;
 		virtual void Invoke( std::uint32_t uiActionType, std::uint32_t uiInstance, const std::string& buffer ) = 0;
 		virtual void Pause( std::uint32_t uiActionType, std::uint32_t uiInstance ) = 0;
 		virtual void Resume( std::uint32_t uiActionType, std::uint32_t uiInstance ) = 0;
 		virtual void Stop( std::uint32_t uiActionType, std::uint32_t uiInstance ) = 0;
+		*/
 	};
 
 

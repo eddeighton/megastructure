@@ -50,13 +50,28 @@ void protobuf_write( google::protobuf::io::CodedOutputStream& os, const std::str
 	os.WriteString( str );
 }
 
+void protobuf_write( google::protobuf::io::CodedOutputStream& os, float value )
+{
+	//os.WriteLittleEndian32( EncodeFloat( value ) );
+}
+
+void protobuf_write( google::protobuf::io::CodedOutputStream& os, double value )
+{
+	//os.WriteLittleEndian64( EncodeDouble( value ) );
+}
+
+
 void protobuf_read( google::protobuf::io::CodedInputStream& is, int& value  )
 {
-	is.ReadLittleEndian32( reinterpret_cast< google::protobuf::uint32* >( &value ) );
+	google::protobuf::uint32 uiValue;
+	is.ReadLittleEndian32( &uiValue );
+	value = *reinterpret_cast< int* >( &uiValue );
 }
 void protobuf_read( google::protobuf::io::CodedInputStream& is, unsigned int& value  )
 {
-	is.ReadLittleEndian32( reinterpret_cast< google::protobuf::uint32* >( &value ) );
+	google::protobuf::uint32 uiValue;
+	is.ReadLittleEndian32( &uiValue );
+	value = *reinterpret_cast< unsigned int* >( &uiValue );
 }
 
 void protobuf_read( google::protobuf::io::CodedInputStream& is, std::string& str )
@@ -109,4 +124,3 @@ TEST( Protobuf, IO_Strings )
 	std::string strTest = "test";
 	ASSERT_EQ( writeThenRead( strTest ), "test" );
 }
-

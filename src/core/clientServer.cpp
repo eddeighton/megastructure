@@ -141,20 +141,8 @@ namespace
 
 namespace megastructure
 {
-	
-	std::string getGlobalCoordinatorPort()
-	{
-		
-#pragma warning( push )
-#pragma warning( disable:4996 )
-		const char* pszEnvValue = std::getenv( "MEGAPORT" );
-#pragma warning( pop )
-		VERIFY_RTE_MSG( pszEnvValue, "MEGAPORT environment variable not defined" );
-		return pszEnvValue;
-	}
-	
 
-	Client::Client( const std::string& strMasterIP, const std::string& strMasterPort )
+	Client::Client( const SocketName& socketName )
 		:	m_messageID( 1 ),
 			m_pSocket( nullptr ),
 			m_pContext( nullptr )
@@ -167,13 +155,7 @@ namespace megastructure
 			zmq_setsockopt( m_pSocket, ZMQ_LINGER, &zmqLinger, sizeof( zmqLinger ) );
 		}
 		
-		std::string strSlaveEndpoint;
-		{
-			std::ostringstream os; //"tcp://localhost:5555" 
-			os << "tcp://" << strMasterIP << ':' << strMasterPort;
-			strSlaveEndpoint = os.str();
-		}
-		
+		const std::string strSlaveEndpoint = socketName.getName();
 		std::cout << "Connecting to: " << strSlaveEndpoint << std::endl;
 		int result = zmq_connect( m_pSocket, strSlaveEndpoint.c_str() );
 		VERIFY_RTE_MSG( result == 0, "Failed to connect to: " << strSlaveEndpoint );
@@ -199,9 +181,9 @@ namespace megastructure
 		}
 	}
 	
-	bool Client::send( Message& message )
+	bool Client::send( const Message& message )
 	{
-		message.set_id( m_messageID++ );
+		//message.set_id( m_messageID++ );
 		
 		ZMQMsg msg( message );
 		
@@ -260,7 +242,7 @@ namespace megastructure
 	
 	////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////
-	Server::Server( const std::string& strPort )
+	Server::Server( const SocketName& socketName )
 		:	m_messageID( 1 ),
 			m_pSocket( nullptr ),
 			m_pContext( nullptr )
@@ -274,13 +256,7 @@ namespace megastructure
 			zmq_setsockopt( m_pSocket, ZMQ_LINGER, &zmqLinger, sizeof( zmqLinger ) );
 		}*/
 		
-		std::string localAddress;
-		{
-			std::ostringstream os; //"tcp://*:5555"
-			os << "tcp://*" << ':' << strPort;
-			localAddress = os.str();
-		}
-		
+		const std::string localAddress = socketName.getName();
 		int rc = zmq_bind( m_pSocket, localAddress.c_str() );
 		VERIFY_RTE_MSG( rc == 0, "Failed to bind to: " << localAddress );
 	}
@@ -306,9 +282,9 @@ namespace megastructure
 		}
 	}
 	
-	bool Server::send( Message& message, std::uint32_t uiClient )
+	bool Server::send( const Message& message, std::uint32_t uiClient )
 	{
-		message.set_id( m_messageID++ );
+		//message.set_id( m_messageID++ );
 		
 		ZMQMsg msg( message, uiClient );
 		

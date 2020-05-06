@@ -3,10 +3,13 @@
 #ifndef SLAVE_26_APRIL_2020
 #define SLAVE_26_APRIL_2020
 
+#include "slave/hostMap.hpp"
+
 #include "megastructure/clientServer.hpp"
 #include "megastructure/queue.hpp"
 #include "megastructure/clientMap.hpp"
 #include "megastructure/buffer.hpp"
+#include "megastructure/networkAddressTable.hpp"
 
 #include "protocol/megastructure.pb.h"
 #include "protocol/protocol_helpers.hpp"
@@ -23,46 +26,12 @@
 #include <ostream>
 #include <map>
 
+class ProjectTree;
+
 namespace slave
 {
-	
-	template< typename Container, typename ValueType = typename Container::value_type::second_type >
-	void eraseByMapSecond( Container& container, const ValueType& value )
-	{
-		for( auto i = container.begin(), iEnd = container.end(); i!=iEnd;  )
-		{
-			if( i->second == value )
-				i = container.erase( i );
-			else
-				++i;
-		}
-	}
-	
-	class HostMap
-	{
-	public:
-		using HostProcessNameMap = std::multimap< std::string, std::uint32_t >;
-		using HostNameMap = std::map< std::string, std::uint32_t >;
-		using ProcessNameToHostNameMap = std::multimap< std::string, std::string >;
-	
-		HostMap();
-		
-		HostMap( const HostMap& oldHostMapping, 
-			ProcessNameToHostNameMap processNameToHostNameMap, 
-			std::vector< std::uint32_t >& unmappedClients, 
-			std::vector< std::string >& unmappedHostNames );
-			
-		const HostProcessNameMap& getEnrolledHosts() const { return m_clientProcessNameMap; }
-		const HostNameMap& getHostNameMapping() const { return m_hostnameMapping; }
-				void removeClient( std::uint32_t uiClient );
-		void listClients( std::ostream& os ) const;
-		bool enroll( const std::string& strProcessName, std::uint32_t clientID );
-	
-	private:
-		std::multimap< std::string, std::uint32_t > m_clientProcessNameMap;
-		std::map< std::string, std::uint32_t > m_hostnameMapping;
-		
-	};
+	void getWorkspaceAndSlaveNameFromPath( const boost::filesystem::path& thePath, 
+		boost::filesystem::path& workspace, std::string& strSlaveName );
 	
 	class Slave
 	{
@@ -72,14 +41,18 @@ namespace slave
 		Slave( Environment& environment,
 			const std::string& strMasterIP, 
 			const std::string strMasterPort, 
-			const std::string& strSlavePort, 
-			const boost::filesystem::path& strSlavePath );
+			const std::string strSlaveMegaPort, 
+			const std::string strSlaveEGPort, 
+			const boost::filesystem::path& workspacePath,
+			const std::string& strSlaveName );
 		~Slave();
 		
 		const std::string& getName() const { return m_strSlaveName; }
 		const boost::filesystem::path& getWorkspace() const { return m_workspacePath; }
 		Environment& getEnvironment() const { return m_environment; }
 		const HostMap& getHosts() const { return m_hostMap; }
+		megastructure::NetworkAddressTable::Ptr 
+			getNetworkAddressTable() const { return m_pNetworkAddressTable; }
 		
 		std::future< bool > getEnrollment() { return m_masterEnrollPromise.get_future(); }
 		const std::string& getActiveProgramName() const { return m_strActiveProgramName; }
@@ -93,15 +66,9 @@ namespace slave
 		void setActiveProgramName( const std::string& strActiveProgramName ) { m_strActiveProgramName = strActiveProgramName; }
 		void setHostMap( const HostMap& newHostMap ) { m_hostMap = newHostMap; }
 		
-		bool sendMaster( megastructure::Message& message )
-		{
-			return m_client.send( message );
-		}
-		
-		bool sendHost( megastructure::Message& message, std::uint32_t uiClient )
-		{
-			return m_server.send( message, uiClient );
-		}
+		bool sendMaster( const megastructure::Message& message );
+		bool sendHost( const megastructure::Message& message, std::uint32_t uiClient );
+		bool sendHostEG( const megastructure::Message& message, std::uint32_t uiClient );
 		
 		void startActivity( megastructure::Activity::Ptr pActivity )
 		{
@@ -120,13 +87,19 @@ namespace slave
 		{
 			m_hostMap.removeClient( uiClient );
 		}
-		bool enroll( const std::string& strName, std::uint32_t clientID )
+		bool enroll( const std::string& strName, std::uint32_t clientID, const std::string& strUnique )
 		{
-			return m_hostMap.enroll( strName, clientID );
+			return m_hostMap.enroll( strName, clientID, strUnique );
+		}
+		bool enrolleg( std::uint32_t clientID, const std::string& strUnique )
+		{
+			return m_hostMap.enrolleg( clientID, strUnique );
 		}
 		
         std::string getSharedBufferName( const std::string& strBufferName, std::size_t szSize );
         
+		void calculateNetworkAddressTable( std::shared_ptr< ProjectTree > pProjectTree );
+		
 	private:
 		Environment& m_environment;
 	
@@ -139,11 +112,15 @@ namespace slave
         
         SharedBufferMap m_sharedBuffers;
 		
+		megastructure::NetworkAddressTable::Ptr m_pNetworkAddressTable;
+		
 		megastructure::Queue m_queue;
 		megastructure::Server m_server;
+		megastructure::Server m_egServer;
 		megastructure::Client m_client;
 		std::thread m_zeromqClient;
 		std::thread m_zeromqServer;
+		std::thread m_zeromqEGServer;
 	};
 
 

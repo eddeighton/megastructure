@@ -2,6 +2,10 @@
 
 #include "activities.hpp"
 
+#include "schema/projectTree.hpp"
+
+#include "common/assert_verify.hpp"
+
 namespace master
 {
 
@@ -242,7 +246,29 @@ bool LoadProgram::clientMessage( std::uint32_t uiClient, const megastructure::Me
 				std::cout << "No clients failed while loading program: " << m_strProgramName << std::endl;
 			}
 			
-			m_master.setActiveProgramName( m_strProgramName );
+			
+			{
+				Environment& environment = m_master.getEnvironment();
+				
+				std::shared_ptr< ProjectTree > pProjectTree;
+				
+				try
+				{
+					pProjectTree = 
+						std::make_shared< ProjectTree >( 
+							environment, m_master.getWorkspace(), m_strProgramName );
+							
+					m_master.setActiveProgramName( m_strProgramName );
+					
+					m_master.calculateNetworkAddressTable( pProjectTree );
+				}
+				catch( std::exception& ex )
+				{
+					std::cout << "Error attempting to load project tree for: " << 
+						m_strProgramName << " : " << ex.what() << std::endl;
+				}
+			}
+			
 			m_master.activityComplete( shared_from_this() );
 		}
 		
@@ -252,4 +278,74 @@ bool LoadProgram::clientMessage( std::uint32_t uiClient, const megastructure::Me
 	return false;
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////
+bool RouteEGProtocolActivity::clientMessage( std::uint32_t uiClient, const megastructure::Message& message )
+{
+	if( message.has_eg_msg() )
+	{
+		//determine how to route the request based on the type
+		if( megastructure::NetworkAddressTable::Ptr pNAT = m_master.getNetworkAddressTable() )
+		{
+			/*const megastructure::Message::EG_Msg& egMsg = message.eg_msg();
+			if( egMsg.has_egs_read() ) //response
+			{
+				//route back to where the request came from
+				const megastructure::Message::EG_Msg::EGS_Read& egsRead = egMsg.egs_read();
+				
+				if( egsRead.coordinator() != 0 )
+				{
+					if( !m_master.send( message, egsRead.coordinator() ) )
+					{
+						m_master.removeClient( egsRead.coordinator() );
+					}
+				}
+				else
+				{
+					THROW_RTE( "EGS Read has not host return address specified" );
+				}
+			}
+			else
+			{
+				const std::uint32_t uiType = egMsg.type();
+				
+				const std::uint32_t uiTargetClientID = pNAT->getClientForType( uiType );
+				VERIFY_RTE( uiTargetClientID != uiClient );
+				VERIFY_RTE( uiTargetClientID != megastructure::NetworkAddressTable::MasterID );
+				
+				if( egMsg.has_egq_read() ) //request
+				{
+					megastructure::Message msgCopy = message;
+					megastructure::Message::EG_Msg* pEGMsg = msgCopy.mutable_eg_msg();
+					megastructure::Message::EG_Msg::EGQ_Read* pEGQRead = pEGMsg->mutable_egq_read();
+					
+					pEGQRead->set_coordinator( uiClient );
+					
+					//forward message to client
+					if( !m_master.send( msgCopy, uiTargetClientID ) )
+					{
+						m_master.removeClient( uiTargetClientID );
+					}
+				}
+				else
+				{
+					//forward message to client
+					if( !m_master.send( message, uiTargetClientID ) )
+					{
+						m_master.removeClient( uiTargetClientID );
+					}
+				}
+			}*/
+		}
+		else
+		{
+			std::cout << "EG Msg received when no network address table configured" << std::endl;
+		}
+		
+		return true;
+	}
+	
+	return false;
+}
+	
 } //namespace master

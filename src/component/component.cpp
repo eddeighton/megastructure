@@ -20,14 +20,19 @@ namespace megastructure
 		return filename.string();
 	}
 	
-	Component::Component( const std::string& strSlavePort, const std::string& strProgramName )
+	Component::Component( const std::string& strMegaPort, const std::string& strEGPort, const std::string& strProgramName )
 		:	m_strHostProgram( strProgramName ),
 			m_queue(),
-			m_client( "localhost", strSlavePort )
+			m_client( TCPRemoteSocketName( "localhost", strMegaPort ) ),
+			m_egClient( TCPRemoteSocketName( "localhost", strEGPort ) )
 	{
-		m_zeromq = std::thread( 
+		m_zeromq1 = std::thread( 
 			std::bind( &megastructure::readClient< megastructure::Client >, 
 				std::ref( m_client ), std::ref( m_queue ) ) );
+				
+		m_zeromq2 = std::thread( 
+			std::bind( &megastructure::readClient< megastructure::Client >, 
+				std::ref( m_egClient ), std::ref( m_queue ) ) );
 				
 		m_queue.startActivity( new EnrollHostActivity( *this, m_strHostProgram ) );
 		m_queue.startActivity( new AliveTestActivity( *this ) );
@@ -38,9 +43,10 @@ namespace megastructure
 	{
 		m_queue.stop();
 		m_client.stop();
-		m_zeromq.join();
+		m_egClient.stop();
+		m_zeromq1.join();
+		m_zeromq2.join();
 	}
-	
 	
 	void Component::runCycle()
 	{
@@ -63,6 +69,27 @@ namespace megastructure
 			m_pProgram->run();
 		}
 		
+	}
+	
+	std::future< std::string > Component::egRead( std::uint32_t uiType, std::uint32_t uiInstance )
+	{
+		TestEGReadActivity* pTest = new TestEGReadActivity( *this, uiType, uiInstance );
+		
+        startActivity( pTest );
+		
+		return pTest->getResult();
+	}
+	
+	void Component::egWrite( std::uint32_t uiType, std::uint32_t uiInstance, const std::string& strBuffer )
+	{
+		TestEGWriteActivity* pTest = new TestEGWriteActivity( *this, uiType, uiInstance, strBuffer );
+        startActivity( pTest );
+	}
+	
+	void Component::egCall( std::uint32_t uiType, std::uint32_t uiInstance, const std::string& strBuffer )
+	{
+		TestEGCallActivity* pTest = new TestEGCallActivity( *this, uiType, uiInstance, strBuffer );
+        startActivity( pTest );
 	}
 		
 	void Component::startJob( Job::Ptr pJob )
@@ -105,4 +132,6 @@ namespace megastructure
         
         return pBufferActivity->getSharedBufferName();
     }
+	
+	
 }

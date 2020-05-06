@@ -130,6 +130,23 @@ private:
 	bool m_clientFailed = false;
 };
 
+//////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////
+class RouteEGProtocolActivity : public megastructure::Activity
+{
+public:
+	RouteEGProtocolActivity( Master& master ) 
+		:	m_master( master )
+	{
+		
+	}
+	
+	virtual bool clientMessage( std::uint32_t uiClient, const megastructure::Message& message );
+	
+private:
+	Master& m_master;
+};
+
 }
 
 #endif //ACTIVITIES_26_APRIL_2020

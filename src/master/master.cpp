@@ -4,11 +4,15 @@
 
 #include "activities.hpp"
 
+#include "schema/projectTree.hpp"
+
 namespace master
 {
 	
-	Master::Master( const std::string& strPort )
-		:	m_server( strPort )
+	Master::Master( Environment& environment, const boost::filesystem::path& workspacePath, const std::string& strPort )
+		:	m_environment( environment ),
+			m_workspacePath( workspacePath ),
+			m_server( megastructure::TCPLocalSocketName( strPort ) )
 	{
 		megastructure::Queue& queue = m_queue;
 		megastructure::Server& server = m_server;
@@ -19,6 +23,7 @@ namespace master
 		});
 		
 		m_queue.startActivity( new EnrollActivity( *this ) );
+		m_queue.startActivity( new RouteEGProtocolActivity( *this ) );
 	}
 	
 	
@@ -29,4 +34,11 @@ namespace master
 		m_zeromqServer.join();
 	}
 	
+	void Master::calculateNetworkAddressTable( std::shared_ptr< ProjectTree > pProjectTree )
+	{
+		m_pNetworkAddressTable.reset( 
+			new megastructure::NetworkAddressTable( 
+					getClients(), 
+					pProjectTree ) );
+	}
 }

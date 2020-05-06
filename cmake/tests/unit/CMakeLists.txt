@@ -9,6 +9,9 @@ include( ${MEGA_ROOT_DIR}/cmake/gtest_include.cmake )
 #get the unit test utils
 include( ${MEGA_ROOT_DIR}/cmake/test_utils_include.cmake )
 
+#get message pack
+include( ${MEGA_ROOT_DIR}/cmake/messagepack_include.cmake )
+
 #get common
 include( ${MEGA_ROOT_DIR}/cmake/common_include.cmake )
 
@@ -17,6 +20,7 @@ set( MEGA_UNIT_TEST_DIR ${MEGA_ROOT_DIR}/tests/unit )
 set( MEGA_UNIT_TESTS
 	 ${MEGA_UNIT_TEST_DIR}/basic_test.cpp
 	 ${MEGA_UNIT_TEST_DIR}/protocol_test.cpp
+	 ${MEGA_UNIT_TEST_DIR}/message_pack_tests.cpp
 	 )
 
 add_executable( mega_tests ${MEGA_UNIT_TESTS})
@@ -30,6 +34,7 @@ link_boost( mega_tests system )
 link_boost( mega_tests date_time )
 link_boost( mega_tests program_options )
 link_gtest( mega_tests )
+link_messagePack( mega_tests )
 link_common( mega_tests )
 link_gtest_utils( mega_tests )
 

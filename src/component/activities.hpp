@@ -13,13 +13,7 @@ namespace megastructure
 	class EnrollHostActivity : public Activity
 	{
 	public:
-		EnrollHostActivity( 
-					Component& component,
-					const std::string& hostprogram ) 
-			:	m_component( component ),
-				m_hostprogram( hostprogram )
-		{
-		}
+		EnrollHostActivity( Component& component, const std::string& hostprogram );
 		
 		virtual void start();
 		virtual bool serverMessage( const Message& message );
@@ -27,6 +21,9 @@ namespace megastructure
 	private:
 		Component& m_component;
 		std::string m_hostprogram;
+		std::string m_strUnique;
+		
+		std::string m_strWorkspace, m_strSlaveName;
 	};
 	
 	////////////////////////////////////////////////////////////////////
@@ -60,7 +57,6 @@ namespace megastructure
 		std::string m_name;
 	};
 
-	
 	////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////
 	class LoadProgramActivity : public Activity
@@ -76,19 +72,19 @@ namespace megastructure
 		
 	private:
 		Component& m_component;
+		std::string m_strProgramName;
+		std::string m_strHostName;
 		Job::Ptr m_pLoadProgramJob;
 	};
 	
-    
 	////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////
 	class BufferActivity : public Activity
 	{
 	public:
-		BufferActivity( 
-					Component& component,
-					const std::string& bufferName,
-                    std::size_t szBufferSize ) 
+		BufferActivity( Component& component,
+						const std::string& bufferName,
+						std::size_t szBufferSize ) 
 			:	m_component( component ),
 				m_bufferName( bufferName ),
 				m_bufferSize( szBufferSize )
@@ -106,6 +102,74 @@ namespace megastructure
         std::promise< std::string > m_result;
 	};
 	
+	////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////
+	class TestEGReadActivity : public Activity
+	{
+	public:
+		TestEGReadActivity( Component& component, 
+						std::uint32_t uiType, 
+						std::uint32_t uiInstance) 
+			:	m_component( component ),
+				m_uiType( uiType ),
+				m_uiInstance( uiInstance )
+		{
+		}
+		
+		std::future< std::string > getResult() { return m_resultPromise.get_future(); }
+		
+		virtual void start();
+		virtual bool serverMessage( const Message& message );
+	private:
+		Component& m_component;
+		std::uint32_t 	m_uiType;
+		std::uint32_t 	m_uiInstance;
+		std::promise< std::string > m_resultPromise;
+	};
+	
+	class TestEGWriteActivity : public Activity
+	{
+	public:
+		TestEGWriteActivity( Component& component, 
+						std::uint32_t uiType, 
+						std::uint32_t uiInstance, 
+						const std::string& strBuffer ) 
+			:	m_component( component ),
+				m_uiType( uiType ),
+				m_uiInstance( uiInstance ),
+				m_strBuffer( strBuffer )
+		{
+		}
+		
+		virtual void start();
+	private:
+		Component& m_component;
+		std::uint32_t 	m_uiType;
+		std::uint32_t 	m_uiInstance;
+		std::string 	m_strBuffer;
+	};
+	
+	class TestEGCallActivity : public Activity
+	{
+	public:
+		TestEGCallActivity( Component& component, 
+						std::uint32_t uiType, 
+						std::uint32_t uiInstance, 
+						const std::string& strBuffer ) 
+			:	m_component( component ),
+				m_uiType( uiType ),
+				m_uiInstance( uiInstance ),
+				m_strBuffer( strBuffer )
+		{
+		}
+		
+		virtual void start();
+	private:
+		Component& m_component;
+		std::uint32_t 	m_uiType;
+		std::uint32_t 	m_uiInstance;
+		std::string 	m_strBuffer;
+	};
 }
 
 #endif //COMPONENT_ACTIVITIES_26_APRIL_2020

@@ -30,14 +30,6 @@ bool MasterEnrollActivity::serverMessage( const megastructure::Message& message 
 		if( message.mss_enroll().success() )
 		{
 			m_slave.setActiveProgramName( message.mss_enroll().programname() );
-			if( m_slave.getActiveProgramName().empty() )
-			{
-				std::cout << "No currently active program" << std::endl;
-			}
-			else
-			{
-				std::cout << "Active program is: " << m_slave.getActiveProgramName() << std::endl;
-			}
 		}
 		
 		m_slave.activityComplete( shared_from_this() );

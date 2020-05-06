@@ -5,7 +5,7 @@ package megastructure;
 
 message Message
 {
-	int32 id = 1;
+	//int32 id = 1;
 
 	//MSQ : Master Slave Request
 	//MSS : Master Slave Response
@@ -40,12 +40,22 @@ message Message
 	message HCQ_Enroll
 	{
 		string processname = 1;
+		string unique = 2;
 	}
 	message CHS_Enroll
 	{
 		bool success = 1;
 		string workspacepath = 2;
 		string slavename = 3;
+	}
+	
+	message HCQ_EnrollEG
+	{
+		string unique = 1;
+	}
+	message CHS_EnrollEG
+	{
+		bool success = 1;
 	}
 	
 	message CHQ_Alive
@@ -56,16 +66,6 @@ message Message
 	{
 		bool success = 1;
 	}
-	
-	//message SMQ_Load
-	//{
-	//	string programname = 1;
-	//}
-	//message MSS_Load
-	//{
-	//	bool success = 1;
-	//}
-	
 	
 	message MSQ_Load
 	{
@@ -97,6 +97,71 @@ message Message
 		string sharedname = 2;
 	}
 	
+	//eg protocol
+	//host to coordinator request read,write,call,unlock
+	
+	message EG_Msg
+	{
+		uint32 type = 1;
+		uint32 instance = 2;
+		uint32 cycle = 3;
+		
+		message Request
+		{
+			uint32 coordinator = 1;
+			uint32 host = 2;
+			
+			message Read
+			{
+			}
+			message Write
+			{
+				string value = 1;
+			}
+			message Call
+			{
+				string args = 1;
+			}
+			message Lock
+			{
+			}
+			message Unlock
+			{
+			}
+			
+			oneof foobar
+			{
+				//eg protocol
+				Read   	read   	= 3;
+				Write  	write  	= 4;
+				Call    call    = 5;
+				Lock    lock    = 6;
+				Unlock  unlock  = 7;
+			}
+		}
+	
+		message Response
+		{
+			uint32 coordinator = 1;
+			uint32 host = 2;
+			string value = 3;
+		}
+		
+		message Event
+		{
+			string value = 1;
+		}
+		
+		oneof foobar
+		{
+			//eg protocol
+			Request   request   = 4;
+			Response  response  = 5;
+			Event     event     = 6;
+		}
+	}
+	
+	
 	oneof foobar
 	{
 		SMQ_Enroll smq_enroll = 2;
@@ -108,11 +173,12 @@ message Message
 		HCQ_Enroll hcq_enroll = 6;
 		CHS_Enroll chs_enroll = 7;
 		
-		CHQ_Alive chq_alive = 8;
-		HCS_Alive hcs_alive = 9;
+		HCQ_EnrollEG hcq_enrolleg = 8;
+		CHS_EnrollEG chs_enrolleg = 9;
 		
-		//SMQ_Load smq_load = 10;
-		//MSS_Load mss_load = 11;
+		CHQ_Alive chq_alive = 10;
+		HCS_Alive hcs_alive = 11;
+		
 		MSQ_Load msq_load = 12;
 		SMS_Load sms_load = 13;
 		
@@ -121,6 +187,8 @@ message Message
 		
 		HCQ_Buffer hcq_buffer = 16;
 		CHS_Buffer chs_buffer = 17;
+		
+		EG_Msg eg_msg = 18;
 	}
 	
 }

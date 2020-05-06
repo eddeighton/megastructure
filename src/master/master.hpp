@@ -6,11 +6,16 @@
 #include "megastructure/clientServer.hpp"
 #include "megastructure/queue.hpp"
 #include "megastructure/clientMap.hpp"
+#include "megastructure/networkAddressTable.hpp"
 
 #include "protocol/megastructure.pb.h"
 #include "protocol/protocol_helpers.hpp"
 
+#include "schema/project.hpp"
+
 #include <thread>
+
+class ProjectTree;
 
 namespace master
 {
@@ -18,7 +23,7 @@ namespace master
 	class Master
 	{
 	public:
-		Master( const std::string& strPort );
+		Master( Environment& environment, const boost::filesystem::path& workspacePath, const std::string& strPort );
 		~Master();
 		
 		void startActivity( megastructure::Activity::Ptr pActivity )
@@ -34,7 +39,7 @@ namespace master
 			m_queue.activityComplete( pActivity );
 		}
 		
-		bool send( megastructure::Message& message, std::uint32_t uiClient )
+		bool send( const megastructure::Message& message, std::uint32_t uiClient )
 		{
 			return m_server.send( message, uiClient );
 		}
@@ -61,8 +66,16 @@ namespace master
 		{
 			return m_strActiveProgramName;
 		}
+		megastructure::NetworkAddressTable::Ptr 
+			getNetworkAddressTable() const { return m_pNetworkAddressTable; }
 		
+		void calculateNetworkAddressTable( std::shared_ptr< ProjectTree > pProjectTree );
+		
+		const boost::filesystem::path& getWorkspace() const { return m_workspacePath; }
+		Environment& getEnvironment() const { return m_environment; }
 	private:
+		Environment& m_environment;
+		boost::filesystem::path m_workspacePath;
 		
 		megastructure::ClientMap m_clients;
 		megastructure::Queue m_queue;
@@ -71,6 +84,7 @@ namespace master
 		std::thread m_zeromqServer;
 		
 		std::string m_strActiveProgramName;
+		megastructure::NetworkAddressTable::Ptr m_pNetworkAddressTable;
 		
 	};
 	

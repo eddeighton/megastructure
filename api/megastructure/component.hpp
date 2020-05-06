@@ -30,12 +30,16 @@ namespace megastructure
 		friend class AliveTestActivity;
 		friend class LoadProgramActivity;
 		friend class BufferActivity;
+		
+		friend class TestEGReadActivity;
+		friend class TestEGWriteActivity;
+		friend class TestEGCallActivity;
         
 		friend class LoadProgramJob;
         
         friend class Program;
 	public:
-		Component( const std::string& strSlavePort, const std::string& strProgramName );
+		Component( const std::string& strMegaPort, const std::string& strEGPort, const std::string& strProgramName );
 		virtual ~Component();
 		
 		const std::string& getHostProgramName() const { return m_strHostProgram; }
@@ -43,6 +47,11 @@ namespace megastructure
 		const boost::filesystem::path& getSlaveWorkspacePath() const { return m_slaveWorkspacePath; }
 		
 		void runCycle();
+		
+		//test eg protocol routines
+		std::future< std::string > egRead( std::uint32_t uiType, std::uint32_t uiInstance );
+		void egWrite( std::uint32_t uiType, std::uint32_t uiInstance, const std::string& strBuffer );
+		void egCall( std::uint32_t uiType, std::uint32_t uiInstance, const std::string& strBuffer );
 		
 	private:
 		void setSlaveName( const std::string& strSlaveName ) { m_strSlaveName = strSlaveName; }
@@ -75,6 +84,10 @@ namespace megastructure
 		{
 			return m_client.send( message);
 		}
+		bool sendeg( megastructure::Message& message )
+		{
+			return m_egClient.send( message );
+		}
 		
 	private:
 		std::string m_strHostProgram;
@@ -82,7 +95,9 @@ namespace megastructure
 		boost::filesystem::path m_slaveWorkspacePath;
 		megastructure::Queue m_queue;
 		megastructure::Client m_client;
-		std::thread m_zeromq;
+		megastructure::Client m_egClient;
+		std::thread m_zeromq1;
+		std::thread m_zeromq2;
 		
 		std::mutex m_simThreadMutex;
 		std::list< Job::Ptr > m_jobs;

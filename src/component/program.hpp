@@ -50,6 +50,7 @@ namespace megastructure
 		boost::filesystem::path m_componentPath;
 		
 		boost::shared_ptr< megastructure::EGComponent > m_pPlugin;
+		EncodeDecode* m_pEncodeDecode;
         
         CacheBufferMap m_cacheBuffers;
         SharedBufferMap m_sharedBuffers;

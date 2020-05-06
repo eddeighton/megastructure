@@ -124,6 +124,7 @@ public:
 		includes.push_back( "pybind11/embed.h" );
 		includes.push_back( environment.expand( "${PYBIND}/pybind11_helpers.hpp" ) );
 		
+		includes.push_back( environment.expand( "egcomponent/traits.hpp" ) );
 		
 		includes.push_back( "eg/include.hpp" );
 		includes.push_back( "eg_runtime/eg_runtime.hpp" );
@@ -222,6 +223,8 @@ public:
 		collateIncludeDirectories( environment, uniquified, directories, "${PYTHONHOME}/include" );
 		collateIncludeDirectories( environment, uniquified, directories, "${EG}/include" );
 		collateIncludeDirectories( environment, uniquified, directories, "${MEGA}/include" );
+		collateIncludeDirectories( environment, uniquified, directories, "${PROTOBUF}/include" );
+		collateIncludeDirectories( environment, uniquified, directories, "${MESSAGEPACK}/include" );
 		
 		
 

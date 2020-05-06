@@ -11,6 +11,7 @@
 struct Args
 {
 	std::string port;
+	boost::filesystem::path master_path;
 	bool bWait;
 };
 
@@ -25,6 +26,7 @@ bool parse_args( int argc, const char* argv[], Args& args )
 		options.add_options()
 			("help", "produce help message")
 			("port",  po::value< std::string >( &args.port ), "Port" )
+			("path",  po::value< boost::filesystem::path >( &args.master_path ), "Workspace Path" )
 			("wait",   po::bool_switch( &args.bWait ), "Wait at startup for attaching a debugger" )
 		;
 
@@ -73,7 +75,9 @@ int main( int argc, const char* argv[] )
 	}
 	
 	{
-		master::Master master( args.port );
+        Environment environment;
+		
+		master::Master master( environment, args.master_path, args.port );
 		
 		while( true )
 		{

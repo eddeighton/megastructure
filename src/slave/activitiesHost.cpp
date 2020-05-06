@@ -18,16 +18,15 @@ void TestHostActivity::start()
 		Message::CHQ_Alive* pAlive = message.mutable_chq_alive();
 		pAlive->set_processname( m_strProcessName );
 	}
-	if( !m_slave.sendHost( message, m_clientID ) )
+	if( !m_slave.sendHost( message, m_host.getMegaClientID() ) )
 	{
-		m_slave.removeClient( m_clientID );
 		m_slave.activityComplete( shared_from_this() );
 	}
 }
 
 bool TestHostActivity::clientMessage( std::uint32_t uiClient, const megastructure::Message& message )
 {
-	if( m_clientID == uiClient )
+	if( m_host.getMegaClientID() == uiClient )
 	{
 		if( message.has_hcs_alive() )
 		{
@@ -35,7 +34,7 @@ bool TestHostActivity::clientMessage( std::uint32_t uiClient, const megastructur
 			if( !alive.success() )
 			{
 				std::cout << "Client: " << uiClient << " with name: " << m_strProcessName << " is not alive" << std::endl;
-				m_slave.removeClient( m_clientID );
+				m_slave.removeClient( m_host.getMegaClientID() );
 			}
 			else
 			{
@@ -97,20 +96,29 @@ bool HostEnrollActivity::clientMessage( std::uint32_t uiClient, const megastruct
 	if( message.has_hcq_enroll() )
 	{
 		const Message::HCQ_Enroll& enroll = message.hcq_enroll();
-		
-		std::cout << "Enroll request from: " << uiClient << 
-			" for role: " << enroll.processname() << std::endl;
-			
-		if( m_slave.enroll( enroll.processname(), uiClient ) )
+		if( m_slave.enroll( enroll.processname(), uiClient, enroll.unique() ) )
 		{
-			if( !m_slave.sendHost( chs_enroll( true, m_slave.getWorkspace(), m_slave.getName() ), uiClient ) )
-			{
-				m_slave.removeClient( uiClient );
-			}
+			m_slave.sendHost( chs_enroll( true, m_slave.getWorkspace(), m_slave.getName() ), uiClient );
 		}
 		else 
 		{
 			std::cout << "HostEnrollActivity error" << std::endl;
+			m_slave.sendHost( chs_enroll( false ), uiClient );
+		}
+		
+		return true;
+	}
+	else if( message.has_hcq_enrolleg() )
+	{
+		const Message::HCQ_EnrollEG& enrolleg = message.hcq_enrolleg();
+		if( m_slave.enrolleg( uiClient, enrolleg.unique() ) )
+		{
+			m_slave.sendHostEG( chs_enrolleg( true ), uiClient );
+		}
+		else 
+		{
+			std::cout << "HostEnrollActivity error" << std::endl;
+			m_slave.sendHostEG( chs_enrolleg( false ), uiClient );
 		}
 		
 		return true;
@@ -129,16 +137,15 @@ void LoadHostProgramActivity::start()
 		pLoad->set_hostname( m_hostName );
 		pLoad->set_programname( m_programName );
 	}
-	if( !m_slave.sendHost( message, m_uiClientID ) )
+	if( !m_slave.sendHost( message, m_host.getMegaClientID() ) )
 	{
-		m_slave.removeClient( m_uiClientID );
 		m_slave.activityComplete( shared_from_this() );
 	}
 }
 
 bool LoadHostProgramActivity::clientMessage( std::uint32_t uiClient, const megastructure::Message& message )
 {
-	if( m_uiClientID == uiClient )
+	if( m_host.getMegaClientID() == uiClient )
 	{
 		if( message.has_hcs_load() )
 		{
@@ -147,7 +154,7 @@ bool LoadHostProgramActivity::clientMessage( std::uint32_t uiClient, const megas
 			{
 				std::cout << "Client: " << uiClient << " has NOT assumed host name: " << 
 					m_hostName << " with process name: " << m_programName << std::endl;
-				m_slave.removeClient( m_uiClientID );
+				m_slave.removeClient( m_host.getMegaClientID() );
 			}
 			else
 			{
@@ -185,6 +192,12 @@ void LoadHostsProgramActivity::start()
 	
 	if( pProjectTree )
 	{
+		//determine a process name to host name map where
+		//the set of enrolled hosts each have a non-unique process name
+		//the program has an associated process name for each host
+		//the process name to host name map uses all available process name instances
+		//to map to host names in the project and attempts to reuse existing equal mappings from 
+		//the previous configuration
 		HostMap::ProcessNameToHostNameMap processNameToHostName;
 		
 		const Coordinator::PtrVector& coordinators = pProjectTree->getCoordinators();
@@ -240,15 +253,15 @@ void LoadHostsProgramActivity::start()
 			std::cout << i.first << " : " << i.second << std::endl;
 		}
 		
-		std::vector< std::uint32_t > unmappedClients; 
+		std::vector< Host > unmappedClients; 
 		std::vector< std::string > unmappedHostNames;
 		HostMap newMapping( m_slave.getHosts(), processNameToHostName, unmappedClients, unmappedHostNames );
 		
-		for( std::uint32_t uiClientID : unmappedClients )
+		for( Host host : unmappedClients )
 		{
 			//start unload program activity
 			megastructure::Activity::Ptr pActivity( 
-				new LoadHostProgramActivity( m_slave, uiClientID, "", "" ) );
+				new LoadHostProgramActivity( m_slave, host, "", "" ) );
 			m_loadActivities.insert( pActivity );
 			m_slave.startActivity( pActivity );
 		}
@@ -256,17 +269,20 @@ void LoadHostsProgramActivity::start()
 		for( auto& i : newMapping.getHostNameMapping() )
 		{
 			const std::string& strHostName = i.first;
-			std::uint32_t uiClientID = i.second;
+			const Host& host = i.second;
 			
 			//start unload program activity
 			megastructure::Activity::Ptr pActivity( 
-				new LoadHostProgramActivity( m_slave, uiClientID, strHostName, m_programName ) );
+				new LoadHostProgramActivity( m_slave, host, strHostName, m_programName ) );
 			m_loadActivities.insert( pActivity );
 			m_slave.startActivity( pActivity );
 		}
 		
 		//TODO - actually use the return values to track the result of the program load
 		m_slave.setHostMap( newMapping );
+		
+		m_slave.calculateNetworkAddressTable( pProjectTree );
+		
 	}
 	
 	if( m_loadActivities.empty() )
@@ -315,10 +331,8 @@ bool HostBufferActivity::clientMessage( std::uint32_t uiClient, const megastruct
         const std::string strSharedBufferName =
             m_slave.getSharedBufferName( bufferRequest.buffername(), bufferRequest.size() );
         
-        if( !m_slave.sendHost( megastructure::chs_buffer( bufferRequest.buffername(), strSharedBufferName ), uiClient ) )
-        {
-            m_slave.removeClient( uiClient );
-        }
+		m_slave.sendHost( megastructure::chs_buffer( bufferRequest.buffername(), strSharedBufferName ), uiClient );
+
         return true;
     }
     

@@ -15,10 +15,10 @@ namespace slave
 	{
 	public:
 		TestHostActivity( Slave& slave, 
-							std::uint32_t clientID, 
+							const Host& host, 
 							const std::string& strProcessName ) 
 			:	m_slave( slave ),
-				m_clientID( clientID ),
+				m_host( host ),
 				m_strProcessName( strProcessName ),
 				m_bSuccess( false )
 		{
@@ -40,11 +40,11 @@ namespace slave
 		
 		std::uint32_t getClientID() const 
 		{
-			return m_clientID;
+			return m_host.getMegaClientID();
 		}
 	private:
 		Slave& m_slave;
-		std::uint32_t m_clientID;
+		const Host m_host;
 		std::string m_strProcessName;
 		bool m_bSuccess;
 	};
@@ -111,12 +111,12 @@ namespace slave
 	class LoadHostProgramActivity : public megastructure::Activity
 	{
 	public:
-		LoadHostProgramActivity( Slave& slave, std::uint32_t uiClient, 
+		LoadHostProgramActivity( Slave& slave, const Host& host, 
 					const std::string& strHostName, const std::string& strProgramName ) 
 			:	m_slave( slave ),
 				m_hostName( strHostName ),
 				m_programName( strProgramName ),
-				m_uiClientID( uiClient )
+				m_host( host )
 		{
 		}
 		
@@ -127,7 +127,7 @@ namespace slave
 		Slave& m_slave;
 		std::string m_hostName;
 		std::string m_programName;
-		std::uint32_t m_uiClientID;
+		Host m_host;
 		bool m_bSuccess = true;
 	};
 	

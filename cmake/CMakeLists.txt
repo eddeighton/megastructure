@@ -38,6 +38,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 include (InstallRequiredSystemLibraries)
 
 install( FILES ${MEGA_API_DIR}/egcomponent/egcomponent.hpp DESTINATION include/egcomponent )
+install( FILES ${MEGA_API_DIR}/egcomponent/traits.hpp DESTINATION include/egcomponent )
 #now simply add all the actual targets
 
 add_subdirectory(core)

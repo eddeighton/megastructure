@@ -7,8 +7,23 @@ include( ${MEGA_ROOT_DIR}/cmake/boost_include.cmake )
 #zeromq
 include( ${MEGA_ROOT_DIR}/cmake/zmq_include.cmake )
 
+#get xsde
+include( ${MEGA_ROOT_DIR}/cmake/xsde_include.cmake )
+
+#get clang
+include( ${MEGA_ROOT_DIR}/cmake/clang_include.cmake )
+
+#get message pack
+include( ${MEGA_ROOT_DIR}/cmake/messagepack_include.cmake )
+
 #common
 include( ${MEGA_ROOT_DIR}/cmake/common_include.cmake )
+
+#eg
+include( ${MEGA_ROOT_DIR}/cmake/eg_include.cmake )
+
+#get mega schema
+include( ${MEGA_ROOT_DIR}/cmake/schema/schema_include.cmake )
 
 set( MEGA_LIBRARY
 	${MEGA_API_DIR}/megastructure/coordinator.hpp
@@ -16,6 +31,7 @@ set( MEGA_LIBRARY
 	${MEGA_API_DIR}/megastructure/queue.hpp
 	${MEGA_API_DIR}/megastructure/activity.hpp
 	${MEGA_API_DIR}/megastructure/buffer.hpp
+	${MEGA_API_DIR}/megastructure/networkAddressTable.hpp
 	)
 
 set( MEGA_SOURCES
@@ -24,6 +40,7 @@ set( MEGA_SOURCES
 	${MEGA_SRC_DIR}/core/queue.cpp
 	${MEGA_SRC_DIR}/core/activity.cpp
 	${MEGA_SRC_DIR}/core/buffer.cpp
+	${MEGA_SRC_DIR}/core/networkAddressTable.cpp
     )
     
 add_library( megastructurelib 
@@ -38,7 +55,12 @@ link_boost( megastructurelib filesystem )
 link_boost( megastructurelib iostreams )
 link_boost( megastructurelib serialization )
 link_zmq( megastructurelib )
+link_xsde( megastructurelib )
+link_clang( megastructurelib )
+link_messagePack( megastructurelib )
 link_common( megastructurelib )
+link_schemalib( megastructurelib )
+link_eg( megastructurelib )
 
 target_link_libraries( megastructurelib megastructureprotocollib )
 

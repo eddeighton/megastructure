@@ -493,19 +493,19 @@ namespace megaxml
     }
 
     public:
-    ::megaxml::Run_pimpl Run_p_;
     ::megaxml::Defaults_pimpl Defaults_p_;
-    ::xml_schema::unsigned_int_pimpl unsigned_int_p_;
-    ::xml_schema::string_pimpl string_p_;
-    ::megaxml::Package_pimpl Package_p_;
-    ::megaxml::Directories_pimpl Directories_p_;
     ::megaxml::Fibers_pimpl Fibers_p_;
     ::megaxml::Stack_pimpl Stack_p_;
     ::megaxml::Files_pimpl Files_p_;
+    ::xml_schema::string_pimpl string_p_;
+    ::xml_schema::unsigned_int_pimpl unsigned_int_p_;
     ::megaxml::EG_pimpl EG_p_;
+    ::megaxml::Package_pimpl Package_p_;
+    ::megaxml::Directories_pimpl Directories_p_;
     ::megaxml::Host_pimpl Host_p_;
     ::megaxml::Project_pimpl Project_p_;
     ::megaxml::Build_pimpl Build_p_;
+    ::megaxml::Run_pimpl Run_p_;
   };
 }
 

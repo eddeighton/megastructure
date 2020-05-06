@@ -13,12 +13,14 @@
 #include "protocol/protocol_helpers.hpp"
 
 #include "megastructure/component.hpp"
+#include "megastructure/mega.hpp"
 #include "egcomponent/egcomponent.hpp"
 
 
 struct Args
 {
-	std::string slavePort;
+	std::string slave_mega_port = megastructure::MEGA_PORT;
+	std::string slave_eg_port = megastructure::EG_PORT;
 };
 
 bool parse_args( int argc, const char* argv[], Args& args )
@@ -30,7 +32,8 @@ bool parse_args( int argc, const char* argv[], Args& args )
 		boost::program_options::variables_map variables;
 		
 		options.add_options()
-			("port", po::value< std::string >( &args.slavePort ), "Slave Port" )
+			("sport", po::value< std::string >( &args.slave_mega_port ), "Slave Mega Port" )
+			("eport", po::value< std::string >( &args.slave_eg_port ), "Slave EG Port" )
 			("help", "produce help message")
 		;
 
@@ -64,6 +67,61 @@ std::string readInput()
 	return str;
 }
 
+bool handleEGTest( megastructure::Component& component, const std::string& strLine )
+{
+	if( strLine.substr( 0, 4 ) == "read" )
+	{
+		std::uint32_t uiType 		= 0U;
+		std::uint32_t uiInstance 	= 0U;
+		
+		{
+			std::istringstream is( strLine.substr( 5 ) );
+			is >> uiType >> uiInstance;
+			std::cout << "Reading type: " << uiType << " instance: " << uiInstance << std::endl;
+		}
+		
+		std::future< std::string > fResult =
+			component.egRead( uiType, uiInstance );
+		
+		return true;
+	}
+	else if( strLine.substr( 0, 5 ) == "write" )
+	{
+		std::uint32_t uiType = 0U;
+		std::uint32_t uiInstance = 0U;
+		std::string strBuffer;
+		
+		{
+			std::istringstream is( strLine.substr( 6 ) );
+			is >> uiType >> uiInstance >> strBuffer;
+			std::cout << "Reading type: " << uiType << " instance: " << uiInstance << " buffer: " << strBuffer << std::endl;
+		}
+		
+		component.egWrite( uiType, uiInstance, strBuffer );
+		
+		return true;
+	}
+	else if( strLine.substr( 0, 4 ) == "call" )
+	{
+		std::uint32_t uiType = 0U;
+		std::uint32_t uiInstance = 0U;
+		std::string strBuffer;
+		
+		{
+			std::istringstream is( strLine.substr( 5 ) );
+			is >> uiType >> uiInstance >> strBuffer;
+			std::cout << "Reading type: " << uiType << " instance: " << uiInstance << " buffer: " << strBuffer << std::endl;
+		}
+		
+		component.egCall( uiType, uiInstance, strBuffer );
+		
+		return true;
+	}
+	
+	return false;
+}
+
+
 int main( int argc, const char* argv[] )
 {
 	Args args;
@@ -77,20 +135,13 @@ int main( int argc, const char* argv[] )
 		std::cout << "Host: " << 
 			megastructure::getHostProgramName() << " : " << 
 			Common::getProcessID() << std::endl;
-			
-		std::string strSlavePort = args.slavePort;
-		if( args.slavePort.empty() )
-			strSlavePort = megastructure::getGlobalCoordinatorPort();
-		if( strSlavePort.empty() )
-		{
-			THROW_RTE( "Could not resolve Slave Port number - set MEGAPORT or pass port on command line" );
-		}
 		
 		std::future< std::string > inputStringFuture =
 			std::async( std::launch::async, readInput );
 		
 		megastructure::Component component( 
-			strSlavePort,
+			args.slave_mega_port,
+			args.slave_eg_port,
 			megastructure::getHostProgramName() );
 		
 		while( true )
@@ -106,6 +157,10 @@ int main( int argc, const char* argv[] )
 				{
 					break;
 				}
+                else if( handleEGTest( component, strInput ) )
+                {
+					//do nothing
+                }
                 else if( strInput == "" )
                 {
                     //do nothing

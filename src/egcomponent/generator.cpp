@@ -56,6 +56,74 @@ BufferRelation getBufferRelation( const eg::TranslationUnitAnalysis& translation
     }
 }
 
+void recurseEncodeDecode( const ::eg::concrete::Action* pAction, std::ostream& os )
+{
+	const std::vector< eg::concrete::Element* >& children = pAction->getChildren();
+	for( const eg::concrete::Element* pElement : children )
+	{
+		if( const eg::concrete::Action* pNestedAction = 
+			dynamic_cast< const eg::concrete::Action* >( pElement ) )
+		{
+			const std::string strType = pNestedAction->getAction()->getStaticType();
+			os << "    template<> inline void encode( Encoder& encoder, const " << strType << "& value ){ encode( encoder, value.data ); }\n";
+			os << "    template<> inline void decode( Decoder& decoder, " << strType << "& value ) 		{ decode( decoder, value.data ); }\n";
+
+			recurseEncodeDecode( pNestedAction, os );
+		}
+	}
+}
+
+void recurseEncode( const eg::Layout& layout, const ::eg::concrete::Action* pAction, std::ostream& os )
+{
+	os << "        case " << pAction->getIndex() << ": ";
+	pAction->printEncode( os, "uiType" );
+	os << " break; //" << pAction->getName() << "\n";
+	
+	const std::vector< eg::concrete::Element* >& children = pAction->getChildren();
+	for( const eg::concrete::Element* pElement : children )
+	{
+		if( const eg::concrete::Action* pNestedAction = 
+			dynamic_cast< const eg::concrete::Action* >( pElement ) )
+		{
+			recurseEncode( layout, pNestedAction, os );
+		}
+		else if( const eg::concrete::Dimension* pDimension =
+			dynamic_cast< const eg::concrete::Dimension* >( pElement ) )
+		{
+			const eg::DataMember* pDataMember = layout.getDataMember( pDimension );
+			
+			os << "        case " << pElement->getIndex() << ": ";
+			pDataMember->printEncode( os, "uiType" );
+			os << " break; //" << pDataMember->getName() << "\n";
+		}
+	}
+}
+
+void recurseDecode( const eg::Layout& layout, const ::eg::concrete::Action* pAction, std::ostream& os )
+{
+	os << "        case " << pAction->getIndex() << ": ";
+	pAction->printDecode( os, "uiType" );
+	os << "break; //" << pAction->getName() << "\n";
+			
+	const std::vector< eg::concrete::Element* >& children = pAction->getChildren();
+	for( const eg::concrete::Element* pElement : children )
+	{
+		if( const eg::concrete::Action* pNestedAction = 
+			dynamic_cast< const eg::concrete::Action* >( pElement ) )
+		{
+			recurseDecode( layout, pNestedAction, os );
+		}
+		else if( const eg::concrete::Dimension* pDimension =
+			dynamic_cast< const eg::concrete::Dimension* >( pElement ) )
+		{
+			const eg::DataMember* pDataMember = layout.getDataMember( pDimension );
+			os << "        case " << pElement->getIndex() << ": ";
+			pDataMember->printDecode( os, "uiType" );
+			os << " break; //" << pDataMember->getName() << "\n";
+		}
+	}
+}
+
 void generate_eg_component( std::ostream& os, 
 		const std::string& strProjectName, 
 		const std::string& strCoordinator, 
@@ -65,15 +133,19 @@ void generate_eg_component( std::ostream& os,
 	
 	os << "//ed was here\n";
 	os << "#include <iostream>\n";
-	os << "#include <boost/fiber/all.hpp>\n";
-	os << "#include <boost/config.hpp>\n";
+	os << "#include <vector>\n";
+	os << "#include \"boost/fiber/all.hpp\"\n";
+	os << "#include \"boost/config.hpp\"\n";
+
 	os << "\n";
 	
 	os << "#include \"egcomponent/egcomponent.hpp\"\n";
+    os << "#include \"egcomponent/traits.hpp\"\n";
     os << "#include \"structures.hpp\"\n";
 	
     const eg::Layout& layout = session.getLayout();
     const eg::IndexedObject::Array& objects = session.getObjects( eg::IndexedObject::MASTER_FILE );
+	const eg::concrete::Action* pRoot = session.getInstanceRoot();
 	
     const eg::TranslationUnitAnalysis& translationUnitAnalysis =
 		session.getTranslationUnitAnalysis();
@@ -142,7 +214,40 @@ void generate_eg_component( std::ostream& os,
     }
     os << "}\n";
     os << "\n";
+	os << "namespace eg\n";
+	os << "{\n";
+	recurseEncodeDecode( pRoot, os );
+	os << "}\n";
+    os << "\n";
 	
+    os << "\n//encode decode\n";
+	os << "void encode( std::uint32_t uiType, std::uint32_t uiInstance, eg::Encoder& buffer )\n";
+	os << "{\n";
+	os << "    switch( uiType )\n";
+	os << "    {\n";
+	recurseEncode( layout, pRoot, os );
+	os << "        default: \n";
+	os << "        {\n";
+	os << "            std::ostringstream _os;\n";
+	os << "            _os << \"Unknown type: \" << uiType << \" instance: \" << uiInstance;\n";
+	os << "            throw std::runtime_error( _os.str() );\n";
+	os << "        }\n";
+	os << "    }\n";
+	os << "}\n";
+	os << "void decode( std::uint32_t uiType, std::uint32_t uiInstance, eg::Decoder& buffer )\n";
+	os << "{\n";
+	os << "    switch( uiType )\n";
+	os << "    {\n";
+	recurseDecode( layout, pRoot, os );
+	os << "        default: \n";
+	os << "        {\n";
+	os << "            std::ostringstream _os;\n";
+	os << "            _os << \"Unknown type: \" << uiType << \" instance: \" << uiInstance;\n";
+	os << "            throw std::runtime_error( _os.str() );\n";
+	os << "        }\n";
+	os << "    }\n";
+	os << "}\n";
+    os << "\n";
 	
 	const char szEventRoutines[] = R"(
 	
@@ -175,7 +280,7 @@ bool events::update()
 namespace megastructure
 {
 	
-class EGComponentImpl : public EGComponent
+class EGComponentImpl : public EGComponent, public EncodeDecode
 {
 	MemorySystem* m_pMemorySystem = nullptr;
 	MegaProtocol* m_pMegaProtocol = nullptr;
@@ -184,8 +289,10 @@ public:
 	{
 	}
 	
-	virtual void Initialise( MemorySystem* pMemorySystem, MegaProtocol* pMegaProtocol )
+	virtual void Initialise( EncodeDecode*& pEncodeDecode, MemorySystem* pMemorySystem, MegaProtocol* pMegaProtocol )
 	{
+		pEncodeDecode = this;
+		
 		boost::fibers::use_scheduling_algorithm< eg::eg_algorithm >();
 		
 		m_pMemorySystem = pMemorySystem;
@@ -206,23 +313,14 @@ public:
 		clock::next();
 	}
 	
-	virtual void Read( std::uint32_t uiDimensionType, std::uint32_t uiInstance, std::string& buffer )
+	virtual void encode( std::uint32_t uiType, std::uint32_t uiInstance, eg::Encoder& buffer )
 	{
+		::encode( uiType, uiInstance, buffer );
 	}
-	virtual void Write( std::uint32_t uiDimensionType, std::uint32_t uiInstance, const std::string& buffer )
+	
+	virtual void decode( std::uint32_t uiType, std::uint32_t uiInstance, eg::Decoder& buffer )
 	{
-	}
-	virtual void Invoke( std::uint32_t uiActionType, std::uint32_t uiInstance, const std::string& buffer )
-	{
-	}
-	virtual void Pause( std::uint32_t uiActionType, std::uint32_t uiInstance )
-	{
-	}
-	virtual void Resume( std::uint32_t uiActionType, std::uint32_t uiInstance )
-	{
-	}
-	virtual void Stop( std::uint32_t uiActionType, std::uint32_t uiInstance )
-	{
+		::decode( uiType, uiInstance, buffer );
 	}
 };
 
