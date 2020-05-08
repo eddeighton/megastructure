@@ -246,8 +246,8 @@ void build_parser_session( const Environment& environment, const ProjectTree& pr
 		std::cout << std::endl;
 		
 		const eg::interface::Root* pInterfaceRoot = pParserSession->getTreeRoot();
-		std::string strIndent;
-		pInterfaceRoot->print( std::cout, strIndent, true );
+		//std::string strIndent;
+		//pInterfaceRoot->print( std::cout, strIndent, true );
 		
 		build_include_header( environment, pInterfaceRoot, project );
 		build_interface_header( environment, pParserSession.get(), project );
@@ -705,7 +705,7 @@ void command_build( bool bHelp, const std::string& strBuildCommand, const std::v
 		{
 			ProjectTree projectTree( environment, projectDirectory, strProject );
 			
-			projectTree.print( std::cout );
+			//projectTree.print( std::cout );
 			
 			build_parser_session( environment, projectTree /*fileTracker, bBenchCommands, bLogCommands, bNoPCH*/ );
 			

@@ -168,7 +168,7 @@ bool BufferActivity::serverMessage( const Message& message )
 ////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////
 
-
+/*
 void TestEGReadActivity::start()
 {
 	Message message;
@@ -259,6 +259,6 @@ void TestEGCallActivity::start()
 	std::cout << "Sending eg call for type: " << m_uiType << " instance: " << m_uiInstance << " args: " << m_strBuffer << std::endl;
     m_component.send( message );
 }
-
+*/
 
 }

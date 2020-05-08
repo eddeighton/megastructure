@@ -7,6 +7,9 @@ include( ${MEGA_ROOT_DIR}/cmake/boost_include.cmake )
 #get clang
 include( ${MEGA_ROOT_DIR}/cmake/clang_include.cmake )
 
+#get xsde
+include( ${MEGA_ROOT_DIR}/cmake/xsde_include.cmake )
+
 #get common
 include( ${MEGA_ROOT_DIR}/cmake/common_include.cmake )
 
@@ -30,7 +33,8 @@ link_boost( test_host filesystem )
 link_boost( test_host system )
 link_boost( test_host date_time )
 link_boost( test_host fiber )
-link_clang( componentlib )
+link_xsde( test_host )
+link_clang( test_host )
 link_common( test_host )
 link_eg( test_host )
 

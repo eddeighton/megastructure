@@ -4090,13 +4090,13 @@ class Message_EG_Msg PROTOBUF_FINAL :
     kResponseFieldNumber = 5,
     kEventFieldNumber = 6,
   };
-  // uint32 type = 1;
+  // int32 type = 1;
   void clear_type();
-  ::PROTOBUF_NAMESPACE_ID::uint32 type() const;
-  void set_type(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  ::PROTOBUF_NAMESPACE_ID::int32 type() const;
+  void set_type(::PROTOBUF_NAMESPACE_ID::int32 value);
   private:
-  ::PROTOBUF_NAMESPACE_ID::uint32 _internal_type() const;
-  void _internal_set_type(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  ::PROTOBUF_NAMESPACE_ID::int32 _internal_type() const;
+  void _internal_set_type(::PROTOBUF_NAMESPACE_ID::int32 value);
   public:
 
   // uint32 instance = 2;
@@ -4186,7 +4186,7 @@ class Message_EG_Msg PROTOBUF_FINAL :
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  ::PROTOBUF_NAMESPACE_ID::uint32 type_;
+  ::PROTOBUF_NAMESPACE_ID::int32 type_;
   ::PROTOBUF_NAMESPACE_ID::uint32 instance_;
   ::PROTOBUF_NAMESPACE_ID::uint32 cycle_;
   union FoobarUnion {
@@ -6992,22 +6992,22 @@ inline void Message_EG_Msg_Event::unsafe_arena_set_allocated_value(
 
 // Message_EG_Msg
 
-// uint32 type = 1;
+// int32 type = 1;
 inline void Message_EG_Msg::clear_type() {
-  type_ = 0u;
+  type_ = 0;
 }
-inline ::PROTOBUF_NAMESPACE_ID::uint32 Message_EG_Msg::_internal_type() const {
+inline ::PROTOBUF_NAMESPACE_ID::int32 Message_EG_Msg::_internal_type() const {
   return type_;
 }
-inline ::PROTOBUF_NAMESPACE_ID::uint32 Message_EG_Msg::type() const {
+inline ::PROTOBUF_NAMESPACE_ID::int32 Message_EG_Msg::type() const {
   // @@protoc_insertion_point(field_get:megastructure.Message.EG_Msg.type)
   return _internal_type();
 }
-inline void Message_EG_Msg::_internal_set_type(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+inline void Message_EG_Msg::_internal_set_type(::PROTOBUF_NAMESPACE_ID::int32 value) {
   
   type_ = value;
 }
-inline void Message_EG_Msg::set_type(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+inline void Message_EG_Msg::set_type(::PROTOBUF_NAMESPACE_ID::int32 value) {
   _internal_set_type(value);
   // @@protoc_insertion_point(field_set:megastructure.Message.EG_Msg.type)
 }

@@ -76,10 +76,77 @@ void recurseSlave( const eg::concrete::Action* pRoot,
 	}
 }
 
+void recurseHost( const eg::concrete::Action* pRoot, 
+		const std::string& strHostName, 
+		ClientIDMap& clientIDMap )
+{
+	const std::vector< eg::concrete::Element* >& children = pRoot->getChildren();
+	for( const eg::concrete::Element* pElement : children )
+	{
+		if( const eg::concrete::Action* pHostAction = 
+			dynamic_cast< const eg::concrete::Action* >( pElement ) )
+		{
+			const std::string& strActionIdentifier = 
+				pHostAction->getAction()->getIdentifier();
+			if( strHostName == strActionIdentifier )
+			{
+				recurseClient( pHostAction, NetworkAddressTable::SelfID, clientIDMap );
+			}
+			else
+			{
+				recurseClient( pHostAction, NetworkAddressTable::MasterID, clientIDMap );
+			}
+		}
+	}
+}
+
+void recurseHost( const eg::concrete::Action* pRoot, 
+		const std::string& strCoordinatorName, 
+		const std::string& strHostName, 
+		ClientIDMap& clientIDMap )
+{
+	const std::vector< eg::concrete::Element* >& children = pRoot->getChildren();
+	for( const eg::concrete::Element* pElement : children )
+	{
+		if( const eg::concrete::Action* pCoordinatorAction = 
+			dynamic_cast< const eg::concrete::Action* >( pElement ) )
+		{
+			const std::string& strActionIdentifier = 
+				pCoordinatorAction->getAction()->getIdentifier();
+			if( strCoordinatorName == strActionIdentifier )
+			{
+				recurseHost( pCoordinatorAction, strHostName, clientIDMap );
+			}
+			else
+			{
+				recurseClient( pCoordinatorAction, NetworkAddressTable::MasterID, clientIDMap );
+			}
+		}
+	}
+}
+
+
+void buildTable( const ClientIDMap& clientIDMap, NetworkAddressTable::Table& table )
+{
+	int iHighest = 0;
+	for( auto& i : clientIDMap )
+	{
+		if( i.first > iHighest )
+			iHighest = i.first;
+	}
+	
+	table.resize( iHighest + 1 );
+	
+	for( auto& i : clientIDMap )
+	{
+		table[ i.first ] = i.second;
+	}
+}
+
 
 NetworkAddressTable::NetworkAddressTable( 
-	const ClientMap& clients, 
-	std::shared_ptr< ProjectTree > pProgramTree )
+						const ClientMap& clients, 
+						std::shared_ptr< ProjectTree > pProgramTree )
 {
 	const boost::filesystem::path programDatabasePath = 
 		pProgramTree->getAnalysisFileName();
@@ -87,33 +154,16 @@ NetworkAddressTable::NetworkAddressTable(
     if( boost::filesystem::exists( programDatabasePath ) )
     {
 		eg::ReadSession session( programDatabasePath );
-		
 		ClientIDMap clientIDMap;
-		
-		const eg::concrete::Action* pRoot = session.getInstanceRoot();
-		
-		recurseMappedClients( pRoot, clients, clientIDMap );
-		
-		int iHighest = 0;
-		for( auto& i : clientIDMap )
-		{
-			if( i.first > iHighest )
-				iHighest = i.first;
-		}
-		
-		m_table.resize( iHighest );
-		
-		for( auto& i : clientIDMap )
-		{
-			m_table[ i.first ] = i.second;
-		}
+		recurseMappedClients( session.getInstanceRoot(), clients, clientIDMap );
+		buildTable( clientIDMap, m_table );
 	}
 }
 
 NetworkAddressTable::NetworkAddressTable( 
-	const ClientMap& clients, 
-	const std::string& strCoordinatorName, 
-	std::shared_ptr< ProjectTree > pProgramTree )
+						const ClientMap& clients, 
+						const std::string& strCoordinatorName, 
+						std::shared_ptr< ProjectTree > pProgramTree )
 {
 	const boost::filesystem::path programDatabasePath = 
 		pProgramTree->getAnalysisFileName();
@@ -121,28 +171,27 @@ NetworkAddressTable::NetworkAddressTable(
     if( boost::filesystem::exists( programDatabasePath ) )
     {
 	    eg::ReadSession session( programDatabasePath );
-	
 	    ClientIDMap clientIDMap;
-	
-	    const eg::concrete::Action* pRoot = session.getInstanceRoot();
-	
-	    recurseSlave( pRoot, clients, strCoordinatorName, clientIDMap );
-	
-	    int iHighest = 0;
-	    for( auto& i : clientIDMap )
-	    {
-		    if( i.first > iHighest )
-			    iHighest = i.first;
-	    }
-	
-	    m_table.resize( iHighest + 1 );
-	
-	    for( auto& i : clientIDMap )
-	    {
-		    m_table[ i.first ] = i.second;
-	    }
+	    recurseSlave( session.getInstanceRoot(), clients, strCoordinatorName, clientIDMap );
+		buildTable( clientIDMap, m_table );
     }
 }
 
+		
+NetworkAddressTable::NetworkAddressTable( const std::string& strCoordinatorName, 
+							const std::string& strHostName, 
+							std::shared_ptr< ProjectTree > pProgramTree )
+{
+	const boost::filesystem::path programDatabasePath = 
+		pProgramTree->getAnalysisFileName();
+
+    if( boost::filesystem::exists( programDatabasePath ) )
+    {
+	    eg::ReadSession session( programDatabasePath );
+	    ClientIDMap clientIDMap;
+	    recurseHost( session.getInstanceRoot(), strCoordinatorName, strHostName, clientIDMap );
+		buildTable( clientIDMap, m_table );
+    }
+}
 
 }

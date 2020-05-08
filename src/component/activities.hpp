@@ -104,6 +104,7 @@ namespace megastructure
 	
 	////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////
+	/*
 	class TestEGReadActivity : public Activity
 	{
 	public:
@@ -169,7 +170,7 @@ namespace megastructure
 		std::uint32_t 	m_uiType;
 		std::uint32_t 	m_uiInstance;
 		std::string 	m_strBuffer;
-	};
+	};*/
 }
 
 #endif //COMPONENT_ACTIVITIES_26_APRIL_2020

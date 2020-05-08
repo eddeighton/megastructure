@@ -7,6 +7,7 @@
 #include <vector>
 #include <cstdint>
 #include <memory>
+#include <limits>
 
 class ProjectTree;
 
@@ -21,12 +22,17 @@ public:
 	using Ptr = std::shared_ptr< NetworkAddressTable >;
 	
 	static const std::uint32_t MasterID = 0U;
+	static const std::uint32_t SelfID = std::numeric_limits< std::uint32_t >::max();
 	
 	NetworkAddressTable( const ClientMap& clients, 
 		std::shared_ptr< ProjectTree > pProgramTree );
 		
 	NetworkAddressTable( const ClientMap& clients, 
 		const std::string& strCoordinatorName,
+		std::shared_ptr< ProjectTree > pProgramTree );
+		
+	NetworkAddressTable( const std::string& strCoordinatorName, 
+		const std::string& strHostName,
 		std::shared_ptr< ProjectTree > pProgramTree );
 	
 	inline std::uint32_t getClientForType( std::uint32_t uiType ) const

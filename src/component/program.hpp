@@ -5,6 +5,10 @@
 
 #include "megastructure/component.hpp"
 #include "megastructure/buffer.hpp"
+#include "megastructure/networkAddressTable.hpp"
+
+#include "protocol/megastructure.pb.h"
+#include "protocol/protocol_helpers.hpp"
 
 #include "egcomponent/egcomponent.hpp"
 
@@ -14,6 +18,8 @@
 #include <string>
 #include <map>
 
+class ProjectTree;
+
 namespace megastructure
 {
 	class Program : public MemorySystem, public MegaProtocol, public std::enable_shared_from_this< Program >
@@ -21,6 +27,7 @@ namespace megastructure
         using CacheBufferMap = std::map< std::string, LocalBufferImpl::Ptr >;
         using SharedBufferMap = std::map< std::string, SharedBufferImpl::Ptr >;
 
+		friend class EGReadFunctor;
 	public:
 		using Ptr = std::shared_ptr< Program >;
 	
@@ -34,17 +41,25 @@ namespace megastructure
 		virtual LocalBuffer* getLocalBuffer( const char* pszName, std::size_t szSize );
         
         //MegaProtocol
-        //virtual boost::fibers::future< std::string > Read( std::uint32_t uiDimensionType, std::uint32_t uiInstance );
-        virtual void Write( std::uint32_t uiDimensionType, std::uint32_t uiInstance, const std::string& buffer );
-        virtual void Invoke( std::uint32_t uiActionType, std::uint32_t uiInstance, const std::string& buffer );
-        virtual void Pause( std::uint32_t uiActionType, std::uint32_t uiInstance );
-        virtual void Resume( std::uint32_t uiActionType, std::uint32_t uiInstance );
-        virtual void Stop( std::uint32_t uiActionType, std::uint32_t uiInstance );
+		virtual bool receive( std::int32_t& iType, std::uint32_t& uiInstance, std::uint32_t& uiTimestamp );
+		virtual void send( const char* type, std::size_t timestamp, const void* value, std::size_t size );
+		
+		//eg
+		std::string egRead( std::int32_t iType, std::uint32_t uiInstance );
+		void egWrite( std::int32_t iType, std::uint32_t uiInstance, const std::string& strBuffer );
+		void egCall( std::int32_t iType, std::uint32_t uiInstance, const std::string& strBuffer );
+		
+	private:
+		void writeBuffer( std::int32_t iType, std::uint32_t uiInstance, const std::string& strBuffer );
+		void readBuffer( std::int32_t iType, std::uint32_t uiInstance, std::string& strBuffer );
 		
 	private:
 		Component& m_component;
 		std::string m_strHostName;
 		std::string m_strProjectName;
+		
+		std::shared_ptr< ProjectTree > m_pProjectTree;
+		std::shared_ptr< NetworkAddressTable > m_pNetworkAddressTable;
 		
 		std::string m_strComponentName;
 		boost::filesystem::path m_componentPath;
@@ -54,6 +69,8 @@ namespace megastructure
         
         CacheBufferMap m_cacheBuffers;
         SharedBufferMap m_sharedBuffers;
+		
+		std::vector< megastructure::Message > m_requests;
 	};
 }
 

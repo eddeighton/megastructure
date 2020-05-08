@@ -11,6 +11,8 @@
 
 #include <string>
 #include <vector>
+#include <cstddef>
+#include <cstdint>
 
 namespace megastructure
 {
@@ -18,8 +20,8 @@ namespace megastructure
 	class BOOST_SYMBOL_VISIBLE EncodeDecode
 	{
 	public:
-		virtual void encode( std::uint32_t uiType, std::uint32_t uiInstance, eg::Encoder& encoder ) = 0;
-		virtual void decode( std::uint32_t uiType, std::uint32_t uiInstance, eg::Decoder& decoder ) = 0;
+		virtual void encode( std::int32_t iType, std::uint32_t uiInstance, eg::Encoder& encoder ) = 0;
+		virtual void decode( std::int32_t iType, std::uint32_t uiInstance, eg::Decoder& decoder ) = 0;
 	};
 	
 	class BOOST_SYMBOL_VISIBLE Buffer
@@ -52,13 +54,8 @@ namespace megastructure
 	class BOOST_SYMBOL_VISIBLE MegaProtocol
 	{
 	public:
-		//virtual boost::fibers::future< std::string > Read( std::uint32_t uiDimensionType, std::uint32_t uiInstance ) = 0;
-		
-		virtual void Write( std::uint32_t uiDimensionType, std::uint32_t uiInstance, const std::string& buffer ) = 0;
-		virtual void Invoke( std::uint32_t uiActionType, std::uint32_t uiInstance, const std::string& buffer ) = 0;
-		virtual void Pause( std::uint32_t uiActionType, std::uint32_t uiInstance ) = 0;
-		virtual void Resume( std::uint32_t uiActionType, std::uint32_t uiInstance ) = 0;
-		virtual void Stop( std::uint32_t uiActionType, std::uint32_t uiInstance ) = 0;
+		virtual bool receive( std::int32_t& iType, std::uint32_t& uiInstance, std::uint32_t& uiTimestamp ) = 0;
+		virtual void send( const char* type, std::size_t timestamp, const void* value, std::size_t size ) = 0;
 		
 	};
 	
@@ -68,15 +65,10 @@ namespace megastructure
 		virtual void Initialise( EncodeDecode*& pEncodeDecode, MemorySystem* pMemorySystem, MegaProtocol* pMegaProtocol ) = 0;
 		virtual void Uninitialise() = 0 ;
 		
+		virtual void WaitForReadResponse( std::int32_t iType, std::uint32_t uiInstance ) = 0;
+		
 		virtual void Cycle() = 0;
-		/*
-		virtual void Read( std::uint32_t uiDimensionType, std::uint32_t uiInstance, std::string& buffer ) = 0;
-		virtual void Write( std::uint32_t uiDimensionType, std::uint32_t uiInstance, const std::string& buffer ) = 0;
-		virtual void Invoke( std::uint32_t uiActionType, std::uint32_t uiInstance, const std::string& buffer ) = 0;
-		virtual void Pause( std::uint32_t uiActionType, std::uint32_t uiInstance ) = 0;
-		virtual void Resume( std::uint32_t uiActionType, std::uint32_t uiInstance ) = 0;
-		virtual void Stop( std::uint32_t uiActionType, std::uint32_t uiInstance ) = 0;
-		*/
+		
 	};
 
 

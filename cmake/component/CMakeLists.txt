@@ -7,6 +7,9 @@ include( ${MEGA_ROOT_DIR}/cmake/boost_include.cmake )
 #get clang
 include( ${MEGA_ROOT_DIR}/cmake/clang_include.cmake )
 
+#get xsde
+include( ${MEGA_ROOT_DIR}/cmake/xsde_include.cmake )
+
 #get common
 include( ${MEGA_ROOT_DIR}/cmake/common_include.cmake )
 
@@ -38,12 +41,14 @@ add_library( componentlib STATIC
 		
 set_target_properties( componentlib PROPERTIES FOLDER core )
 set_target_properties( componentlib PROPERTIES DEBUG_POSTFIX d )
+target_link_options( componentlib PUBLIC "-SAFESEH:NO" )
 
 link_boost( componentlib program_options )
 link_boost( componentlib filesystem )
 link_boost( componentlib system )
 link_boost( componentlib date_time )
 link_boost( componentlib fiber )
+link_xsde( componentlib )
 link_clang( componentlib )
 link_common( componentlib )
 link_eg( componentlib )

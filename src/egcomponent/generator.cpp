@@ -76,7 +76,7 @@ void recurseEncodeDecode( const ::eg::concrete::Action* pAction, std::ostream& o
 void recurseEncode( const eg::Layout& layout, const ::eg::concrete::Action* pAction, std::ostream& os )
 {
 	os << "        case " << pAction->getIndex() << ": ";
-	pAction->printEncode( os, "uiType" );
+	pAction->printEncode( os, "uiInstance" );
 	os << " break; //" << pAction->getName() << "\n";
 	
 	const std::vector< eg::concrete::Element* >& children = pAction->getChildren();
@@ -93,7 +93,7 @@ void recurseEncode( const eg::Layout& layout, const ::eg::concrete::Action* pAct
 			const eg::DataMember* pDataMember = layout.getDataMember( pDimension );
 			
 			os << "        case " << pElement->getIndex() << ": ";
-			pDataMember->printEncode( os, "uiType" );
+			pDataMember->printEncode( os, "uiInstance" );
 			os << " break; //" << pDataMember->getName() << "\n";
 		}
 	}
@@ -102,7 +102,7 @@ void recurseEncode( const eg::Layout& layout, const ::eg::concrete::Action* pAct
 void recurseDecode( const eg::Layout& layout, const ::eg::concrete::Action* pAction, std::ostream& os )
 {
 	os << "        case " << pAction->getIndex() << ": ";
-	pAction->printDecode( os, "uiType" );
+	pAction->printDecode( os, "uiInstance" );
 	os << "break; //" << pAction->getName() << "\n";
 			
 	const std::vector< eg::concrete::Element* >& children = pAction->getChildren();
@@ -118,7 +118,7 @@ void recurseDecode( const eg::Layout& layout, const ::eg::concrete::Action* pAct
 		{
 			const eg::DataMember* pDataMember = layout.getDataMember( pDimension );
 			os << "        case " << pElement->getIndex() << ": ";
-			pDataMember->printDecode( os, "uiType" );
+			pDataMember->printDecode( os, "uiInstance" );
 			os << " break; //" << pDataMember->getName() << "\n";
 		}
 	}
@@ -221,60 +221,35 @@ void generate_eg_component( std::ostream& os,
     os << "\n";
 	
     os << "\n//encode decode\n";
-	os << "void encode( std::uint32_t uiType, std::uint32_t uiInstance, eg::Encoder& buffer )\n";
+	os << "void encode( std::int32_t iType, std::uint32_t uiInstance, eg::Encoder& buffer )\n";
 	os << "{\n";
-	os << "    switch( uiType )\n";
+	os << "    switch( iType )\n";
 	os << "    {\n";
 	recurseEncode( layout, pRoot, os );
 	os << "        default: \n";
 	os << "        {\n";
 	os << "            std::ostringstream _os;\n";
-	os << "            _os << \"Unknown type: \" << uiType << \" instance: \" << uiInstance;\n";
+	os << "            _os << \"Unknown type: \" << iType << \" instance: \" << uiInstance;\n";
 	os << "            throw std::runtime_error( _os.str() );\n";
 	os << "        }\n";
 	os << "    }\n";
 	os << "}\n";
-	os << "void decode( std::uint32_t uiType, std::uint32_t uiInstance, eg::Decoder& buffer )\n";
+	os << "void decode( std::int32_t iType, std::uint32_t uiInstance, eg::Decoder& buffer )\n";
 	os << "{\n";
-	os << "    switch( uiType )\n";
+	os << "    switch( iType )\n";
 	os << "    {\n";
 	recurseDecode( layout, pRoot, os );
 	os << "        default: \n";
 	os << "        {\n";
 	os << "            std::ostringstream _os;\n";
-	os << "            _os << \"Unknown type: \" << uiType << \" instance: \" << uiInstance;\n";
+	os << "            _os << \"Unknown type: \" << iType << \" instance: \" << uiInstance;\n";
 	os << "            throw std::runtime_error( _os.str() );\n";
 	os << "        }\n";
 	os << "    }\n";
 	os << "}\n";
     os << "\n";
 	
-	const char szEventRoutines[] = R"(
-	
-	
-eg::event_iterator events::getIterator()
-{
-    return 0;
-}
 
-bool events::get( eg::event_iterator& iterator, Event& event )
-{
-    return false;
-}
-
-void events::put( const char* type, eg::TimeStamp timestamp, const void* value, std::size_t size )
-{
-}
-    
-bool events::update()
-{
-    return false;
-}
-
-	)";
-	os << szEventRoutines << "\n";
-
-	
 	const char szStuff[] = R"(
 	
 namespace megastructure
@@ -313,14 +288,47 @@ public:
 		clock::next();
 	}
 	
-	virtual void encode( std::uint32_t uiType, std::uint32_t uiInstance, eg::Encoder& buffer )
+	virtual void WaitForReadResponse( std::int32_t iType, std::uint32_t uiInstance )
 	{
-		::encode( uiType, uiInstance, buffer );
+		boost::fibers::fiber executionFiber
+		(
+			std::allocator_arg,
+			boost::fibers::fixedsize_stack( 1024 ),
+			[ iType, uiInstance ]()
+			{
+				boost::this_fiber::properties< eg::fiber_props >().setResumption( 
+					[ iType, uiInstance ]( Event e )
+					{
+						return ( iType 		== e.data.type && 
+								 uiInstance == e.data.instance );
+					}
+				);
+				boost::this_fiber::yield();
+			}
+		);
+        executionFiber.properties< eg::fiber_props >().setReference( eg::reference{ uiInstance, iType, 0 } );
+		
+		executionFiber.join();
 	}
 	
-	virtual void decode( std::uint32_t uiType, std::uint32_t uiInstance, eg::Decoder& buffer )
+	virtual void encode( std::int32_t iType, std::uint32_t uiInstance, eg::Encoder& buffer )
 	{
-		::decode( uiType, uiInstance, buffer );
+		::encode( iType, uiInstance, buffer );
+	}
+	
+	virtual void decode( std::int32_t iType, std::uint32_t uiInstance, eg::Decoder& buffer )
+	{
+		::decode( iType, uiInstance, buffer );
+	}
+	
+	bool receive( Event& event )
+	{
+		return m_pMegaProtocol->receive( event.data.type, event.data.instance, event.data.timestamp );
+	}
+	
+	void send( const char* type, eg::TimeStamp timestamp, const void* value, std::size_t size )
+	{
+		m_pMegaProtocol->send( type, timestamp, value, size );
 	}
 };
 
@@ -333,5 +341,30 @@ EGComponentImpl g_pluginSymbol;
 	
 	os << szStuff << "\n";
 	
+	const char szEventRoutines[] = R"(
+	
+	
+eg::event_iterator events::getIterator()
+{
+    return eg::event_iterator{};
+}
+
+bool events::get( eg::event_iterator& iterator, Event& event )
+{
+	return megastructure::g_pluginSymbol.receive( event );
+}
+
+void events::put( const char* type, eg::TimeStamp timestamp, const void* value, std::size_t size )
+{
+	megastructure::g_pluginSymbol.send( type, timestamp, value, size );
+}
+    
+bool events::update()
+{
+    return true;
+}
+
+	)";
+	os << szEventRoutines << "\n";
 }
 

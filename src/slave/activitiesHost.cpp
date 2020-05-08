@@ -325,8 +325,8 @@ bool HostBufferActivity::clientMessage( std::uint32_t uiClient, const megastruct
     {
         const megastructure::Message::HCQ_Buffer& bufferRequest = message.hcq_buffer();
         
-        std::cout << "Received request for shared buffer: " << bufferRequest.buffername() << 
-            " size: " << bufferRequest.size() << std::endl;
+        //std::cout << "Received request for shared buffer: " << bufferRequest.buffername() << 
+        //    " size: " << bufferRequest.size() << std::endl;
         
         const std::string strSharedBufferName =
             m_slave.getSharedBufferName( bufferRequest.buffername(), bufferRequest.size() );

@@ -64,6 +64,7 @@ namespace megastructure
 		void stop();
 		bool send( const Message& message );
 		bool recv_sync( Message& message, bool& bReceived );
+		bool recv_async( Message& message, bool& bReceived );
 		
 	private:
 		void* m_pContext;

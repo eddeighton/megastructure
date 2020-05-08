@@ -857,7 +857,7 @@ const char descriptor_table_protodef_megastructure_2eproto[] PROTOBUF_SECTION_VA
   "\n\007success\030\001 \001(\010\032.\n\nHCQ_Buffer\022\022\n\nbuffern"
   "ame\030\001 \001(\t\022\014\n\004size\030\002 \001(\r\0324\n\nCHS_Buffer\022\022\n"
   "\nbuffername\030\001 \001(\t\022\022\n\nsharedname\030\002 \001(\t\032\366\005"
-  "\n\006EG_Msg\022\014\n\004type\030\001 \001(\r\022\020\n\010instance\030\002 \001(\r"
+  "\n\006EG_Msg\022\014\n\004type\030\001 \001(\005\022\020\n\010instance\030\002 \001(\r"
   "\022\r\n\005cycle\030\003 \001(\r\0228\n\007request\030\004 \001(\0132%.megas"
   "tructure.Message.EG_Msg.RequestH\000\022:\n\010res"
   "ponse\030\005 \001(\0132&.megastructure.Message.EG_M"
@@ -6564,10 +6564,10 @@ const char* Message_EG_Msg::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE
     ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
     CHK_(ptr);
     switch (tag >> 3) {
-      // uint32 type = 1;
+      // int32 type = 1;
       case 1:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 8)) {
-          type_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
+          type_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -6634,10 +6634,10 @@ failure:
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  // uint32 type = 1;
+  // int32 type = 1;
   if (this->type() != 0) {
     target = stream->EnsureSpace(target);
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteUInt32ToArray(1, this->_internal_type(), target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteInt32ToArray(1, this->_internal_type(), target);
   }
 
   // uint32 instance = 2;
@@ -6692,10 +6692,10 @@ size_t Message_EG_Msg::ByteSizeLong() const {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  // uint32 type = 1;
+  // int32 type = 1;
   if (this->type() != 0) {
     total_size += 1 +
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::UInt32Size(
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::Int32Size(
         this->_internal_type());
   }
 

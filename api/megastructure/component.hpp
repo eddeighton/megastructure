@@ -2,8 +2,6 @@
 #ifndef COMPONENT_16_APRIL_2020
 #define COMPONENT_16_APRIL_2020
 
-#pragma once
-
 #include "megastructure/mega.hpp"
 #include "megastructure/queue.hpp"
 #include "megastructure/clientServer.hpp"
@@ -11,12 +9,16 @@
 
 #include "egcomponent/egcomponent.hpp"
 
+#include "schema/project.hpp"
+
 #include "protocol/megastructure.pb.h"
 
 #include "boost/filesystem/path.hpp"
 
 #include <mutex>
 #include <list>
+#include <mutex>
+#include <condition_variable>
 
 namespace megastructure
 {
@@ -38,9 +40,13 @@ namespace megastructure
 		friend class LoadProgramJob;
         
         friend class Program;
+		
+		friend class EGReadFunctor;
 	public:
-		Component( const std::string& strMegaPort, const std::string& strEGPort, const std::string& strProgramName );
+		Component( Environment& environment, const std::string& strMegaPort, const std::string& strEGPort, const std::string& strProgramName );
 		virtual ~Component();
+		
+		Environment& getEnvironment() { return m_environment; }
 		
 		const std::string& getHostProgramName() const { return m_strHostProgram; }
 		const std::string& getSlaveName() const { return m_strSlaveName; }
@@ -49,7 +55,7 @@ namespace megastructure
 		void runCycle();
 		
 		//test eg protocol routines
-		std::future< std::string > egRead( std::uint32_t uiType, std::uint32_t uiInstance );
+		std::string egRead( std::uint32_t uiType, std::uint32_t uiInstance );
 		void egWrite( std::uint32_t uiType, std::uint32_t uiInstance, const std::string& strBuffer );
 		void egCall( std::uint32_t uiType, std::uint32_t uiInstance, const std::string& strBuffer );
 		
@@ -80,16 +86,37 @@ namespace megastructure
         std::future< std::string > getSharedBuffer( const std::string& strName, std::size_t szSize );
 		
 		//megastructure protocol
-		bool send( megastructure::Message& message )
+		void send( const megastructure::Message& message )
 		{
-			return m_client.send( message);
+			if( !m_client.send( message) )
+			{
+				//disconnect...
+				throw std::runtime_error( "Socket failed" );
+			}
 		}
-		bool sendeg( megastructure::Message& message )
+		void sendeg( const megastructure::Message& message )
 		{
-			return m_egClient.send( message );
+			if( !m_egClient.send( message ) )
+			{
+				//disconnect...
+				throw std::runtime_error( "Socket failed" );
+			}
+		}
+		bool readeg( megastructure::Message& message )
+		{
+			bool bReceived = false;
+			if( m_egClient.recv_async( message, bReceived ) )
+			{
+				return bReceived;
+			}
+			else
+			{
+				throw std::runtime_error( "Socket failed" );
+			}
 		}
 		
 	private:
+		Environment m_environment;
 		std::string m_strHostProgram;
 		std::string m_strSlaveName;
 		boost::filesystem::path m_slaveWorkspacePath;
@@ -100,9 +127,11 @@ namespace megastructure
 		std::thread m_zeromq2;
 		
 		std::mutex m_simThreadMutex;
+		std::condition_variable m_simJobCondition;
+		bool m_bPendingJobs;
 		std::list< Job::Ptr > m_jobs;
 		
-		std::shared_ptr< Program > m_pProgram;
+		std::shared_ptr< Program > m_pProgram; //only access from main thread
 	};
 	
 }

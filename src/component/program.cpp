@@ -3,10 +3,13 @@
 
 #include "egcomponent/egcomponent.hpp"
 
+#include "schema/projectTree.hpp"
+
 #include "common/assert_verify.hpp"
 #include "common/file.hpp"
 
-#include <boost/dll/import.hpp> // for import_alias
+#include "boost/fiber/all.hpp"
+#include "boost/dll/import.hpp" // for import_alias
 
 
 namespace megastructure
@@ -31,6 +34,28 @@ Program::Program( Component& component, const std::string& strHostName, const st
         m_strProjectName( strProjectName ),
 		m_pEncodeDecode( nullptr )
 {
+	
+	try
+	{
+		m_pProjectTree = 
+			std::make_shared< ProjectTree >( 
+				m_component.getEnvironment(), 
+				m_component.getSlaveWorkspacePath(), 
+				strProjectName );
+	}
+	catch( std::exception& ex )
+	{
+		std::cout << "Error attempting to load project tree for: " << 
+			strProjectName << " : " << ex.what() << std::endl;
+		throw;
+	}
+	
+	m_pNetworkAddressTable.reset( 
+		new NetworkAddressTable( 
+			m_component.getSlaveName(), 
+			strHostName, 
+			m_pProjectTree ) );
+	
     const boost::filesystem::path binDirectory = getBinFolderForProject( m_component.getSlaveWorkspacePath(), m_strProjectName );
     m_strComponentName = getComponentName( m_component.getSlaveName(), m_strHostName, m_strProjectName );
 
@@ -38,7 +63,7 @@ Program::Program( Component& component, const std::string& strHostName, const st
 	std::cout << "Attempting to load component: " << m_componentPath.string() << std::endl;
 
     m_pPlugin = boost::dll::import< megastructure::EGComponent >(   // type of imported symbol is located between `<` and `>`
-            m_componentPath,                       // path to the library and library name
+            m_componentPath,                       					// path to the library and library name
             "g_pluginSymbol",                                       // name of the symbol to import
             boost::dll::load_mode::append_decorations               // makes `libmy_plugin_sum.so` or `my_plugin_sum.dll` from `my_plugin_sum`
         );
@@ -106,30 +131,154 @@ LocalBuffer* Program::getLocalBuffer( const char* pszName, std::size_t szSize )
     }
 }
 
+void Program::writeBuffer( std::int32_t iType, std::uint32_t uiInstance, const std::string& strBuffer )
+{
+	msgpack::unpacker decoder;
+	decoder.reserve_buffer( strBuffer.size() );
+	memcpy( decoder.buffer(), strBuffer.data(), strBuffer.size() );
+	decoder.buffer_consumed( strBuffer.size() );
+	m_pEncodeDecode->decode( iType, uiInstance, decoder );
+}
+
+void Program::readBuffer( std::int32_t iType, std::uint32_t uiInstance, std::string& strBuffer )
+{
+	msgpack::sbuffer buffer;
+	msgpack::packer< msgpack::sbuffer > packer( &buffer );
+	m_pEncodeDecode->encode( iType, uiInstance, packer );
+	strBuffer.assign( buffer.data(), buffer.size() );
+}
+		
 //MegaProtocol
-/*
-boost::fibers::future< std::string > Program::Read( std::uint32_t uiDimensionType, std::uint32_t uiInstance )
+bool Program::receive( std::int32_t& iType, std::size_t& uiInstance, std::uint32_t& uiTimestamp )
 {
-    boost::fibers::future< std::string > result;
-    return result;
-}*/
-void Program::Write( std::uint32_t uiDimensionType, std::uint32_t uiInstance, const std::string& buffer )
+	megastructure::Message message;
+	
+	while( m_component.readeg( message ) )
+	{
+		if( message.has_eg_msg() )
+		{
+			const megastructure::Message::EG_Msg& egMsg = message.eg_msg();
+			
+			if( egMsg.has_request() )
+			{
+				//push onto queue
+				const megastructure::Message::EG_Msg::Request& egRequest = egMsg.request();
+				m_requests.push_back( message );
+			}
+			else if( egMsg.has_response() )
+			{
+				const megastructure::Message::EG_Msg::Response& egResponse = egMsg.response();
+				
+				iType 		= egMsg.type();
+				uiInstance 	= egMsg.instance();
+				uiTimestamp = egMsg.cycle();
+				
+				//first update the cache with the actual value
+				writeBuffer( iType, uiInstance, egResponse.value() );
+				
+				return true;
+			}
+			else if( egMsg.has_event() )
+			{
+				const megastructure::Message::EG_Msg::Event& egEvent = egMsg.event();
+				
+				iType 		= egMsg.type();
+				uiInstance 	= egMsg.instance();
+				uiTimestamp = egMsg.cycle();
+				
+				return true;
+			}
+			else
+			{
+				THROW_RTE( "Unknown eg message type" );
+			}
+		}
+		else
+		{
+			THROW_RTE( "Did not receive eg msg on eg socket" );
+		}
+	}
+	
+	return false;
+}
+
+void Program::send( const char* type, std::size_t timestamp, const void* value, std::size_t size )
 {
 }
-void Program::Invoke( std::uint32_t uiActionType, std::uint32_t uiInstance, const std::string& buffer )
+
+		
+//eg
+std::string Program::egRead( std::int32_t iType, std::uint32_t uiInstance )
 {
+	//std::future< std::string > result;
+	
+	if( m_pNetworkAddressTable->getClientForType( iType ) == NetworkAddressTable::SelfID )
+	{
+		//write the buffer directly
+		std::string strBuffer;
+		readBuffer( iType, uiInstance, strBuffer );
+		return strBuffer;
+	}
+	else
+	{
+		Message message;
+		{
+			Message::EG_Msg* pEGMsg = message.mutable_eg_msg();
+			pEGMsg->set_type( iType );
+			pEGMsg->set_instance( uiInstance );
+			pEGMsg->set_cycle( 0 );
+			
+			Message::EG_Msg::Request* pRequest = pEGMsg->mutable_request();
+			Message::EG_Msg::Request::Read* pRead = pRequest->mutable_read();
+		}
+		m_component.sendeg( message );
+		
+		m_pPlugin->WaitForReadResponse( iType, uiInstance );
+		
+		std::string strBuffer;
+		readBuffer( iType, uiInstance, strBuffer );
+		return strBuffer;
+	}
 }
-void Program::Pause( std::uint32_t uiActionType, std::uint32_t uiInstance )
+
+void Program::egWrite( std::int32_t iType, std::uint32_t uiInstance, const std::string& strBuffer )
 {
+	if( m_pNetworkAddressTable->getClientForType( iType ) == NetworkAddressTable::SelfID )
+	{
+		//write the buffer directly
+		writeBuffer( iType, uiInstance, strBuffer );
+	}
+	else
+	{
+		//send the write request
+		Message message;
+		{
+			Message::EG_Msg* pEGMsg = message.mutable_eg_msg();
+			pEGMsg->set_type( iType );
+			pEGMsg->set_instance( uiInstance );
+			pEGMsg->set_cycle( 0 );
+			
+			Message::EG_Msg::Request* pRequest = pEGMsg->mutable_request();
+			Message::EG_Msg::Request::Write* pWrite = pRequest->mutable_write();
+			pWrite->set_value( strBuffer );
+		}
+		m_component.sendeg( message );
+	}
 }
-void Program::Resume( std::uint32_t uiActionType, std::uint32_t uiInstance )
+
+void Program::egCall( std::int32_t iType, std::uint32_t uiInstance, const std::string& strBuffer )
 {
+	if( m_pNetworkAddressTable->getClientForType( iType ) == NetworkAddressTable::SelfID )
+	{
+		
+	}
+	else
+	{
+		//send the write request
+		
+		
+	}
 }
-void Program::Stop( std::uint32_t uiActionType, std::uint32_t uiInstance )
-{
-}
-        
-        
         
 void Program::run()
 {

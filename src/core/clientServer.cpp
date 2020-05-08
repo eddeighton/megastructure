@@ -215,6 +215,8 @@ namespace megastructure
 	
 	bool Client::recv_sync( Message& message, bool& bReceived )
 	{
+		bReceived = false;
+		
 		/* Create an empty ØMQ message */
 		ZMQMsg msg;
 		
@@ -240,6 +242,39 @@ namespace megastructure
 		return true;
 	}
 	
+	bool Client::recv_async( Message& message, bool& bReceived )
+	{
+		bReceived = false;
+			
+		/* Create an empty ØMQ message */
+		ZMQMsg msg;
+		
+		/* Block until a message is available to be received from socket */
+		const int rc = zmq_msg_recv( msg.get(), m_pSocket, ZMQ_DONTWAIT );
+		
+		//test if connection was broken
+		if( rc < 0 && ( errno == ETERM ) )
+		{
+			return false;
+		}
+		
+		if( rc < 0 && ( errno == EAGAIN ) )
+		{
+			return true;
+		}
+		
+		if( rc >= 0 )
+		{
+			msg.readMessage( message );
+			bReceived = true;
+		}
+		else //if( errno != EAGAIN )
+		{
+			throwReceiveError();
+		}
+		
+		return true;
+	}
 	////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////
 	Server::Server( const SocketName& socketName )

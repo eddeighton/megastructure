@@ -102,7 +102,7 @@ message Message
 	
 	message EG_Msg
 	{
-		uint32 type = 1;
+		int32 type = 1;
 		uint32 instance = 2;
 		uint32 cycle = 3;
 		

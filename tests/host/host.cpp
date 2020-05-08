@@ -6,6 +6,7 @@
 
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/optional.hpp>
 
 #include "common/processID.hpp"
 #include "common/assert_verify.hpp"
@@ -67,7 +68,7 @@ std::string readInput()
 	return str;
 }
 
-bool handleEGTest( megastructure::Component& component, const std::string& strLine )
+bool handleEGTest( megastructure::Component& component, const std::string& strLine/*, boost::optional< std::future< std::string > >& optResult*/ )
 {
 	if( strLine.substr( 0, 4 ) == "read" )
 	{
@@ -80,8 +81,7 @@ bool handleEGTest( megastructure::Component& component, const std::string& strLi
 			std::cout << "Reading type: " << uiType << " instance: " << uiInstance << std::endl;
 		}
 		
-		std::future< std::string > fResult =
-			component.egRead( uiType, uiInstance );
+		std::cout << "Result: " << component.egRead( uiType, uiInstance ) << std::endl;
 		
 		return true;
 	}
@@ -138,16 +138,23 @@ int main( int argc, const char* argv[] )
 		
 		std::future< std::string > inputStringFuture =
 			std::async( std::launch::async, readInput );
+			
+		Environment environment;
 		
 		megastructure::Component component( 
+			environment,
 			args.slave_mega_port,
 			args.slave_eg_port,
 			megastructure::getHostProgramName() );
+			
+		//std::vector< std::future< std::string > > resultFutures, temp;
 		
 		while( true )
 		{
+			//boost::optional< std::future< std::string > > optResult;
+	
 			using namespace std::chrono_literals;
-			std::future_status status =
+			const std::future_status status =
 				inputStringFuture.wait_for( 100ms );
 			if( status == std::future_status::deferred ||
 				status == std::future_status::ready )
@@ -157,9 +164,13 @@ int main( int argc, const char* argv[] )
 				{
 					break;
 				}
-                else if( handleEGTest( component, strInput ) )
+                else if( handleEGTest( component, strInput/*, optResult*/ ) )
                 {
-					//do nothing
+					/*if( optResult )
+					{
+						std::future< std::string >* f = boost::get_pointer( optResult );
+						resultFutures.push_back( std::move( *f ) );
+					}*/
                 }
                 else if( strInput == "" )
                 {
@@ -175,6 +186,23 @@ int main( int argc, const char* argv[] )
 			}
 			
 			component.runCycle();
+			/*
+			//handle any pending response results
+			temp.swap( resultFutures );
+			for( auto& f : temp )
+			{
+				const std::future_status status = f.wait_for( 1ms );
+				if( status == std::future_status::deferred ||
+					status == std::future_status::ready )
+				{
+					std::cout << "Result: " << f.get() << std::endl;
+				}
+				else
+				{
+					resultFutures.push_back( std::move( f ) );
+				}
+			}
+			temp.clear();*/
 		}
 		
 	}
