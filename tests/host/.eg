@@ -46,6 +46,6 @@
             <Library>${BOOST}/lib/libboost_iostreams-vc141-mt-x32-1_73.lib</Library>
                 
         </Files>
-		<Command>${MEGA}/bin/test_host.exe</Command>
+		<Command>${MEGA}/bin/test_hostd.exe</Command>
 	</Host>
 </EG>

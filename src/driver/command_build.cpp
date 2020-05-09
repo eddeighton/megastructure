@@ -48,7 +48,7 @@
 #include <memory>
 #include <map>
 
-
+/*
 struct LogEntry
 {
 private:
@@ -111,10 +111,10 @@ private:
     }
     
     FileTimeMap m_fileTimes;
-};
+};*/
 
 
-void build_include_header( const Environment& environment, const eg::interface::Root* pInterfaceRoot, const ProjectTree& project )
+void build_include_header( const Environment& environment, const eg::interface::Root* pInterfaceRoot, const ProjectTree& project, const std::string& strCompilationFlags  )
 {
 	//generate the includes header
 	{
@@ -141,7 +141,7 @@ void build_include_header( const Environment& environment, const eg::interface::
 		
 		std::ostringstream osCmd;
 		environment.startCompilationCommand( osCmd );
-		osCmd << " " << project.getCompilerFlags() << " ";
+		osCmd << " " << strCompilationFlags << " ";
 		
 		osCmd << "-Xclang -emit-pch -o " << environment.printPath( project.getIncludePCH() ) << " ";
 		
@@ -176,7 +176,7 @@ void build_include_header( const Environment& environment, const eg::interface::
 	
 }
 
-void build_interface_header( const Environment& environment, eg::ParserSession* pParserSession, const ProjectTree& project )
+void build_interface_header( const Environment& environment, eg::ParserSession* pParserSession, const ProjectTree& project, const std::string& strCompilationFlags )
 {
 	
     //generate the interface
@@ -193,7 +193,7 @@ void build_interface_header( const Environment& environment, eg::ParserSession* 
 		//LogEntry log( std::cout, "Compiling interface to pch", bBenchCommands );
 		std::ostringstream osCmd;
 		environment.startCompilationCommand( osCmd );
-		osCmd << " " << project.getCompilerFlags() << " ";
+		osCmd << " " << strCompilationFlags << " ";
 		
 		osCmd << "-Xclang -include-pch ";
 		osCmd << "-Xclang " << environment.printPath( project.getIncludePCH() ) << " ";
@@ -221,7 +221,7 @@ void build_interface_header( const Environment& environment, eg::ParserSession* 
 	}
 }
 
-void build_parser_session( const Environment& environment, const ProjectTree& project )
+void build_parser_session( const Environment& environment, const ProjectTree& project, const std::string& strCompilationFlags )
 {
 	
 	eg::ParserDiagnosticSystem diagnostics( project.getRootPath(), std::cout );
@@ -249,8 +249,8 @@ void build_parser_session( const Environment& environment, const ProjectTree& pr
 		//std::string strIndent;
 		//pInterfaceRoot->print( std::cout, strIndent, true );
 		
-		build_include_header( environment, pInterfaceRoot, project );
-		build_interface_header( environment, pParserSession.get(), project );
+		build_include_header( environment, pInterfaceRoot, project, strCompilationFlags );
+		build_interface_header( environment, pParserSession.get(), project, strCompilationFlags );
 	}
 	
 	{
@@ -285,7 +285,7 @@ void build_parser_session( const Environment& environment, const ProjectTree& pr
 }
 
 void build_operations( eg::InterfaceSession& interfaceSession, const Environment& environment, 
-    const ProjectTree& project /*, FileWriteTracker& fileTracker, bool bBenchCommands, bool bLogCommands*/ )
+    const ProjectTree& project, const std::string& strCompilationFlags )
 {
     //interface session MUST NOT store beyond this point - compiler will be loaded TU analysis sessions
     const eg::TranslationUnitAnalysis& tuAnalysis = interfaceSession.getTranslationUnitAnalysis();
@@ -314,7 +314,7 @@ void build_operations( eg::InterfaceSession& interfaceSession, const Environment
             
             std::ostringstream osCmd;
             environment.startCompilationCommand( osCmd );
-            osCmd << " " << project.getCompilerFlags() << " ";
+            osCmd << " " << strCompilationFlags << " ";
             
             osCmd << "-Xclang -include-pch ";
             osCmd << "-Xclang " << environment.printPath( project.getIncludePCH() ) << " ";
@@ -354,7 +354,7 @@ extern void generate_eg_component( std::ostream& os,
 		const eg::ReadSession& session );
 
 void generate_objects( const eg::TranslationUnitAnalysis& translationUnits, const Environment& environment,
-    const ProjectTree& project /*, FileWriteTracker& fileTracker, bool bBenchCommands, bool bLogCommands*/ )
+    const ProjectTree& project, const std::string& strCompilationFlags )
 {
     eg::IndexedFile::FileIDtoPathMap allFiles;
     
@@ -454,7 +454,7 @@ void objectCompilationCommandSetFileTIme( std::string strMsg, std::string strCom
 }
 
 void build_component( const eg::ReadSession& session, const Environment& environment,
-    const ProjectTree& project, const boost::filesystem::path& binPath )
+    const ProjectTree& project, const boost::filesystem::path& binPath, const std::string& strCompilationFlags )
 {
 	bool bBenchCommands = false;
 	
@@ -531,7 +531,7 @@ void build_component( const eg::ReadSession& session, const Environment& environ
 			
 		std::ostringstream osCmd;
 		environment.startCompilationCommand( osCmd );
-		osCmd << " " << project.getCompilerFlags() << " ";
+		osCmd << " " << strCompilationFlags << " ";
 		
 		osCmd << "-c -o " << environment.printPath( objectFilePath ) << " ";
 		
@@ -587,7 +587,7 @@ void build_component( const eg::ReadSession& session, const Environment& environ
 				
 				std::ostringstream osCmd;
 				environment.startCompilationCommand( osCmd );
-				osCmd << " " << project.getCompilerFlags() << " ";
+				osCmd << " " << strCompilationFlags << " ";
 				
 				osCmd << "-c -o " << environment.printPath( objectFilePath ) << " ";
 					
@@ -635,6 +635,7 @@ void command_build( bool bHelp, const std::string& strBuildCommand, const std::v
     bool bLogCommands = false;
     bool bNoPCH = false;
     bool bFullRebuild = false;
+	std::vector< std::string > flags;
     
     namespace po = boost::program_options;
     po::options_description commandOptions(" Create Project Command");
@@ -649,6 +650,7 @@ void command_build( bool bHelp, const std::string& strBuildCommand, const std::v
             ("trace",   	po::bool_switch( &bLogCommands ), "Trace compilation commands" )
             ("nopch",   	po::bool_switch( &bNoPCH ), "Force regeneration of precompiled header file" )
             ("full",    	po::bool_switch( &bFullRebuild ), "Full rebuild - do not reuse previous objects or precompiled headers" )
+			("flags",   	po::value< std::vector< std::string > >( &flags ), "C++ Compilation Flags" )
         ;
     }
     
@@ -670,6 +672,18 @@ void command_build( bool bHelp, const std::string& strBuildCommand, const std::v
             std::cout << "Missing build command type" << std::endl;
             return;
         }
+		else
+		{
+			std::cout << "Got build command: " << strBuildCommand << std::endl;
+		}
+		
+		std::string strCompilationFlags;
+		{
+			std::ostringstream osFlags;
+			for( const auto& str : flags )
+				osFlags << str << " ";
+			strCompilationFlags = osFlags.str();
+		}
 		
 		if( strProject.empty() )
 		{
@@ -707,14 +721,14 @@ void command_build( bool bHelp, const std::string& strBuildCommand, const std::v
 			
 			//projectTree.print( std::cout );
 			
-			build_parser_session( environment, projectTree /*fileTracker, bBenchCommands, bLogCommands, bNoPCH*/ );
+			build_parser_session( environment, projectTree, strCompilationFlags );
 			
 			std::unique_ptr< eg::InterfaceSession > pInterfaceSession
 				 = std::make_unique< eg::InterfaceSession >( projectTree.getInterfaceDatabaseFile() );
 				 
-			build_operations( *pInterfaceSession, environment, projectTree /*, fileTracker, bBenchCommands, bLogCommands*/ );
+			build_operations( *pInterfaceSession, environment, projectTree, strCompilationFlags );
 			
-			generate_objects( pInterfaceSession->getTranslationUnitAnalysis(), environment, projectTree/*, fileTracker, bBenchCommands, bLogCommands*/ );
+			generate_objects( pInterfaceSession->getTranslationUnitAnalysis(), environment, projectTree, strCompilationFlags );
 			
 		}
 		else
@@ -728,7 +742,7 @@ void command_build( bool bHelp, const std::string& strBuildCommand, const std::v
 			
 			eg::ReadSession session( projectDirectory / "interface" / projectTree.getProjectName() / "database.db" );
 			
-			build_component( session, environment, projectTree, binPath );
+			build_component( session, environment, projectTree, binPath, strCompilationFlags );
 					
 		}
     }

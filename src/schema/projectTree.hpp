@@ -164,15 +164,6 @@ public:
 	{
 		return getInterfaceFolder() / "interface.hpp";
 	}
-		
-	std::string getCompilerFlags() const
-	{
-		static const std::string strFlags = //"";
-		//"-D_MT -D_DLL -DNOMINMAX -DBOOST_ALL_NO_LIB -D_CRT_SECURE_NO_WARNINGS -DBOOST_USE_WINDOWS_H -Xclang -std=c++17  -fexceptions";
-		"-DWIN32_LEAN_AND_MEAN -D_MT -D_DLL -DNOMINMAX -DBOOST_ALL_NO_LIB -D_CRT_SECURE_NO_WARNINGS -DBOOST_USE_WINDOWS_H -fexceptions -Xclang -std=c++17 -Xclang -flto-visibility-public-std -Wno-deprecated -Wno-inconsistent-missing-override";
-      //<LinkerFlags>-nostdlib -lmsvcrt -Xlinker /SUBSYSTEM:CONSOLE</LinkerFlags>
-		return strFlags;
-	}
 	
     boost::filesystem::path getIncludeHeader() const
 	{

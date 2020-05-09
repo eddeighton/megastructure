@@ -133,6 +133,8 @@ void generate_eg_component( std::ostream& os,
 	
 	os << "//ed was here\n";
 	os << "#include <iostream>\n";
+	os << "#include <chrono>\n";
+	os << "#include <thread>\n";
 	os << "#include <vector>\n";
 	os << "#include \"boost/fiber/all.hpp\"\n";
 	os << "#include \"boost/config.hpp\"\n";
@@ -290,11 +292,12 @@ public:
 	
 	virtual void WaitForReadResponse( std::int32_t iType, std::uint32_t uiInstance )
 	{
+        bool bCompleted = false;
 		boost::fibers::fiber executionFiber
 		(
 			std::allocator_arg,
 			boost::fibers::fixedsize_stack( 1024 ),
-			[ iType, uiInstance ]()
+			[ iType, uiInstance, &bCompleted ]()
 			{
 				boost::this_fiber::properties< eg::fiber_props >().setResumption( 
 					[ iType, uiInstance ]( Event e )
@@ -304,9 +307,21 @@ public:
 					}
 				);
 				boost::this_fiber::yield();
+				bCompleted = true;
 			}
 		);
         executionFiber.properties< eg::fiber_props >().setReference( eg::reference{ uiInstance, iType, 0 } );
+		
+        while( !bCompleted )
+        {
+			//spin the simulation while waiting for response
+		    eg::wait();
+		    clock::next();
+			
+			//could sleep here??
+			using namespace std::chrono_literals;
+			std::this_thread::sleep_for( 1ms );
+        }
 		
 		executionFiber.join();
 	}

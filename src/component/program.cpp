@@ -18,7 +18,8 @@ namespace megastructure
 std::string getComponentName( const std::string& strCoordinator, const std::string& strHostName, const std::string& strProjectName )
 {
 	std::ostringstream os;
-	os << strCoordinator << '_' << strHostName << '_' << strProjectName << ".dll";
+	//for now always load the debug dll - d post fix
+	os << strCoordinator << '_' << strHostName << '_' << strProjectName << "d.dll";
 	return os.str();
 }
 
