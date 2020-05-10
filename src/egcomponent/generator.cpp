@@ -293,24 +293,27 @@ public:
 	virtual void WaitForReadResponse( std::int32_t iType, std::uint32_t uiInstance )
 	{
         bool bCompleted = false;
-		boost::fibers::fiber executionFiber
-		(
-			std::allocator_arg,
-			boost::fibers::fixedsize_stack( 1024 ),
-			[ iType, uiInstance, &bCompleted ]()
-			{
-				boost::this_fiber::properties< eg::fiber_props >().setResumption( 
-					[ iType, uiInstance ]( Event e )
-					{
-						return ( iType 		== e.data.type && 
-								 uiInstance == e.data.instance );
-					}
-				);
-				boost::this_fiber::yield();
-				bCompleted = true;
-			}
-		);
-        executionFiber.properties< eg::fiber_props >().setReference( eg::reference{ uiInstance, iType, 0 } );
+		{
+			boost::fibers::fiber executionFiber
+			(
+				std::allocator_arg,
+				boost::fibers::fixedsize_stack( 4096 ),
+				[ iType, uiInstance, &bCompleted ]()
+				{
+					boost::this_fiber::properties< eg::fiber_props >().setResumption( 
+						[ iType, uiInstance ]( Event e )
+						{
+							return ( iType 		== e.data.type && 
+									 uiInstance == e.data.instance );
+						}
+					);
+					boost::this_fiber::yield();
+					bCompleted = true;
+				}
+			);
+			executionFiber.properties< eg::fiber_props >().setReference( eg::reference{ uiInstance, iType, 0 } );
+			executionFiber.detach();
+		}
 		
         while( !bCompleted )
         {
@@ -322,8 +325,6 @@ public:
 			using namespace std::chrono_literals;
 			std::this_thread::sleep_for( 1ms );
         }
-		
-		executionFiber.join();
 	}
 	
 	virtual void encode( std::int32_t iType, std::uint32_t uiInstance, eg::Encoder& buffer )

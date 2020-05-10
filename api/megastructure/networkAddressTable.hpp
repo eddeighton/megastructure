@@ -23,6 +23,7 @@ public:
 	
 	static const std::uint32_t MasterID = 0U;
 	static const std::uint32_t SelfID = std::numeric_limits< std::uint32_t >::max();
+	static const std::uint32_t UnMapped = std::numeric_limits< std::uint32_t >::max() - 1;
 	
 	NetworkAddressTable( const ClientMap& clients, 
 		std::shared_ptr< ProjectTree > pProgramTree );

@@ -58,6 +58,16 @@ namespace slave
 		bool enroll( const std::string& strProcessName, Host::ClientID clientID, const std::string& strUniqueID );
 		bool enrolleg( Host::ClientID clientID, const std::string& strUniqueID );
 	
+		Host::ClientID getMegaClientForEGClient( Host::ClientID clientID ) const
+		{
+			for( const auto& i : m_hostProcessNameMap )
+			{
+				if( i.second.getEGClientID() == clientID )
+					return i.second.getMegaClientID();
+			}
+			return 0;
+		}
+	
 	private:
 		std::multimap< std::string, Host > m_hostProcessNameMap;
 		std::map< std::string, Host > m_hostnameMapping;

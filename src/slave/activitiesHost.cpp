@@ -99,6 +99,7 @@ bool HostEnrollActivity::clientMessage( std::uint32_t uiClient, const megastruct
 		if( m_slave.enroll( enroll.processname(), uiClient, enroll.unique() ) )
 		{
 			m_slave.sendHost( chs_enroll( true, m_slave.getWorkspace(), m_slave.getName() ), uiClient );
+			
 		}
 		else 
 		{
@@ -111,18 +112,26 @@ bool HostEnrollActivity::clientMessage( std::uint32_t uiClient, const megastruct
 	else if( message.has_hcq_enrolleg() )
 	{
 		const Message::HCQ_EnrollEG& enrolleg = message.hcq_enrolleg();
+		
 		if( m_slave.enrolleg( uiClient, enrolleg.unique() ) )
 		{
-			m_slave.sendHostEG( chs_enrolleg( true ), uiClient );
+			const std::uint32_t uiMegaClientID = 
+				m_slave.getHosts().getMegaClientForEGClient( uiClient );
+			VERIFY_RTE( uiMegaClientID != 0 );
+			m_slave.sendHost( chs_enrolleg( true ), uiMegaClientID );
 		}
-		else 
+		else
 		{
-			std::cout << "HostEnrollActivity error" << std::endl;
-			m_slave.sendHostEG( chs_enrolleg( false ), uiClient );
+			std::cout << "Enrollment failed for unique: " << enrolleg.unique() << std::endl;
 		}
-		
-		return true;
+		/*else 
+		{
+			//???
+			std::cout << "HostEnrollActivity error" << std::endl;
+			m_slave.sendHost( chs_enrolleg( false ), uiClient );
+		}*/
 	}
+	
 	return false;
 }
 

@@ -20,8 +20,8 @@
 
 struct Args
 {
-	std::string slave_mega_port = megastructure::MEGA_PORT;
-	std::string slave_eg_port = megastructure::EG_PORT;
+	std::string slave_mega_port;
+	std::string slave_eg_port;
 };
 
 bool parse_args( int argc, const char* argv[], Args& args )
@@ -33,8 +33,8 @@ bool parse_args( int argc, const char* argv[], Args& args )
 		boost::program_options::variables_map variables;
 		
 		options.add_options()
-			("sport", po::value< std::string >( &args.slave_mega_port ), "Slave Mega Port" )
-			("eport", po::value< std::string >( &args.slave_eg_port ), "Slave EG Port" )
+			("sport", po::value< std::string >( &args.slave_mega_port )->default_value( megastructure::MEGA_PORT ), "Slave Mega Port" )
+			("eport", po::value< std::string >( &args.slave_eg_port )->default_value( megastructure::EG_PORT ), "Slave EG Port" )
 			("help", "produce help message")
 		;
 

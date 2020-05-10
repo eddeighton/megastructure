@@ -69,8 +69,6 @@ namespace megastructure
         
         CacheBufferMap m_cacheBuffers;
         SharedBufferMap m_sharedBuffers;
-		
-		std::vector< megastructure::Message > m_requests;
 	};
 }
 

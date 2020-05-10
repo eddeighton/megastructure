@@ -246,27 +246,22 @@ bool LoadProgram::clientMessage( std::uint32_t uiClient, const megastructure::Me
 				std::cout << "No clients failed while loading program: " << m_strProgramName << std::endl;
 			}
 			
-			
+			try
 			{
-				Environment& environment = m_master.getEnvironment();
-				
-				std::shared_ptr< ProjectTree > pProjectTree;
-				
-				try
-				{
-					pProjectTree = 
-						std::make_shared< ProjectTree >( 
-							environment, m_master.getWorkspace(), m_strProgramName );
+				std::shared_ptr< ProjectTree > pProjectTree = 
+					std::make_shared< ProjectTree >( 
+						m_master.getEnvironment(), 
+                        m_master.getWorkspace(), 
+                        m_strProgramName );
 							
-					m_master.setActiveProgramName( m_strProgramName );
+				m_master.setActiveProgramName( m_strProgramName );
 					
-					m_master.calculateNetworkAddressTable( pProjectTree );
-				}
-				catch( std::exception& ex )
-				{
-					std::cout << "Error attempting to load project tree for: " << 
-						m_strProgramName << " : " << ex.what() << std::endl;
-				}
+				m_master.calculateNetworkAddressTable( pProjectTree );
+			}
+			catch( std::exception& ex )
+			{
+				std::cout << "Error attempting to load project tree for: " << 
+					m_strProgramName << " : " << ex.what() << std::endl;
 			}
 			
 			m_master.activityComplete( shared_from_this() );
@@ -280,66 +275,90 @@ bool LoadProgram::clientMessage( std::uint32_t uiClient, const megastructure::Me
 
 //////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////
+
+inline megastructure::Message copyRequestSetSourceCoordinator( 
+	const megastructure::Message& message, std::uint32_t uiClient )
+{
+	megastructure::Message msgCopy = message;
+	megastructure::Message::EG_Msg* pEGMsg = msgCopy.mutable_eg_msg();
+	megastructure::Message::EG_Msg::Request* pRequest = pEGMsg->mutable_request();
+	pRequest->set_coordinator( uiClient );
+	return msgCopy;
+}
+	
+	
 bool RouteEGProtocolActivity::clientMessage( std::uint32_t uiClient, const megastructure::Message& message )
 {
 	if( message.has_eg_msg() )
 	{
-		//determine how to route the request based on the type
-		if( megastructure::NetworkAddressTable::Ptr pNAT = m_master.getNetworkAddressTable() )
+		const megastructure::Message::EG_Msg& egMsg = message.eg_msg();
+		
+		if( egMsg.has_request() )
 		{
-			/*const megastructure::Message::EG_Msg& egMsg = message.eg_msg();
-			if( egMsg.has_egs_read() ) //response
+			//route the request to the client
+			if( megastructure::NetworkAddressTable::Ptr pNAT = m_master.getNetworkAddressTable() )
 			{
-				//route back to where the request came from
-				const megastructure::Message::EG_Msg::EGS_Read& egsRead = egMsg.egs_read();
-				
-				if( egsRead.coordinator() != 0 )
+				const std::uint32_t uiTargetClientID = pNAT->getClientForType( egMsg.type() );
+				if( uiTargetClientID == megastructure::NetworkAddressTable::MasterID )
 				{
-					if( !m_master.send( message, egsRead.coordinator() ) )
+					THROW_RTE( "Request mapped to master id in master" );
+				}
+				else if( uiTargetClientID == megastructure::NetworkAddressTable::SelfID )
+				{
+					THROW_RTE( "Request mapped to self id in master" );
+				}
+				else if( uiTargetClientID == megastructure::NetworkAddressTable::UnMapped )
+				{
+					//generate error response that cannot route message
+					const megastructure::Message::EG_Msg::Request& egRequest = egMsg.request();
+					
+					megastructure::Message errorMessage;
 					{
-						m_master.removeClient( egsRead.coordinator() );
+						megastructure::Message::EG_Msg* pErrorEGMsg = errorMessage.mutable_eg_msg();
+						pErrorEGMsg->set_type( egMsg.type() );
+						pErrorEGMsg->set_instance( egMsg.instance() );
+						pErrorEGMsg->set_cycle( egMsg.cycle() );
+						
+						megastructure::Message::EG_Msg::Error* pErrorEGMsgError = pErrorEGMsg->mutable_error();
+						pErrorEGMsgError->set_host( egRequest.host() );
 					}
+					m_master.send( errorMessage, uiClient );
 				}
 				else
 				{
-					THROW_RTE( "EGS Read has not host return address specified" );
+					VERIFY_RTE_MSG( uiTargetClientID != uiClient, "Incorrect routine for eg request" );
+					m_master.send( copyRequestSetSourceCoordinator( message, uiClient ), uiTargetClientID );
 				}
 			}
 			else
 			{
-				const std::uint32_t uiType = egMsg.type();
-				
-				const std::uint32_t uiTargetClientID = pNAT->getClientForType( uiType );
-				VERIFY_RTE( uiTargetClientID != uiClient );
-				VERIFY_RTE( uiTargetClientID != megastructure::NetworkAddressTable::MasterID );
-				
-				if( egMsg.has_egq_read() ) //request
-				{
-					megastructure::Message msgCopy = message;
-					megastructure::Message::EG_Msg* pEGMsg = msgCopy.mutable_eg_msg();
-					megastructure::Message::EG_Msg::EGQ_Read* pEGQRead = pEGMsg->mutable_egq_read();
-					
-					pEGQRead->set_coordinator( uiClient );
-					
-					//forward message to client
-					if( !m_master.send( msgCopy, uiTargetClientID ) )
-					{
-						m_master.removeClient( uiTargetClientID );
-					}
-				}
-				else
-				{
-					//forward message to client
-					if( !m_master.send( message, uiTargetClientID ) )
-					{
-						m_master.removeClient( uiTargetClientID );
-					}
-				}
-			}*/
+				std::cout << "EG request from master received when no network address table configured" << std::endl;
+			}
 		}
-		else
+		else if( egMsg.has_response() )
 		{
-			std::cout << "EG Msg received when no network address table configured" << std::endl;
+			//route the response back to the source host
+			const megastructure::Message::EG_Msg::Response& response = egMsg.response();
+			VERIFY_RTE_MSG( response.coordinator() != 0U, "Invalid coordinator resolved for response from slave to master" );
+			m_master.send( message, response.coordinator() );
+		}
+		else if( egMsg.has_error() )
+		{
+			const megastructure::Message::EG_Msg::Error& error = egMsg.error();
+			VERIFY_RTE_MSG( error.coordinator() != 0U, "Invalid coordinator resolved for error from slave to master" );
+			m_master.send( message, error.coordinator() );
+		}
+		else if( egMsg.has_event() )
+		{
+			//route event to all hosts
+			const auto& hosts = m_master.getClients();
+			for( const auto& i : hosts )
+			{
+				if( i.second != uiClient )
+				{
+					m_master.send( message, i.second );
+				}
+			}
 		}
 		
 		return true;

@@ -36,12 +36,13 @@ namespace megastructure
 		friend class TestEGReadActivity;
 		friend class TestEGWriteActivity;
 		friend class TestEGCallActivity;
+		friend class EGRequestManagerActivity;
         
 		friend class LoadProgramJob;
         
         friend class Program;
 		
-		friend class EGReadFunctor;
+		friend class SimThreadManager;
 	public:
 		Component( Environment& environment, const std::string& strMegaPort, const std::string& strEGPort, const std::string& strProgramName );
 		virtual ~Component();
@@ -114,6 +115,18 @@ namespace megastructure
 				throw std::runtime_error( "Socket failed" );
 			}
 		}
+		bool readegSync( megastructure::Message& message )
+		{
+			bool bReceived = false;
+			if( m_egClient.recv_sync( message, bReceived ) )
+			{
+				return bReceived;
+			}
+			else
+			{
+				throw std::runtime_error( "Socket failed" );
+			}
+		}
 		
 	private:
 		Environment m_environment;
@@ -124,12 +137,11 @@ namespace megastructure
 		megastructure::Client m_client;
 		megastructure::Client m_egClient;
 		std::thread m_zeromq1;
-		std::thread m_zeromq2;
 		
 		std::mutex m_simThreadMutex;
-		std::condition_variable m_simJobCondition;
-		bool m_bPendingJobs;
+		std::mutex m_jobMutex;
 		std::list< Job::Ptr > m_jobs;
+		std::condition_variable m_simJobCondition;
 		
 		std::shared_ptr< Program > m_pProgram; //only access from main thread
 	};

@@ -36,9 +36,15 @@ namespace master
 	
 	void Master::calculateNetworkAddressTable( std::shared_ptr< ProjectTree > pProjectTree )
 	{
-		m_pNetworkAddressTable.reset( 
-			new megastructure::NetworkAddressTable( 
-					getClients(), 
-					pProjectTree ) );
+        if( boost::filesystem::exists( pProjectTree->getAnalysisFileName() ) )
+        {
+		    m_pNetworkAddressTable.reset( 
+			    new megastructure::NetworkAddressTable( 
+					    getClients(), pProjectTree ) );
+        }
+        else
+        {
+            m_pNetworkAddressTable.reset();
+        }
 	}
 }

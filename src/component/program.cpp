@@ -47,15 +47,23 @@ Program::Program( Component& component, const std::string& strHostName, const st
 	catch( std::exception& ex )
 	{
 		std::cout << "Error attempting to load project tree for: " << 
+			m_component.getSlaveWorkspacePath().string() << " project: " << 
 			strProjectName << " : " << ex.what() << std::endl;
 		throw;
 	}
 	
-	m_pNetworkAddressTable.reset( 
-		new NetworkAddressTable( 
-			m_component.getSlaveName(), 
-			strHostName, 
-			m_pProjectTree ) );
+    if( boost::filesystem::exists( m_pProjectTree->getAnalysisFileName() ) )
+    {
+	    m_pNetworkAddressTable.reset( 
+		    new NetworkAddressTable( 
+			    m_component.getSlaveName(), 
+			    strHostName, 
+			    m_pProjectTree ) );
+    }
+    else
+    {
+        m_pNetworkAddressTable.reset();
+    }
 	
     const boost::filesystem::path binDirectory = getBinFolderForProject( m_component.getSlaveWorkspacePath(), m_strProjectName );
     m_strComponentName = getComponentName( m_component.getSlaveName(), m_strHostName, m_strProjectName );
@@ -162,9 +170,7 @@ bool Program::receive( std::int32_t& iType, std::size_t& uiInstance, std::uint32
 			
 			if( egMsg.has_request() )
 			{
-				//push onto queue
-				const megastructure::Message::EG_Msg::Request& egRequest = egMsg.request();
-				m_requests.push_back( message );
+				THROW_RTE( "Program received eg request on eg socket" );
 			}
 			else if( egMsg.has_response() )
 			{
@@ -177,6 +183,25 @@ bool Program::receive( std::int32_t& iType, std::size_t& uiInstance, std::uint32
 				//first update the cache with the actual value
 				writeBuffer( iType, uiInstance, egResponse.value() );
 				
+				std::cout << "Program received response type: " << iType << 
+					" instance: " << uiInstance << " timestamp: " << uiTimestamp << std::endl;
+				
+				return true;
+			}
+			else if( egMsg.has_error() )
+			{
+				const megastructure::Message::EG_Msg::Error& egError = egMsg.error();
+				
+				iType 		= egMsg.type();
+				uiInstance 	= egMsg.instance();
+				uiTimestamp = egMsg.cycle();
+				
+				//first update the cache with the actual value
+				//writeBuffer( iType, uiInstance, egResponse.value() );
+				
+				std::cout << "Program received error type: " << iType << 
+					" instance: " << uiInstance << " timestamp: " << uiTimestamp << std::endl;
+				
 				return true;
 			}
 			else if( egMsg.has_event() )
@@ -186,6 +211,9 @@ bool Program::receive( std::int32_t& iType, std::size_t& uiInstance, std::uint32
 				iType 		= egMsg.type();
 				uiInstance 	= egMsg.instance();
 				uiTimestamp = egMsg.cycle();
+				
+				std::cout << "Program received event type: " << iType << 
+					" instance: " << uiInstance << " timestamp: " << uiTimestamp << std::endl;
 				
 				return true;
 			}
@@ -211,8 +239,6 @@ void Program::send( const char* type, std::size_t timestamp, const void* value, 
 //eg
 std::string Program::egRead( std::int32_t iType, std::uint32_t uiInstance )
 {
-	//std::future< std::string > result;
-	
 	if( m_pNetworkAddressTable->getClientForType( iType ) == NetworkAddressTable::SelfID )
 	{
 		//write the buffer directly
@@ -233,6 +259,7 @@ std::string Program::egRead( std::int32_t iType, std::uint32_t uiInstance )
 			Message::EG_Msg::Request::Read* pRead = pRequest->mutable_read();
 		}
 		m_component.sendeg( message );
+		std::cout << "Sent eg read request type: " << iType << " instance: " << uiInstance << std::endl;
 		
 		m_pPlugin->WaitForReadResponse( iType, uiInstance );
 		

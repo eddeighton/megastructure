@@ -47,7 +47,7 @@ struct TableStruct_megastructure_2eproto {
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::AuxillaryParseTableField aux[]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
-  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[26]
+  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[27]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::FieldMetadata field_metadata[];
   static const ::PROTOBUF_NAMESPACE_ID::internal::SerializationTable serialization_table[];
@@ -76,6 +76,9 @@ extern Message_CHS_EnrollEGDefaultTypeInternal _Message_CHS_EnrollEG_default_ins
 class Message_EG_Msg;
 class Message_EG_MsgDefaultTypeInternal;
 extern Message_EG_MsgDefaultTypeInternal _Message_EG_Msg_default_instance_;
+class Message_EG_Msg_Error;
+class Message_EG_Msg_ErrorDefaultTypeInternal;
+extern Message_EG_Msg_ErrorDefaultTypeInternal _Message_EG_Msg_Error_default_instance_;
 class Message_EG_Msg_Event;
 class Message_EG_Msg_EventDefaultTypeInternal;
 extern Message_EG_Msg_EventDefaultTypeInternal _Message_EG_Msg_Event_default_instance_;
@@ -142,6 +145,7 @@ template<> ::megastructure::Message_CHS_Buffer* Arena::CreateMaybeMessage<::mega
 template<> ::megastructure::Message_CHS_Enroll* Arena::CreateMaybeMessage<::megastructure::Message_CHS_Enroll>(Arena*);
 template<> ::megastructure::Message_CHS_EnrollEG* Arena::CreateMaybeMessage<::megastructure::Message_CHS_EnrollEG>(Arena*);
 template<> ::megastructure::Message_EG_Msg* Arena::CreateMaybeMessage<::megastructure::Message_EG_Msg>(Arena*);
+template<> ::megastructure::Message_EG_Msg_Error* Arena::CreateMaybeMessage<::megastructure::Message_EG_Msg_Error>(Arena*);
 template<> ::megastructure::Message_EG_Msg_Event* Arena::CreateMaybeMessage<::megastructure::Message_EG_Msg_Event>(Arena*);
 template<> ::megastructure::Message_EG_Msg_Request* Arena::CreateMaybeMessage<::megastructure::Message_EG_Msg_Request>(Arena*);
 template<> ::megastructure::Message_EG_Msg_Request_Call* Arena::CreateMaybeMessage<::megastructure::Message_EG_Msg_Request_Call>(Arena*);
@@ -3806,6 +3810,154 @@ class Message_EG_Msg_Response PROTOBUF_FINAL :
 };
 // -------------------------------------------------------------------
 
+class Message_EG_Msg_Error PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:megastructure.Message.EG_Msg.Error) */ {
+ public:
+  inline Message_EG_Msg_Error() : Message_EG_Msg_Error(nullptr) {};
+  virtual ~Message_EG_Msg_Error();
+
+  Message_EG_Msg_Error(const Message_EG_Msg_Error& from);
+  Message_EG_Msg_Error(Message_EG_Msg_Error&& from) noexcept
+    : Message_EG_Msg_Error() {
+    *this = ::std::move(from);
+  }
+
+  inline Message_EG_Msg_Error& operator=(const Message_EG_Msg_Error& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline Message_EG_Msg_Error& operator=(Message_EG_Msg_Error&& from) noexcept {
+    if (GetArena() == from.GetArena()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const Message_EG_Msg_Error& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const Message_EG_Msg_Error* internal_default_instance() {
+    return reinterpret_cast<const Message_EG_Msg_Error*>(
+               &_Message_EG_Msg_Error_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    23;
+
+  friend void swap(Message_EG_Msg_Error& a, Message_EG_Msg_Error& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(Message_EG_Msg_Error* other) {
+    if (other == this) return;
+    if (GetArena() == other->GetArena()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(Message_EG_Msg_Error* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline Message_EG_Msg_Error* New() const final {
+    return CreateMaybeMessage<Message_EG_Msg_Error>(nullptr);
+  }
+
+  Message_EG_Msg_Error* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<Message_EG_Msg_Error>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const Message_EG_Msg_Error& from);
+  void MergeFrom(const Message_EG_Msg_Error& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(Message_EG_Msg_Error* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "megastructure.Message.EG_Msg.Error";
+  }
+  protected:
+  explicit Message_EG_Msg_Error(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  private:
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_megastructure_2eproto);
+    return ::descriptor_table_megastructure_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kCoordinatorFieldNumber = 1,
+    kHostFieldNumber = 2,
+  };
+  // uint32 coordinator = 1;
+  void clear_coordinator();
+  ::PROTOBUF_NAMESPACE_ID::uint32 coordinator() const;
+  void set_coordinator(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint32 _internal_coordinator() const;
+  void _internal_set_coordinator(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  public:
+
+  // uint32 host = 2;
+  void clear_host();
+  ::PROTOBUF_NAMESPACE_ID::uint32 host() const;
+  void set_host(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint32 _internal_host() const;
+  void _internal_set_host(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:megastructure.Message.EG_Msg.Error)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  ::PROTOBUF_NAMESPACE_ID::uint32 coordinator_;
+  ::PROTOBUF_NAMESPACE_ID::uint32 host_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_megastructure_2eproto;
+};
+// -------------------------------------------------------------------
+
 class Message_EG_Msg_Event PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:megastructure.Message.EG_Msg.Event) */ {
  public:
@@ -3848,7 +4000,7 @@ class Message_EG_Msg_Event PROTOBUF_FINAL :
                &_Message_EG_Msg_Event_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    23;
+    24;
 
   friend void swap(Message_EG_Msg_Event& a, Message_EG_Msg_Event& b) {
     a.Swap(&b);
@@ -3998,7 +4150,8 @@ class Message_EG_Msg PROTOBUF_FINAL :
   enum FoobarCase {
     kRequest = 4,
     kResponse = 5,
-    kEvent = 6,
+    kError = 6,
+    kEvent = 7,
     FOOBAR_NOT_SET = 0,
   };
 
@@ -4008,7 +4161,7 @@ class Message_EG_Msg PROTOBUF_FINAL :
                &_Message_EG_Msg_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    24;
+    25;
 
   friend void swap(Message_EG_Msg& a, Message_EG_Msg& b) {
     a.Swap(&b);
@@ -4078,6 +4231,7 @@ class Message_EG_Msg PROTOBUF_FINAL :
 
   typedef Message_EG_Msg_Request Request;
   typedef Message_EG_Msg_Response Response;
+  typedef Message_EG_Msg_Error Error;
   typedef Message_EG_Msg_Event Event;
 
   // accessors -------------------------------------------------------
@@ -4088,7 +4242,8 @@ class Message_EG_Msg PROTOBUF_FINAL :
     kCycleFieldNumber = 3,
     kRequestFieldNumber = 4,
     kResponseFieldNumber = 5,
-    kEventFieldNumber = 6,
+    kErrorFieldNumber = 6,
+    kEventFieldNumber = 7,
   };
   // int32 type = 1;
   void clear_type();
@@ -4153,7 +4308,25 @@ class Message_EG_Msg PROTOBUF_FINAL :
       ::megastructure::Message_EG_Msg_Response* response);
   ::megastructure::Message_EG_Msg_Response* unsafe_arena_release_response();
 
-  // .megastructure.Message.EG_Msg.Event event = 6;
+  // .megastructure.Message.EG_Msg.Error error = 6;
+  bool has_error() const;
+  private:
+  bool _internal_has_error() const;
+  public:
+  void clear_error();
+  const ::megastructure::Message_EG_Msg_Error& error() const;
+  ::megastructure::Message_EG_Msg_Error* release_error();
+  ::megastructure::Message_EG_Msg_Error* mutable_error();
+  void set_allocated_error(::megastructure::Message_EG_Msg_Error* error);
+  private:
+  const ::megastructure::Message_EG_Msg_Error& _internal_error() const;
+  ::megastructure::Message_EG_Msg_Error* _internal_mutable_error();
+  public:
+  void unsafe_arena_set_allocated_error(
+      ::megastructure::Message_EG_Msg_Error* error);
+  ::megastructure::Message_EG_Msg_Error* unsafe_arena_release_error();
+
+  // .megastructure.Message.EG_Msg.Event event = 7;
   bool has_event() const;
   private:
   bool _internal_has_event() const;
@@ -4178,6 +4351,7 @@ class Message_EG_Msg PROTOBUF_FINAL :
   class _Internal;
   void set_has_request();
   void set_has_response();
+  void set_has_error();
   void set_has_event();
 
   inline bool has_foobar() const;
@@ -4193,6 +4367,7 @@ class Message_EG_Msg PROTOBUF_FINAL :
     FoobarUnion() {}
     ::megastructure::Message_EG_Msg_Request* request_;
     ::megastructure::Message_EG_Msg_Response* response_;
+    ::megastructure::Message_EG_Msg_Error* error_;
     ::megastructure::Message_EG_Msg_Event* event_;
   } foobar_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
@@ -4265,7 +4440,7 @@ class Message PROTOBUF_FINAL :
                &_Message_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    25;
+    26;
 
   friend void swap(Message& a, Message& b) {
     a.Swap(&b);
@@ -6905,6 +7080,50 @@ inline void Message_EG_Msg_Response::unsafe_arena_set_allocated_value(
 
 // -------------------------------------------------------------------
 
+// Message_EG_Msg_Error
+
+// uint32 coordinator = 1;
+inline void Message_EG_Msg_Error::clear_coordinator() {
+  coordinator_ = 0u;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 Message_EG_Msg_Error::_internal_coordinator() const {
+  return coordinator_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 Message_EG_Msg_Error::coordinator() const {
+  // @@protoc_insertion_point(field_get:megastructure.Message.EG_Msg.Error.coordinator)
+  return _internal_coordinator();
+}
+inline void Message_EG_Msg_Error::_internal_set_coordinator(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  
+  coordinator_ = value;
+}
+inline void Message_EG_Msg_Error::set_coordinator(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  _internal_set_coordinator(value);
+  // @@protoc_insertion_point(field_set:megastructure.Message.EG_Msg.Error.coordinator)
+}
+
+// uint32 host = 2;
+inline void Message_EG_Msg_Error::clear_host() {
+  host_ = 0u;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 Message_EG_Msg_Error::_internal_host() const {
+  return host_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 Message_EG_Msg_Error::host() const {
+  // @@protoc_insertion_point(field_get:megastructure.Message.EG_Msg.Error.host)
+  return _internal_host();
+}
+inline void Message_EG_Msg_Error::_internal_set_host(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  
+  host_ = value;
+}
+inline void Message_EG_Msg_Error::set_host(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  _internal_set_host(value);
+  // @@protoc_insertion_point(field_set:megastructure.Message.EG_Msg.Error.host)
+}
+
+// -------------------------------------------------------------------
+
 // Message_EG_Msg_Event
 
 // string value = 1;
@@ -7198,7 +7417,80 @@ inline ::megastructure::Message_EG_Msg_Response* Message_EG_Msg::mutable_respons
   return _internal_mutable_response();
 }
 
-// .megastructure.Message.EG_Msg.Event event = 6;
+// .megastructure.Message.EG_Msg.Error error = 6;
+inline bool Message_EG_Msg::_internal_has_error() const {
+  return foobar_case() == kError;
+}
+inline bool Message_EG_Msg::has_error() const {
+  return _internal_has_error();
+}
+inline void Message_EG_Msg::set_has_error() {
+  _oneof_case_[0] = kError;
+}
+inline void Message_EG_Msg::clear_error() {
+  if (_internal_has_error()) {
+    if (GetArena() == nullptr) {
+      delete foobar_.error_;
+    }
+    clear_has_foobar();
+  }
+}
+inline ::megastructure::Message_EG_Msg_Error* Message_EG_Msg::release_error() {
+  // @@protoc_insertion_point(field_release:megastructure.Message.EG_Msg.error)
+  if (_internal_has_error()) {
+    clear_has_foobar();
+      ::megastructure::Message_EG_Msg_Error* temp = foobar_.error_;
+    if (GetArena() != nullptr) {
+      temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+    }
+    foobar_.error_ = nullptr;
+    return temp;
+  } else {
+    return nullptr;
+  }
+}
+inline const ::megastructure::Message_EG_Msg_Error& Message_EG_Msg::_internal_error() const {
+  return _internal_has_error()
+      ? *foobar_.error_
+      : *reinterpret_cast< ::megastructure::Message_EG_Msg_Error*>(&::megastructure::_Message_EG_Msg_Error_default_instance_);
+}
+inline const ::megastructure::Message_EG_Msg_Error& Message_EG_Msg::error() const {
+  // @@protoc_insertion_point(field_get:megastructure.Message.EG_Msg.error)
+  return _internal_error();
+}
+inline ::megastructure::Message_EG_Msg_Error* Message_EG_Msg::unsafe_arena_release_error() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:megastructure.Message.EG_Msg.error)
+  if (_internal_has_error()) {
+    clear_has_foobar();
+    ::megastructure::Message_EG_Msg_Error* temp = foobar_.error_;
+    foobar_.error_ = nullptr;
+    return temp;
+  } else {
+    return nullptr;
+  }
+}
+inline void Message_EG_Msg::unsafe_arena_set_allocated_error(::megastructure::Message_EG_Msg_Error* error) {
+  clear_foobar();
+  if (error) {
+    set_has_error();
+    foobar_.error_ = error;
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:megastructure.Message.EG_Msg.error)
+}
+inline ::megastructure::Message_EG_Msg_Error* Message_EG_Msg::_internal_mutable_error() {
+  if (!_internal_has_error()) {
+    clear_foobar();
+    set_has_error();
+    foobar_.error_ = CreateMaybeMessage< ::megastructure::Message_EG_Msg_Error >(GetArena());
+  }
+  return foobar_.error_;
+}
+inline ::megastructure::Message_EG_Msg_Error* Message_EG_Msg::mutable_error() {
+  // @@protoc_insertion_point(field_mutable:megastructure.Message.EG_Msg.error)
+  return _internal_mutable_error();
+}
+
+// .megastructure.Message.EG_Msg.Event event = 7;
 inline bool Message_EG_Msg::_internal_has_event() const {
   return foobar_case() == kEvent;
 }
@@ -8537,6 +8829,8 @@ inline Message::FoobarCase Message::foobar_case() const {
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

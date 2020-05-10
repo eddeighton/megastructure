@@ -21,8 +21,8 @@ struct Args
 {
 	std::string master_ip;
 	std::string master_port;
-	std::string slave_mega_port = megastructure::MEGA_PORT;
-	std::string slave_eg_port = megastructure::EG_PORT;
+	std::string slave_mega_port;
+	std::string slave_eg_port;
 	boost::filesystem::path slave_path;
 	bool bWait;
 };
@@ -40,8 +40,8 @@ bool parse_args( int argc, const char* argv[], Args& args )
 			("mip",    po::value< std::string >( &args.master_ip ), "Master IP Address" )
 			("mport",  po::value< std::string >( &args.master_port ), "Master Port" )
 			("spath",  po::value< boost::filesystem::path >( &args.slave_path ), "Path to workspace coordinator folder for slave" )
-			("sport",  po::value< std::string >( &args.slave_mega_port ), "Slave Mega Port" )
-			("eport",  po::value< std::string >( &args.slave_eg_port ), "Slave EG Port" )
+			("sport",  po::value< std::string >( &args.slave_mega_port )->default_value( megastructure::MEGA_PORT ), "Slave Mega Port" )
+			("eport",  po::value< std::string >( &args.slave_eg_port )->default_value( megastructure::EG_PORT ), "Slave EG Port" )
 			("wait",   po::bool_switch( &args.bWait ), "Wait at startup for attaching a debugger" )
 		;
 

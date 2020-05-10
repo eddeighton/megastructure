@@ -146,6 +146,12 @@ message Message
 			uint32 host = 2;
 			string value = 3;
 		}
+	
+		message Error
+		{
+			uint32 coordinator = 1;
+			uint32 host = 2;
+		}
 		
 		message Event
 		{
@@ -157,7 +163,8 @@ message Message
 			//eg protocol
 			Request   request   = 4;
 			Response  response  = 5;
-			Event     event     = 6;
+			Error     error     = 6;
+			Event     event     = 7;
 		}
 	}
 	

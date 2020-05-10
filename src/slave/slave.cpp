@@ -143,17 +143,44 @@ namespace slave
 	
 	void Slave::calculateNetworkAddressTable( std::shared_ptr< ProjectTree > pProjectTree )
 	{
-		megastructure::NetworkAddressTable::ClientMap clientMap;
-		
-		for( const auto& i : m_hostMap.getHostNameMapping() )
-		{
-			clientMap.insert( std::make_pair( i.first, i.second.getMegaClientID() ) );
-		}
-		
-		m_pNetworkAddressTable.reset( 
-			new megastructure::NetworkAddressTable( 
-					clientMap, 
-					getName(), 
-					pProjectTree ) );
+        if( boost::filesystem::exists( pProjectTree->getAnalysisFileName() ) )
+        {
+			//requests are always routed to the mega structure socket
+			{
+				megastructure::NetworkAddressTable::ClientMap clientMap;
+			
+				for( const auto& i : m_hostMap.getHostNameMapping() )
+				{
+					clientMap.insert( std::make_pair( i.first, i.second.getMegaClientID() ) );
+				}
+			
+				m_pNetworkAddressTableRequests.reset( 
+					new megastructure::NetworkAddressTable( 
+							clientMap, 
+							getName(), 
+							pProjectTree ) );
+			}
+			
+			//responses, events and errors are always routed to the eg socket
+			//{
+			//	megastructure::NetworkAddressTable::ClientMap clientMap;
+			//
+			//	for( const auto& i : m_hostMap.getHostNameMapping() )
+			//	{
+			//		clientMap.insert( std::make_pair( i.first, i.second.getEGClientID() ) );
+			//	}
+			//
+			//	m_pNetworkAddressTableResponses.reset( 
+			//		new megastructure::NetworkAddressTable( 
+			//				clientMap, 
+			//				getName(), 
+			//				pProjectTree ) );
+			//}
+        }
+        else
+        {
+            m_pNetworkAddressTableRequests.reset();
+            //m_pNetworkAddressTableResponses.reset();
+        }
 	}
 }

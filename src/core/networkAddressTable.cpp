@@ -45,7 +45,7 @@ void recurseMappedClients( const eg::concrete::Action* pRoot, const NetworkAddre
 			}
 			else
 			{
-				//THROW_RTE( "Could not map client action: " << pClientAction->getName() );
+				recurseClient( pClientAction, NetworkAddressTable::UnMapped, clientIDMap );
 			}
 		}
 	}
@@ -143,6 +143,25 @@ void buildTable( const ClientIDMap& clientIDMap, NetworkAddressTable::Table& tab
 	}
 }
 
+const eg::concrete::Action* getMegaRoot( const eg::concrete::Action* pInstanceRoot )
+{
+    const eg::concrete::Action* pMegaRootResult = nullptr;
+
+	const std::vector< eg::concrete::Element* >& children = pInstanceRoot->getChildren();
+	for( const eg::concrete::Element* pElement : children )
+	{
+		if( const eg::concrete::Action* pMegaRoot = 
+			dynamic_cast< const eg::concrete::Action* >( pElement ) )
+		{
+            VERIFY_RTE( !pMegaRootResult );
+            pMegaRootResult = pMegaRoot;
+		}
+	}
+
+    VERIFY_RTE_MSG( pMegaRootResult, "Failed to locate mega root" );
+
+    return pMegaRootResult;
+}
 
 NetworkAddressTable::NetworkAddressTable( 
 						const ClientMap& clients, 
@@ -155,7 +174,7 @@ NetworkAddressTable::NetworkAddressTable(
     {
 		eg::ReadSession session( programDatabasePath );
 		ClientIDMap clientIDMap;
-		recurseMappedClients( session.getInstanceRoot(), clients, clientIDMap );
+		recurseMappedClients( getMegaRoot( session.getInstanceRoot() ), clients, clientIDMap );
 		buildTable( clientIDMap, m_table );
 	}
 }
@@ -172,7 +191,7 @@ NetworkAddressTable::NetworkAddressTable(
     {
 	    eg::ReadSession session( programDatabasePath );
 	    ClientIDMap clientIDMap;
-	    recurseSlave( session.getInstanceRoot(), clients, strCoordinatorName, clientIDMap );
+	    recurseSlave( getMegaRoot( session.getInstanceRoot() ), clients, strCoordinatorName, clientIDMap );
 		buildTable( clientIDMap, m_table );
     }
 }
@@ -189,7 +208,7 @@ NetworkAddressTable::NetworkAddressTable( const std::string& strCoordinatorName,
     {
 	    eg::ReadSession session( programDatabasePath );
 	    ClientIDMap clientIDMap;
-	    recurseHost( session.getInstanceRoot(), strCoordinatorName, strHostName, clientIDMap );
+	    recurseHost( getMegaRoot( session.getInstanceRoot() ), strCoordinatorName, strHostName, clientIDMap );
 		buildTable( clientIDMap, m_table );
     }
 }

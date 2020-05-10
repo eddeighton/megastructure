@@ -28,20 +28,16 @@ namespace megastructure
 			m_strHostProgram( strProgramName ),
 			m_queue(),
 			m_client( TCPRemoteSocketName( "localhost", strMegaPort ) ),
-			m_egClient( TCPRemoteSocketName( "localhost", strEGPort ) ),
-			m_bPendingJobs( false )
+			m_egClient( TCPRemoteSocketName( "localhost", strEGPort ) )
 	{
 		m_zeromq1 = std::thread( 
 			std::bind( &megastructure::readClient< megastructure::Client >, 
 				std::ref( m_client ), std::ref( m_queue ) ) );
 				
-		m_zeromq2 = std::thread( 
-			std::bind( &megastructure::readClient< megastructure::Client >, 
-				std::ref( m_egClient ), std::ref( m_queue ) ) );
-				
 		m_queue.startActivity( new EnrollHostActivity( *this, m_strHostProgram ) );
 		m_queue.startActivity( new AliveTestActivity( *this ) );
 		m_queue.startActivity( new LoadProgramActivity( *this ) );
+		m_queue.startActivity( new EGRequestManagerActivity( *this ) );
 	}
 	
 	Component::~Component()
@@ -50,21 +46,74 @@ namespace megastructure
 		m_client.stop();
 		m_egClient.stop();
 		m_zeromq1.join();
-		m_zeromq2.join();
 	}
 	
-	void Component::runCycle()
+	class SimThreadManager
 	{
-		std::list< Job::Ptr > temp;
-		
-		while( true )
+		Component& m_component;
+		bool m_bLocked;
+	public:
+		SimThreadManager( Component& component )
+			:	m_component( component ),
+				m_bLocked( false )
 		{
-			//attempt to grab some jobs if there are any
+			//either immediately acquire the simulation lock or fail to and return false
+			if( m_component.m_simThreadMutex.try_lock() )
 			{
-				std::unique_lock< std::mutex > simLock( m_simThreadMutex );
-				temp.swap( m_jobs );
+				m_bLocked = true;
+				runAllJobs();
 			}
-			
+			else
+			{
+				//do not return until we acquire the simulation lock
+				bool& bLocked = m_bLocked;
+				while( !bLocked )
+				{
+					runAllJobs();
+					//wait for more jobs OR completion
+					{
+						std::unique_lock< std::mutex > simLock( m_component.m_jobMutex );
+						m_component.m_simJobCondition.wait
+						( 
+							simLock, 
+							[ &component, &bLocked ]
+							{ 
+								if( !component.m_jobs.empty() )
+								{
+									return true;
+								}
+								else if( component.m_simThreadMutex.try_lock() )
+								{
+									bLocked = true;
+									return true;
+								}
+								else
+								{
+									return false;
+								}
+							} 
+						);
+					}
+				}
+			}
+		}
+		
+		~SimThreadManager()
+		{
+			//release simulation lock if acquired
+			if( m_bLocked )
+			{
+				m_component.m_simThreadMutex.unlock();
+			}
+		}
+		
+		void runAllJobs()
+		{
+			std::list< Job::Ptr > temp;
+			{
+				std::unique_lock< std::mutex > simLock( m_component.m_jobMutex );
+				temp.swap( m_component.m_jobs );
+			}
 			if( !temp.empty() )
 			{
 				//process all jobs
@@ -72,21 +121,27 @@ namespace megastructure
 					pJob->run();
 				temp.clear();
 			}
-			
-			//wait for more jobs OR completion
-			{
-				std::unique_lock< std::mutex > simLock( m_simThreadMutex );
-				if( !m_bPendingJobs && m_jobs.empty() )
-					break;
-				std::list< Job::Ptr >& jobs = m_jobs;
-				m_simJobCondition.wait( simLock, [ &jobs ]{ return !jobs.empty(); } );
-			}
 		}
+	
+		void spinProtection()
+		{
+			//in the case that simulation lock WAS requested while it WAS acquired by this then 
+			//ensure the requester GETS IT before continuing by waiting on condition variable
+		}
+	};
+	
+	void Component::runCycle()
+	{
+		SimThreadManager simThreadManager( *this );
 		
+		//run simulation
 		if( m_pProgram )
 		{
 			m_pProgram->run();
 		}
+		
+		simThreadManager.spinProtection();
+		
 	}
 	
 	std::string Component::egRead( std::uint32_t uiType, std::uint32_t uiInstance )
@@ -127,10 +182,8 @@ namespace megastructure
 		
 	void Component::startJob( Job::Ptr pJob )
 	{
-		{
-			std::lock_guard< std::mutex > lock( m_simThreadMutex );
-			m_jobs.push_back( pJob );
-		}
+		std::unique_lock< std::mutex > simLock( m_jobMutex );
+		m_jobs.push_back( pJob );
 		m_simJobCondition.notify_one();
 	}
 	

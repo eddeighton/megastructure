@@ -104,73 +104,22 @@ namespace megastructure
 	
 	////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////
-	/*
-	class TestEGReadActivity : public Activity
+	
+	class EGRequestManagerActivity : public Activity
 	{
 	public:
-		TestEGReadActivity( Component& component, 
-						std::uint32_t uiType, 
-						std::uint32_t uiInstance) 
-			:	m_component( component ),
-				m_uiType( uiType ),
-				m_uiInstance( uiInstance )
+		EGRequestManagerActivity( Component& component ) 
+			:	m_component( component )
 		{
+			
 		}
 		
-		std::future< std::string > getResult() { return m_resultPromise.get_future(); }
-		
-		virtual void start();
 		virtual bool serverMessage( const Message& message );
-	private:
-		Component& m_component;
-		std::uint32_t 	m_uiType;
-		std::uint32_t 	m_uiInstance;
-		std::promise< std::string > m_resultPromise;
-	};
-	
-	class TestEGWriteActivity : public Activity
-	{
-	public:
-		TestEGWriteActivity( Component& component, 
-						std::uint32_t uiType, 
-						std::uint32_t uiInstance, 
-						const std::string& strBuffer ) 
-			:	m_component( component ),
-				m_uiType( uiType ),
-				m_uiInstance( uiInstance ),
-				m_strBuffer( strBuffer )
-		{
-		}
 		
-		virtual void start();
 	private:
 		Component& m_component;
-		std::uint32_t 	m_uiType;
-		std::uint32_t 	m_uiInstance;
-		std::string 	m_strBuffer;
-	};
-	
-	class TestEGCallActivity : public Activity
-	{
-	public:
-		TestEGCallActivity( Component& component, 
-						std::uint32_t uiType, 
-						std::uint32_t uiInstance, 
-						const std::string& strBuffer ) 
-			:	m_component( component ),
-				m_uiType( uiType ),
-				m_uiInstance( uiInstance ),
-				m_strBuffer( strBuffer )
-		{
-		}
 		
-		virtual void start();
-	private:
-		Component& m_component;
-		std::uint32_t 	m_uiType;
-		std::uint32_t 	m_uiInstance;
-		std::string 	m_strBuffer;
-	};*/
+	};
 }
 
 #endif //COMPONENT_ACTIVITIES_26_APRIL_2020

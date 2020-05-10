@@ -8,9 +8,6 @@
 
 namespace slave
 {
-
-
-
 	//////////////////////////////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////////
 	class RouteEGProtocolActivity : public megastructure::Activity
@@ -19,9 +16,7 @@ namespace slave
 		RouteEGProtocolActivity( Slave& slave ) 
 			:	m_slave( slave )
 		{
-			
 		}
-		
 		
 		virtual bool serverMessage( const megastructure::Message& message );
 		virtual bool clientMessage( std::uint32_t uiClient, const megastructure::Message& message );
@@ -29,7 +24,6 @@ namespace slave
 	private:
 		Slave& m_slave;
 	};
-
 
 }
 

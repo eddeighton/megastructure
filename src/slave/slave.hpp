@@ -51,8 +51,11 @@ namespace slave
 		const boost::filesystem::path& getWorkspace() const { return m_workspacePath; }
 		Environment& getEnvironment() const { return m_environment; }
 		const HostMap& getHosts() const { return m_hostMap; }
+		
 		megastructure::NetworkAddressTable::Ptr 
-			getNetworkAddressTable() const { return m_pNetworkAddressTable; }
+			getNATRequests() const { return m_pNetworkAddressTableRequests; }
+		//megastructure::NetworkAddressTable::Ptr 
+		//	getNATResponses() const { return m_pNetworkAddressTableResponses; }
 		
 		std::future< bool > getEnrollment() { return m_masterEnrollPromise.get_future(); }
 		const std::string& getActiveProgramName() const { return m_strActiveProgramName; }
@@ -112,7 +115,8 @@ namespace slave
         
         SharedBufferMap m_sharedBuffers;
 		
-		megastructure::NetworkAddressTable::Ptr m_pNetworkAddressTable;
+		megastructure::NetworkAddressTable::Ptr m_pNetworkAddressTableRequests;
+		//megastructure::NetworkAddressTable::Ptr m_pNetworkAddressTableResponses;
 		
 		megastructure::Queue m_queue;
 		megastructure::Server m_server;

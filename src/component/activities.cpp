@@ -1,12 +1,13 @@
 
 
 #include "activities.hpp"
+#include "jobs.hpp"
 
 #include "megastructure/mega.hpp"
 
-#include "jobs.hpp"
-
 #include "protocol/protocol_helpers.hpp"
+
+#include "common/assert_verify.hpp"
 
 namespace megastructure
 {
@@ -168,97 +169,53 @@ bool BufferActivity::serverMessage( const Message& message )
 ////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////
 
-/*
-void TestEGReadActivity::start()
-{
-	Message message;
-    {
-		Message::EG_Msg* pEGMsg = message.mutable_eg_msg();
-		
-		pEGMsg->set_type( m_uiType );
-		pEGMsg->set_instance( m_uiInstance );
-		pEGMsg->set_cycle( 0 );
-		
-		Message::EG_Msg::Request* pEGRequest = pEGMsg->mutable_request();
-		pEGRequest->set_coordinator( 0U );
-		pEGRequest->set_host( 0U );
-		
-		Message::EG_Msg::Request::Read* pEGReadRequest = pEGRequest->mutable_read();
-		
-    }
-	std::cout << "Sending eg read for type: " << m_uiType << " instance: " << m_uiInstance << std::endl;
-    m_component.send( message );
-}
-
-bool TestEGReadActivity::serverMessage( const Message& message )
+bool EGRequestManagerActivity::serverMessage( const Message& message )
 {
 	if( message.has_eg_msg() )
 	{
 		const Message::EG_Msg& egMsg = message.eg_msg();
-		
-		if( egMsg.type() == m_uiType &&
-			egMsg.instance() == m_uiInstance &&
-			egMsg.cycle() == 0U )
+		if( egMsg.has_request() )
 		{
-			if( egMsg.has_response() )
+			const Message::EG_Msg::Request& egRequest = egMsg.request();
+			
+			std::cout << "Got eg request type: " << egMsg.type() << " instance: " << egMsg.instance() <<
+				" cycle: " << egMsg.cycle() << " coordinator: " << egRequest.coordinator() << 
+				" host: " << egRequest.host() << std::endl;
+				
+			megastructure::Message errorMessage;
 			{
-				const Message::EG_Msg::Response& readResponse = egMsg.response();
-				const std::string& strValue = readResponse.value();
+				megastructure::Message::EG_Msg* pErrorEGMsg = errorMessage.mutable_eg_msg();
+				pErrorEGMsg->set_type( egMsg.type() );
+				pErrorEGMsg->set_instance( egMsg.instance() );
+				pErrorEGMsg->set_cycle( egMsg.cycle() );
 				
-				m_resultPromise.set_value( strValue );
-				m_component.activityComplete( shared_from_this() );
-				
-				std::cout << "Get eg read response for type: " << m_uiType << " instance: " << m_uiInstance << " of: " << strValue << std::endl;
+				megastructure::Message::EG_Msg::Error* pErrorEGMsgError = pErrorEGMsg->mutable_error();
+				pErrorEGMsgError->set_coordinator( egRequest.coordinator() );
+				pErrorEGMsgError->set_host( egRequest.host() );
 			}
-			return true;
+			m_component.send( errorMessage );
 		}
-    }
+		else if( egMsg.has_response() )
+		{
+			THROW_RTE( "EGRequestManagerActivity received eg response" );
+		}
+		else if( egMsg.has_error() )
+		{
+			const Message::EG_Msg::Error& egError = egMsg.error();
+			
+			std::cout << "Got eg error type: " << egMsg.type() << " instance: " << egMsg.instance() <<
+				" cycle: " << egMsg.cycle() << " coordinator: " << egError.coordinator() << 
+				" host: " << egError.host() << std::endl;
+		}
+		else if( egMsg.has_event() )
+		{
+			THROW_RTE( "EGRequestManagerActivity received eg event" );
+		}
+		
+		return true;
+	}
 	return false;
 }
 
-
-void TestEGWriteActivity::start()
-{
-	Message message;
-    {
-		Message::EG_Msg* pEGMsg = message.mutable_eg_msg();
-		
-		pEGMsg->set_type( m_uiType );
-		pEGMsg->set_instance( m_uiInstance );
-		pEGMsg->set_cycle( 0 );
-		
-		Message::EG_Msg::Request* pEGRequest = pEGMsg->mutable_request();
-		pEGRequest->set_coordinator( 0U );
-		pEGRequest->set_host( 0U );
-		
-		Message::EG_Msg::Request::Write* pEGWrite = pEGRequest->mutable_write();
-		pEGWrite->set_value( m_strBuffer );
-    }
-	std::cout << "Sending eg write for type: " << m_uiType << " instance: " << m_uiInstance << " value: " << m_strBuffer << std::endl;
-    m_component.send( message );
-}
-
-
-void TestEGCallActivity::start()
-{
-	Message message;
-    {
-		Message::EG_Msg* pEGMsg = message.mutable_eg_msg();
-		
-		pEGMsg->set_type( m_uiType );
-		pEGMsg->set_instance( m_uiInstance );
-		pEGMsg->set_cycle( 0 );
-		
-		Message::EG_Msg::Request* pEGRequest = pEGMsg->mutable_request();
-		pEGRequest->set_coordinator( 0U );
-		pEGRequest->set_host( 0U );
-		
-		Message::EG_Msg::Request::Call* pEGCall = pEGRequest->mutable_call();
-		pEGCall->set_args( m_strBuffer );
-    }
-	std::cout << "Sending eg call for type: " << m_uiType << " instance: " << m_uiInstance << " args: " << m_strBuffer << std::endl;
-    m_component.send( message );
-}
-*/
 
 }
