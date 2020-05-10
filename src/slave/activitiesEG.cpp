@@ -71,12 +71,14 @@ bool RouteEGProtocolActivity::serverMessage( const megastructure::Message& messa
 			//route the response back to the source host
 			const megastructure::Message::EG_Msg::Response& response = egMsg.response();
 			VERIFY_RTE_MSG( response.host() != 0U, "Invalid host resolved for response from master to slave" );
+			std::cout << "Sending response to: " << response.host() << std::endl;
 			m_slave.sendHostEG( message, response.host() );
 		}
 		else if( egMsg.has_error() )
 		{
 			const megastructure::Message::EG_Msg::Error& error = egMsg.error();
 			VERIFY_RTE_MSG( error.host() != 0U, "Invalid host resolved for error from master to slave" );
+			std::cout << "Sending error to: " << error.host() << std::endl;
 			m_slave.sendHostEG( message, error.host() );
 		}
 		else if( egMsg.has_event() )

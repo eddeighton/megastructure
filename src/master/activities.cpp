@@ -322,11 +322,13 @@ bool RouteEGProtocolActivity::clientMessage( std::uint32_t uiClient, const megas
 						megastructure::Message::EG_Msg::Error* pErrorEGMsgError = pErrorEGMsg->mutable_error();
 						pErrorEGMsgError->set_host( egRequest.host() );
 					}
+					std::cout << "Sending error to: " << uiClient << std::endl;
 					m_master.send( errorMessage, uiClient );
 				}
 				else
 				{
 					VERIFY_RTE_MSG( uiTargetClientID != uiClient, "Incorrect routine for eg request" );
+					std::cout << "Sending request to: " << uiTargetClientID << std::endl;
 					m_master.send( copyRequestSetSourceCoordinator( message, uiClient ), uiTargetClientID );
 				}
 			}
@@ -340,12 +342,14 @@ bool RouteEGProtocolActivity::clientMessage( std::uint32_t uiClient, const megas
 			//route the response back to the source host
 			const megastructure::Message::EG_Msg::Response& response = egMsg.response();
 			VERIFY_RTE_MSG( response.coordinator() != 0U, "Invalid coordinator resolved for response from slave to master" );
+			std::cout << "Sending response to: " << response.coordinator() << std::endl;
 			m_master.send( message, response.coordinator() );
 		}
 		else if( egMsg.has_error() )
 		{
 			const megastructure::Message::EG_Msg::Error& error = egMsg.error();
 			VERIFY_RTE_MSG( error.coordinator() != 0U, "Invalid coordinator resolved for error from slave to master" );
+			std::cout << "Sending error to: " << error.coordinator() << std::endl;
 			m_master.send( message, error.coordinator() );
 		}
 		else if( egMsg.has_event() )
