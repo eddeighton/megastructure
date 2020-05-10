@@ -5,6 +5,10 @@
 
 #include "megastructure/component.hpp"
 
+#include <tuple>
+#include <map>
+#include <memory>
+
 namespace megastructure
 {
 	
@@ -105,19 +109,43 @@ namespace megastructure
 	////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////
 	
+	class EGRequestHandlerActivity : public Activity
+	{
+	public:
+		using Ptr = std::shared_ptr< EGRequestHandlerActivity >;
+		
+		EGRequestHandlerActivity( Component& component );
+		void request( const Message& message );
+		void simulationLockGranted();
+	private:
+		void processMessages();
+	
+		Component& m_component;
+		std::vector< Message > m_messages;
+		bool m_bHasSimulationLock;
+		
+	};
+	
 	class EGRequestManagerActivity : public Activity
 	{
+		using CoordinatorHostCycle = 
+			std::tuple< std::uint32_t, std::uint32_t, std::uint32_t >;
+		
+		using ActivityMap =
+			std::map< CoordinatorHostCycle, EGRequestHandlerActivity::Ptr >;
+		
 	public:
 		EGRequestManagerActivity( Component& component ) 
 			:	m_component( component )
 		{
-			
 		}
 		
 		virtual bool serverMessage( const Message& message );
+		virtual bool activityComplete( Activity::Ptr pActivity );
 		
 	private:
 		Component& m_component;
+		ActivityMap m_activities;
 		
 	};
 }

@@ -140,6 +140,14 @@ LocalBuffer* Program::getLocalBuffer( const char* pszName, std::size_t szSize )
     }
 }
 
+void Program::readBuffer( std::int32_t iType, std::uint32_t uiInstance, std::string& strBuffer )
+{
+	msgpack::sbuffer buffer;
+	msgpack::packer< msgpack::sbuffer > packer( &buffer );
+	m_pEncodeDecode->encode( iType, uiInstance, packer );
+	strBuffer.assign( buffer.data(), buffer.size() );
+}
+
 void Program::writeBuffer( std::int32_t iType, std::uint32_t uiInstance, const std::string& strBuffer )
 {
 	msgpack::unpacker decoder;
@@ -147,14 +155,6 @@ void Program::writeBuffer( std::int32_t iType, std::uint32_t uiInstance, const s
 	memcpy( decoder.buffer(), strBuffer.data(), strBuffer.size() );
 	decoder.buffer_consumed( strBuffer.size() );
 	m_pEncodeDecode->decode( iType, uiInstance, decoder );
-}
-
-void Program::readBuffer( std::int32_t iType, std::uint32_t uiInstance, std::string& strBuffer )
-{
-	msgpack::sbuffer buffer;
-	msgpack::packer< msgpack::sbuffer > packer( &buffer );
-	m_pEncodeDecode->encode( iType, uiInstance, packer );
-	strBuffer.assign( buffer.data(), buffer.size() );
 }
 		
 //MegaProtocol

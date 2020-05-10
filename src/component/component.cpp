@@ -48,100 +48,120 @@ namespace megastructure
 		m_zeromq1.join();
 	}
 	
-	class SimThreadManager
+	
+	void Component::grantNextSimulationLock()
 	{
-		Component& m_component;
-		bool m_bLocked;
-	public:
-		SimThreadManager( Component& component )
-			:	m_component( component ),
-				m_bLocked( false )
+		//assumes m_simulationMutex is locked
+		if( !m_bSimulationHasLock )
 		{
-			//either immediately acquire the simulation lock or fail to and return false
-			if( m_component.m_simThreadMutex.try_lock() )
+			if( !m_pLockActivity )
 			{
-				m_bLocked = true;
-				runAllJobs();
-			}
-			else
-			{
-				//do not return until we acquire the simulation lock
-				bool& bLocked = m_bLocked;
-				while( !bLocked )
+				if( !m_simulationLockActivities.empty() )
 				{
-					runAllJobs();
-					//wait for more jobs OR completion
-					{
-						std::unique_lock< std::mutex > simLock( m_component.m_jobMutex );
-						m_component.m_simJobCondition.wait
-						( 
-							simLock, 
-							[ &component, &bLocked ]
-							{ 
-								if( !component.m_jobs.empty() )
-								{
-									return true;
-								}
-								else if( component.m_simThreadMutex.try_lock() )
-								{
-									bLocked = true;
-									return true;
-								}
-								else
-								{
-									return false;
-								}
-							} 
-						);
-					}
+					m_pLockActivity = m_simulationLockActivities.front();
+					m_simulationLockActivities.pop_front();
+					m_queue.simulationLockGranted( m_pLockActivity );
 				}
 			}
 		}
-		
-		~SimThreadManager()
-		{
-			//release simulation lock if acquired
-			if( m_bLocked )
-			{
-				m_component.m_simThreadMutex.unlock();
-			}
-		}
-		
-		void runAllJobs()
-		{
-			std::list< Job::Ptr > temp;
-			{
-				std::unique_lock< std::mutex > simLock( m_component.m_jobMutex );
-				temp.swap( m_component.m_jobs );
-			}
-			if( !temp.empty() )
-			{
-				//process all jobs
-				for( Job::Ptr pJob : temp )
-					pJob->run();
-				temp.clear();
-			}
-		}
+	}
 	
-		void spinProtection()
+	void Component::requestSimulationLock( Activity::Ptr pActivity )
+	{
+		std::unique_lock< std::mutex > simLock( m_simulationMutex );
+		
+		m_simulationLockActivities.push_back( pActivity );
+		
+		grantNextSimulationLock();
+	}
+	
+	void Component::releaseSimulationLock( Activity::Ptr pActivity )
+	{
+		std::unique_lock< std::mutex > simLock( m_simulationMutex );
+		
+		if( pActivity != m_pLockActivity )
 		{
-			//in the case that simulation lock WAS requested while it WAS acquired by this then 
-			//ensure the requester GETS IT before continuing by waiting on condition variable
+			Activity::PtrList::iterator iFind =
+				std::find( m_simulationLockActivities.begin(), 
+					m_simulationLockActivities.end(), pActivity );
+			VERIFY_RTE( iFind != m_simulationLockActivities.end() );
+			m_simulationLockActivities.erase( iFind );
 		}
-	};
+		else
+		{
+			m_pLockActivity.reset();
+			if( !m_simulationLockActivities.empty() )
+				grantNextSimulationLock();
+			else
+				m_simJobCondition.notify_one();
+		}
+	}
+
+	void Component::runAllJobs()
+	{
+		std::list< Job::Ptr > temp;
+		{
+			std::unique_lock< std::mutex > simLock( m_simulationMutex );
+			temp.swap( m_jobs );
+		}
+		if( !temp.empty() )
+		{
+			//process all jobs
+			for( Job::Ptr pJob : temp )
+				pJob->run();
+			temp.clear();
+		}
+	}
 	
 	void Component::runCycle()
 	{
-		SimThreadManager simThreadManager( *this );
+		bool bIsActivityLock = false;
+		{
+			std::unique_lock< std::mutex > simLock( m_simulationMutex );
+			if( m_pLockActivity || !m_jobs.empty() )
+			{
+				bIsActivityLock = true;
+			}
+		}
 		
+		if( bIsActivityLock )
+		{
+			Component& component = *this;
+			
+			//enter locked state
+			while( true )
+			{
+				runAllJobs();
+				
+				//wait for more jobs OR completion
+				std::unique_lock< std::mutex > simLock( m_simulationMutex );
+				m_simJobCondition.wait
+				( 
+					simLock, 
+					[ &component ]
+					{ 
+						return !component.m_pLockActivity || !component.m_jobs.empty();
+					} 
+				);
+				if( !m_pLockActivity )
+				{
+					m_bSimulationHasLock = true;
+					break;
+				}
+			}
+		}
+	
 		//run simulation
 		if( m_pProgram )
 		{
 			m_pProgram->run();
 		}
 		
-		simThreadManager.spinProtection();
-		
+		{
+			std::unique_lock< std::mutex > simLock( m_simulationMutex );
+			m_bSimulationHasLock = false;
+			grantNextSimulationLock();
+		}
 	}
 	
 	std::string Component::egRead( std::uint32_t uiType, std::uint32_t uiInstance )
@@ -182,7 +202,7 @@ namespace megastructure
 		
 	void Component::startJob( Job::Ptr pJob )
 	{
-		std::unique_lock< std::mutex > simLock( m_jobMutex );
+		std::unique_lock< std::mutex > simLock( m_simulationMutex );
 		m_jobs.push_back( pJob );
 		m_simJobCondition.notify_one();
 	}

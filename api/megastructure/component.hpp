@@ -37,12 +37,14 @@ namespace megastructure
 		friend class TestEGWriteActivity;
 		friend class TestEGCallActivity;
 		friend class EGRequestManagerActivity;
+		friend class EGRequestHandlerActivity;
         
 		friend class LoadProgramJob;
         
         friend class Program;
 		
 		friend class SimThreadManager;
+		
 	public:
 		Component( Environment& environment, const std::string& strMegaPort, const std::string& strEGPort, const std::string& strProgramName );
 		virtual ~Component();
@@ -52,6 +54,7 @@ namespace megastructure
 		const std::string& getHostProgramName() const { return m_strHostProgram; }
 		const std::string& getSlaveName() const { return m_strSlaveName; }
 		const boost::filesystem::path& getSlaveWorkspacePath() const { return m_slaveWorkspacePath; }
+		std::shared_ptr< Program > getProgram() { return m_pProgram; }
 		
 		void runCycle();
 		
@@ -78,9 +81,15 @@ namespace megastructure
 			m_queue.activityComplete( pActivity );
 		}
 		
+		//simulation lock
+		void requestSimulationLock( Activity::Ptr pActivity );
+		void releaseSimulationLock( Activity::Ptr pActivity );
+		void grantNextSimulationLock();
+		
 		//jobs
 		void startJob( Job::Ptr pJob );
 		void jobComplete( Job::Ptr pJob );
+		void runAllJobs();
 		
 		//program
 		void setProgram( std::shared_ptr< Program > pProgram );
@@ -138,12 +147,15 @@ namespace megastructure
 		megastructure::Client m_egClient;
 		std::thread m_zeromq1;
 		
-		std::mutex m_simThreadMutex;
-		std::mutex m_jobMutex;
+		//simulation lock
+		Activity::PtrList m_simulationLockActivities;
+		std::mutex m_simulationMutex;
+		Activity::Ptr m_pLockActivity;
+		bool m_bSimulationHasLock;
 		std::list< Job::Ptr > m_jobs;
 		std::condition_variable m_simJobCondition;
 		
-		std::shared_ptr< Program > m_pProgram; //only access from main thread
+		std::shared_ptr< Program > m_pProgram;
 	};
 	
 }

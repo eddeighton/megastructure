@@ -49,9 +49,9 @@ namespace megastructure
 		void egWrite( std::int32_t iType, std::uint32_t uiInstance, const std::string& strBuffer );
 		void egCall( std::int32_t iType, std::uint32_t uiInstance, const std::string& strBuffer );
 		
-	private:
-		void writeBuffer( std::int32_t iType, std::uint32_t uiInstance, const std::string& strBuffer );
+		//memory access
 		void readBuffer( std::int32_t iType, std::uint32_t uiInstance, std::string& strBuffer );
+		void writeBuffer( std::int32_t iType, std::uint32_t uiInstance, const std::string& strBuffer );
 		
 	private:
 		Component& m_component;

@@ -191,4 +191,19 @@ namespace megastructure
 			std::cout << "activities complete" << std::endl;
 		}
 	}
+	
+	
+	void Queue::simulationLockGranted( Activity::Ptr pActivity )
+	{
+		m_queue.post( std::bind( &Queue::OnSimulationLockGranted, this, pActivity ) );
+	}
+	
+	void Queue::OnSimulationLockGranted( Activity::Ptr pActivity )
+	{
+		PRINTEXCEPTION_AND_ABORT
+		(
+			pActivity->simulationLockGranted();
+		);
+	}
+
 }

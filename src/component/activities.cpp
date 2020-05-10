@@ -98,6 +98,8 @@ bool LoadProgramActivity::serverMessage( const Message& message )
 		}
 		else
 		{
+			m_component.requestSimulationLock( shared_from_this() );
+					
 			m_strProgramName 	= loadProgramRequest.programname();
 			m_strHostName 		= loadProgramRequest.hostname();
             m_pLoadProgramJob.reset( new LoadProgramJob( m_component, 
@@ -129,6 +131,7 @@ bool LoadProgramActivity::jobComplete( Job::Ptr pJob )
             m_component.send( megastructure::hcs_load( false ) );
         }
 		m_pLoadProgramJob.reset();
+		m_component.releaseSimulationLock( shared_from_this() );
 		return true;
 	}
 	return false;
@@ -169,6 +172,117 @@ bool BufferActivity::serverMessage( const Message& message )
 ////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////
 
+EGRequestHandlerActivity::EGRequestHandlerActivity( Component& component ) 
+	:	m_component( component ),
+		m_bHasSimulationLock( false )
+{
+	
+}
+
+
+void EGRequestHandlerActivity::request( const Message& message )
+{
+	m_messages.push_back( message );
+	
+	/*if( m_bHasSimulationLock )
+	{
+		
+	}
+	else
+	{
+		
+	}*/
+}
+
+void EGRequestHandlerActivity::simulationLockGranted()
+{
+	m_bHasSimulationLock = true;
+	
+	processMessages();
+	
+	m_component.releaseSimulationLock( shared_from_this() );
+	m_component.activityComplete( shared_from_this() );
+}
+
+void EGRequestHandlerActivity::processMessages()
+{
+	for( const Message& msg : m_messages )
+	{
+		const Message::EG_Msg& egMsg = msg.eg_msg();
+		const Message::EG_Msg::Request& egRequest = egMsg.request();
+		
+		if( egRequest.has_read() )
+		{
+			const std::int32_t iType = egMsg.type();
+			const std::uint32_t uiInstance = egMsg.instance();
+			
+			if( std::shared_ptr< Program > pProgram = m_component.getProgram() )
+			{
+				std::string strBuffer;
+				pProgram->readBuffer( iType, uiInstance, strBuffer );
+				
+				Message responseMessage;
+				{
+					Message::EG_Msg* pEGMsg = responseMessage.mutable_eg_msg();
+					pEGMsg->set_type( iType );
+					pEGMsg->set_instance( uiInstance );
+					pEGMsg->set_cycle( 0 );
+					
+					Message::EG_Msg::Response* pResponse = pEGMsg->mutable_response();
+					pResponse->set_coordinator( egRequest.coordinator() );
+					pResponse->set_host( egRequest.host() );
+					pResponse->set_value( strBuffer );
+				}
+				std::cout << "Sending eg response type: " << egMsg.type() << " instance: " << egMsg.instance() <<
+					" cycle: " << egMsg.cycle() << " coordinator: " << egRequest.coordinator() << 
+					" host: " << egRequest.host() << std::endl;
+				m_component.sendeg( responseMessage );
+			}
+			else
+			{
+				//error
+				megastructure::Message errorMessage;
+				{
+					megastructure::Message::EG_Msg* pErrorEGMsg = errorMessage.mutable_eg_msg();
+					pErrorEGMsg->set_type( egMsg.type() );
+					pErrorEGMsg->set_instance( egMsg.instance() );
+					pErrorEGMsg->set_cycle( egMsg.cycle() );
+					
+					megastructure::Message::EG_Msg::Error* pErrorEGMsgError = pErrorEGMsg->mutable_error();
+					pErrorEGMsgError->set_coordinator( egRequest.coordinator() );
+					pErrorEGMsgError->set_host( egRequest.host() );
+				}
+				std::cout << "Sending eg error type: " << egMsg.type() << " instance: " << egMsg.instance() <<
+					" cycle: " << egMsg.cycle() << " coordinator: " << egRequest.coordinator() << 
+					" host: " << egRequest.host() << std::endl;
+				m_component.sendeg( errorMessage );
+			}
+		}
+		else if( egRequest.has_write() )
+		{
+		}
+		else if( egRequest.has_call() )
+		{
+		}
+		else if( egRequest.has_lock() )
+		{
+		}
+		else if( egRequest.has_unlock() )
+		{
+			
+			
+		}
+		else
+		{
+			THROW_RTE( "Unknown eg message type" );
+		}
+	}
+	m_messages.clear();
+	
+}
+////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
+
 bool EGRequestManagerActivity::serverMessage( const Message& message )
 {
 	if( message.has_eg_msg() )
@@ -178,22 +292,30 @@ bool EGRequestManagerActivity::serverMessage( const Message& message )
 		{
 			const Message::EG_Msg::Request& egRequest = egMsg.request();
 			
-			std::cout << "Got eg request type: " << egMsg.type() << " instance: " << egMsg.instance() <<
-				" cycle: " << egMsg.cycle() << " coordinator: " << egRequest.coordinator() << 
-				" host: " << egRequest.host() << std::endl;
-				
-			megastructure::Message errorMessage;
+			const std::uint32_t uiCoordinator 	= egRequest.coordinator();
+			const std::uint32_t uiHost 			= egRequest.host();
+			const std::uint32_t uiCycle 		= egMsg.cycle();
+			
+			const CoordinatorHostCycle chc( uiCoordinator, uiHost, uiCycle );
+			
+			EGRequestHandlerActivity::Ptr pHandler;
 			{
-				megastructure::Message::EG_Msg* pErrorEGMsg = errorMessage.mutable_eg_msg();
-				pErrorEGMsg->set_type( egMsg.type() );
-				pErrorEGMsg->set_instance( egMsg.instance() );
-				pErrorEGMsg->set_cycle( egMsg.cycle() );
-				
-				megastructure::Message::EG_Msg::Error* pErrorEGMsgError = pErrorEGMsg->mutable_error();
-				pErrorEGMsgError->set_coordinator( egRequest.coordinator() );
-				pErrorEGMsgError->set_host( egRequest.host() );
+				ActivityMap::const_iterator iFind = m_activities.find( chc );
+				if( iFind != m_activities.end() )
+				{
+					pHandler = iFind->second;
+				}
+				else
+				{
+					//create new handler
+					pHandler.reset( new EGRequestHandlerActivity( m_component ) );
+					m_component.startActivity( pHandler );
+					m_component.requestSimulationLock( pHandler );
+					m_activities.insert( std::make_pair( chc, pHandler ) );
+				}
 			}
-			m_component.send( errorMessage );
+			
+			pHandler->request( message );
 		}
 		else if( egMsg.has_response() )
 		{
@@ -217,5 +339,19 @@ bool EGRequestManagerActivity::serverMessage( const Message& message )
 	return false;
 }
 
+bool EGRequestManagerActivity::activityComplete( Activity::Ptr pActivity )
+{
+	for( ActivityMap::iterator i = m_activities.begin(),
+		iEnd = m_activities.end(); i!=iEnd; ++i )
+	{
+		if( i->second == pActivity )
+		{
+			m_activities.erase( i );
+			return true;
+		}
+	}
+	
+	return false;
+}
 
 }
