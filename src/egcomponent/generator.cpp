@@ -17,43 +17,100 @@
 //  NEGLIGENCE) OR STRICT LIABILITY, EVEN IF COPYRIGHT OWNERS ARE ADVISED
 //  OF THE POSSIBILITY OF SUCH DAMAGES.
 
+#include "egcomponent/generator.hpp"
 
-#include <ostream>
 #include <iostream>
 
 #include "eg_compiler/codegen/codegen.hpp"
-#include "eg_compiler/sessions/implementation_session.hpp"
 #include "eg_compiler/translation_unit.hpp"
 
-enum BufferRelation
+namespace megastructure
 {
-    eComponent,
-    eProcess,
-    ePlanet
-};
 
-BufferRelation getBufferRelation( const eg::TranslationUnitAnalysis& translationUnitAnalysis, 
-	const std::string& strCoordinator, const std::string& strHost, const eg::Buffer* pBuffer )
+void getBufferTypes( const eg::Layout& layout, const eg::TranslationUnitAnalysis& translationUnitAnalysis, 
+	const std::string& strCoordinator, const std::string& strHost, BufferTypes& bufferTypes )
 {
-	const eg::concrete::Action* pConcreteAction = pBuffer->getAction();
-    const eg::interface::Action* pInterfaceAction = pConcreteAction->getAction();
-	const eg::TranslationUnit* pUnit = translationUnitAnalysis.getActionTU( pInterfaceAction );
-		
-	if( pUnit->getCoordinatorHostnameDefinitionFile().isCoordinator( strCoordinator ) )
+    for( const eg::Buffer* pBuffer : layout.getBuffers() )
     {
-        if( pUnit->getCoordinatorHostnameDefinitionFile().isHost( strHost ) )
+        const eg::concrete::Action* pConcreteAction = pBuffer->getAction();
+        const eg::interface::Context* pInterfaceAction = pConcreteAction->getContext();
+        const eg::TranslationUnit* pUnit = translationUnitAnalysis.getActionTU( pInterfaceAction );
+            
+        if( pUnit->getCoordinatorHostnameDefinitionFile().isCoordinator( strCoordinator ) )
         {
-            return eComponent;
+            if( pUnit->getCoordinatorHostnameDefinitionFile().isHost( strHost ) )
+            {
+                bufferTypes[ pBuffer ] = eComponent;
+            }
+            else
+            {
+                bufferTypes[ pBuffer ] = eProcess;
+            }
         }
         else
         {
-            return eProcess;
+            bufferTypes[ pBuffer ] = ePlanet;
         }
     }
-    else
+}
+
+struct MegastructurePrinter : public ::eg::Printer
+{
+    MegastructurePrinter( const ::eg::DataMember* pDataMember, const char* pszIndex )
+        :   m_pDataMember( pDataMember ),
+            m_pszIndex( pszIndex)
     {
-        return ePlanet;
     }
+private:
+    const ::eg::DataMember* m_pDataMember;
+    const char* m_pszIndex;
+protected:
+    virtual void print( std::ostream& os ) const
+    {
+        os << m_pDataMember->getBuffer()->getVariableName() << 
+            "[ " << m_pszIndex << " ]." << m_pDataMember->getName();
+    }
+};
+
+
+
+struct MegastructurePrinterFactory : public ::eg::PrinterFactory
+{
+    const eg::Layout& m_layout;
+    const eg::TranslationUnitAnalysis& m_translationUnitAnalysis;
+    const std::string& m_strCoordinator; 
+    const std::string& m_strHost;
+        
+    MegastructurePrinterFactory( const eg::Layout& layout, 
+        const eg::TranslationUnitAnalysis& translationUnitAnalysis, 
+        const std::string& strCoordinator, const std::string& strHost )
+            :   m_layout( layout ),
+                m_translationUnitAnalysis( translationUnitAnalysis ),
+                m_strCoordinator( strCoordinator ),
+                m_strHost( strHost )
+    {
+    }
+    
+    ::eg::Printer::Ptr getPrinter( const ::eg::DataMember* pDataMember, const char* pszIndex )
+    {
+        return std::make_shared< MegastructurePrinter >( pDataMember, pszIndex );
+    }
+    ::eg::Printer::Ptr read( const ::eg::DataMember* pDataMember, const char* pszIndex )
+    {
+        return std::make_shared< MegastructurePrinter >( pDataMember, pszIndex );
+    }
+    ::eg::Printer::Ptr write( const ::eg::DataMember* pDataMember, const char* pszIndex )
+    {
+        return std::make_shared< MegastructurePrinter >( pDataMember, pszIndex );
+    }
+};
+
+::eg::PrinterFactory::Ptr getMegastructurePrinterFactory( 
+    const eg::Layout& layout, const eg::TranslationUnitAnalysis& translationUnitAnalysis, 
+        const std::string& strCoordinator, const std::string& strHost )
+{
+    return std::make_shared< MegastructurePrinterFactory >( 
+        layout, translationUnitAnalysis, strCoordinator, strHost );
 }
 
 void recurseEncodeDecode( const ::eg::concrete::Action* pAction, std::ostream& os )
@@ -64,7 +121,7 @@ void recurseEncodeDecode( const ::eg::concrete::Action* pAction, std::ostream& o
 		if( const eg::concrete::Action* pNestedAction = 
 			dynamic_cast< const eg::concrete::Action* >( pElement ) )
 		{
-			const std::string strType = pNestedAction->getAction()->getStaticType();
+			const std::string strType = getStaticType( pNestedAction->getContext() );
 			os << "    template<> inline void encode( Encoder& encoder, const " << strType << "& value ){ encode( encoder, value.data ); }\n";
 			os << "    template<> inline void decode( Decoder& decoder, " << strType << "& value ) 		{ decode( decoder, value.data ); }\n";
 
@@ -76,7 +133,7 @@ void recurseEncodeDecode( const ::eg::concrete::Action* pAction, std::ostream& o
 void recurseEncode( const eg::Layout& layout, const ::eg::concrete::Action* pAction, std::ostream& os )
 {
 	os << "        case " << pAction->getIndex() << ": ";
-	pAction->printEncode( os, "uiInstance" );
+	//generateEncode( os, pAction );
 	os << " break; //" << pAction->getName() << "\n";
 	
 	const std::vector< eg::concrete::Element* >& children = pAction->getChildren();
@@ -93,7 +150,7 @@ void recurseEncode( const eg::Layout& layout, const ::eg::concrete::Action* pAct
 			const eg::DataMember* pDataMember = layout.getDataMember( pDimension );
 			
 			os << "        case " << pElement->getIndex() << ": ";
-			pDataMember->printEncode( os, "uiInstance" );
+            generateEncode( os, pDataMember, "uiInstance" );
 			os << " break; //" << pDataMember->getName() << "\n";
 		}
 	}
@@ -102,7 +159,7 @@ void recurseEncode( const eg::Layout& layout, const ::eg::concrete::Action* pAct
 void recurseDecode( const eg::Layout& layout, const ::eg::concrete::Action* pAction, std::ostream& os )
 {
 	os << "        case " << pAction->getIndex() << ": ";
-	pAction->printDecode( os, "uiInstance" );
+	//generateDecode( os, pAction );
 	os << "break; //" << pAction->getName() << "\n";
 			
 	const std::vector< eg::concrete::Element* >& children = pAction->getChildren();
@@ -118,7 +175,7 @@ void recurseDecode( const eg::Layout& layout, const ::eg::concrete::Action* pAct
 		{
 			const eg::DataMember* pDataMember = layout.getDataMember( pDimension );
 			os << "        case " << pElement->getIndex() << ": ";
-			pDataMember->printDecode( os, "uiInstance" );
+            generateDecode( os, pDataMember, "uiInstance" );
 			os << " break; //" << pDataMember->getName() << "\n";
 		}
 	}
@@ -132,12 +189,9 @@ void generate_eg_component( std::ostream& os,
 {
 	
 	os << "//ed was here\n";
-	os << "#include <iostream>\n";
 	os << "#include <chrono>\n";
 	os << "#include <thread>\n";
 	os << "#include <vector>\n";
-	os << "#include \"boost/fiber/all.hpp\"\n";
-	os << "#include \"boost/config.hpp\"\n";
 
 	os << "\n";
 	
@@ -151,11 +205,14 @@ void generate_eg_component( std::ostream& os,
 	
     const eg::TranslationUnitAnalysis& translationUnitAnalysis =
 		session.getTranslationUnitAnalysis();
+        
+    BufferTypes bufferTypes;
+    getBufferTypes( layout, translationUnitAnalysis, strCoordinator, strHost, bufferTypes );
 	
     os << "\n//buffers\n";
     for( const eg::Buffer* pBuffer : layout.getBuffers() )
     {
-		auto r  = getBufferRelation( translationUnitAnalysis, strCoordinator, strHost, pBuffer );
+		auto r  = bufferTypes[ pBuffer ];
 		std::cout << "Buffer: " << pBuffer->getVariableName() << " relation: " << r << std::endl;
         if( r == eComponent )
         {
@@ -173,7 +230,7 @@ void generate_eg_component( std::ostream& os,
     os << "{\n";
     for( const eg::Buffer* pBuffer : layout.getBuffers() )
     {
-        if( getBufferRelation( translationUnitAnalysis, strCoordinator, strHost, pBuffer ) == eComponent )
+        if( bufferTypes[ pBuffer ] == eComponent )
         {
             os << "    " << pBuffer->getVariableName() << "_mega = pMemorySystem->getSharedBuffer( \"" << 
                 pBuffer->getVariableName() << "\" , " <<  pBuffer->getSize() << " * sizeof( " << pBuffer->getTypeName() << " ) );\n";
@@ -187,9 +244,9 @@ void generate_eg_component( std::ostream& os,
 
     os << "    for( " << eg::EG_INSTANCE << " i = 0U; i != " << pBuffer->getSize() << "; ++i )\n";
     os << "    {\n";
-        for( const eg::DataMember* pDimension : pBuffer->getDimensions() )
+        for( const eg::DataMember* pDataMember : pBuffer->getDataMembers() )
         {
-            pDimension->printAllocation( os, "i" );
+            eg::generateAllocation( os, pDataMember, "i" ); 
         }
     
     os << "    }\n";
@@ -208,9 +265,9 @@ void generate_eg_component( std::ostream& os,
 
     os << "    for( " << eg::EG_INSTANCE << " i = 0U; i != " << pBuffer->getSize() << "; ++i )\n";
     os << "    {\n";
-        for( const eg::DataMember* pDimension : pBuffer->getDimensions() )
+        for( const eg::DataMember* pDataMember : pBuffer->getDataMembers() )
         {
-            pDimension->printDeallocation( os, "i" );
+            eg::generateDeallocation( os, pDataMember, "i" ); 
         }
     os << "    }\n";
     }
@@ -270,14 +327,10 @@ public:
 	{
 		pEncodeDecode = this;
 		
-		boost::fibers::use_scheduling_algorithm< eg::eg_algorithm >();
-		
 		m_pMemorySystem = pMemorySystem;
 		m_pMegaProtocol = pMegaProtocol;
 		
 		allocate_buffers( m_pMemorySystem );
-		
-        boost::this_fiber::properties< eg::fiber_props >().setTimeKeeper();
 	}
 	virtual void Uninitialise()
 	{
@@ -286,45 +339,12 @@ public:
 	
 	virtual void Cycle()
 	{
-		eg::wait();
+        eg::Scheduler::cycle();
 		clock::next();
 	}
 	
 	virtual void WaitForReadResponse( std::int32_t iType, std::uint32_t uiInstance )
 	{
-        bool bCompleted = false;
-		{
-			boost::fibers::fiber executionFiber
-			(
-				std::allocator_arg,
-				boost::fibers::fixedsize_stack( 4096 ),
-				[ iType, uiInstance, &bCompleted ]()
-				{
-					boost::this_fiber::properties< eg::fiber_props >().setResumption( 
-						[ iType, uiInstance ]( Event e )
-						{
-							return ( iType 		== e.data.type && 
-									 uiInstance == e.data.instance );
-						}
-					);
-					boost::this_fiber::yield();
-					bCompleted = true;
-				}
-			);
-			executionFiber.properties< eg::fiber_props >().setReference( eg::reference{ uiInstance, iType, 0 } );
-			executionFiber.detach();
-		}
-		
-        while( !bCompleted )
-        {
-			//spin the simulation while waiting for response
-		    eg::wait();
-		    clock::next();
-			
-			//could sleep here??
-			using namespace std::chrono_literals;
-			std::this_thread::sleep_for( 1ms );
-        }
 	}
 	
 	virtual void encode( std::int32_t iType, std::uint32_t uiInstance, eg::Encoder& buffer )
@@ -384,3 +404,4 @@ bool events::update()
 	os << szEventRoutines << "\n";
 }
 
+} //namespace megastructure

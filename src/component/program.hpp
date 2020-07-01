@@ -44,11 +44,13 @@ namespace megastructure
 		virtual bool receive( std::int32_t& iType, std::uint32_t& uiInstance, std::uint32_t& uiTimestamp );
 		virtual void send( const char* type, std::size_t timestamp, const void* value, std::size_t size );
 		
-		//eg
+		//test routines
+        /*
 		std::string egRead( std::int32_t iType, std::uint32_t uiInstance );
 		void egWrite( std::int32_t iType, std::uint32_t uiInstance, const std::string& strBuffer );
 		void egCall( std::int32_t iType, std::uint32_t uiInstance, const std::string& strBuffer );
-		
+		*/
+        
 		//memory access
 		void readBuffer( std::int32_t iType, std::uint32_t uiInstance, std::string& strBuffer );
 		void writeBuffer( std::int32_t iType, std::uint32_t uiInstance, const std::string& strBuffer );
@@ -59,7 +61,8 @@ namespace megastructure
 		std::string m_strProjectName;
 		
 		std::shared_ptr< ProjectTree > m_pProjectTree;
-		std::shared_ptr< NetworkAddressTable > m_pNetworkAddressTable;
+		NetworkAddressTable::Ptr m_pNetworkAddressTable;
+		ProgramTypeTable::Ptr m_pProgramTable;
 		
 		std::string m_strComponentName;
 		boost::filesystem::path m_componentPath;

@@ -163,7 +163,7 @@ namespace megastructure
 			grantNextSimulationLock();
 		}
 	}
-	
+	/*
 	std::string Component::egRead( std::uint32_t uiType, std::uint32_t uiInstance )
 	{
 		if( m_pProgram )
@@ -198,7 +198,7 @@ namespace megastructure
 		{
 			THROW_RTE( "EG Call called when no active program" );
 		}
-	}
+	}*/
 		
 	void Component::startJob( Job::Ptr pJob )
 	{

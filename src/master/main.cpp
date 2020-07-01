@@ -83,8 +83,16 @@ int main( int argc, const char* argv[] )
 		{
 			std::string inputString;
 			std::cin >> inputString;
-			
-			if( inputString == "test" )
+            
+            if( inputString == "help" )
+            {
+                std::cout << "help:   This...\n";
+                std::cout << "test:   Test existing connections and drop inactive ones.\n";
+                std::cout << "list:   List existing connections.\n";
+                std::cout << "load:   Load a program.\n";
+                std::cout << "quit:   Quit.\n";
+            }
+			else if( inputString == "test" )
 			{
 				master.startActivity( new master::TestClientsActivity( master ) );
 			}

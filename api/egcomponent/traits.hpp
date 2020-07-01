@@ -110,6 +110,10 @@ struct DimensionTraits
     {
         new (&value ) T;
     }
+    static void uninitialise( T& value )
+    {
+        value.~T();
+    }
 	
 	static inline void encode( Encoder& encoder, const T& value )
 	{

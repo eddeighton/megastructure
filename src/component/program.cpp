@@ -59,10 +59,15 @@ Program::Program( Component& component, const std::string& strHostName, const st
 			    m_component.getSlaveName(), 
 			    strHostName, 
 			    m_pProjectTree ) );
+				
+		m_pProgramTable.reset(
+			new ProgramTypeTable( 
+				m_pProjectTree ) );
     }
     else
     {
         m_pNetworkAddressTable.reset();
+		m_pProgramTable.reset();
     }
 	
     const boost::filesystem::path binDirectory = getBinFolderForProject( m_component.getSlaveWorkspacePath(), m_strProjectName );
@@ -237,6 +242,7 @@ void Program::send( const char* type, std::size_t timestamp, const void* value, 
 
 		
 //eg
+/*
 std::string Program::egRead( std::int32_t iType, std::uint32_t uiInstance )
 {
 	if( m_pNetworkAddressTable->getClientForType( iType ) == NetworkAddressTable::SelfID )
@@ -261,7 +267,7 @@ std::string Program::egRead( std::int32_t iType, std::uint32_t uiInstance )
 		m_component.sendeg( message );
 		std::cout << "Sent eg read request type: " << iType << " instance: " << uiInstance << std::endl;
 		
-		m_pPlugin->WaitForReadResponse( iType, uiInstance );
+		//m_pPlugin->WaitForReadResponse( iType, uiInstance );
 		
 		std::string strBuffer;
 		readBuffer( iType, uiInstance, strBuffer );
@@ -306,8 +312,8 @@ void Program::egCall( std::int32_t iType, std::uint32_t uiInstance, const std::s
 		
 		
 	}
-}
-        
+}*/
+  
 void Program::run()
 {
     m_pPlugin->Cycle();

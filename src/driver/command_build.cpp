@@ -17,6 +17,7 @@
 //  NEGLIGENCE) OR STRICT LIABILITY, EVEN IF COPYRIGHT OWNERS ARE ADVISED
 //  OF THE POSSIBILITY OF SUCH DAMAGES.
 
+#include "egcomponent/generator.hpp"
 
 #include "schema/project.hpp"
 #include "schema/projectTree.hpp"
@@ -260,9 +261,9 @@ void build_parser_session( const Environment& environment, const ProjectTree& pr
 			= std::make_unique< eg::InterfaceSession >( project.getParserDatabaseFile() );
 			
 		//perform the analysis
-		pInterfaceSession->linkAnalysis();
 		pInterfaceSession->instanceAnalysis();
-		pInterfaceSession->dependencyAnalysis();
+		pInterfaceSession->linkAnalysis();
+		//pInterfaceSession->dependencyAnalysis();
 		
 		pInterfaceSession->translationUnitAnalysis( project.getRootPath(), 
 			[ &project ]( const std::string& strName )
@@ -347,11 +348,6 @@ void build_operations( eg::InterfaceSession& interfaceSession, const Environment
     }
 }
 
-extern void generate_eg_component( std::ostream& os, 
-		const std::string& strProjectName, 
-		const std::string& strCoordinator, 
-		const std::string& strHost, 
-		const eg::ReadSession& session );
 
 void generate_objects( const eg::TranslationUnitAnalysis& translationUnits, const Environment& environment,
     const ProjectTree& project, const std::string& strCompilationFlags )
@@ -457,6 +453,13 @@ void build_component( const eg::ReadSession& session, const Environment& environ
     const ProjectTree& project, const boost::filesystem::path& binPath, const std::string& strCompilationFlags )
 {
 	bool bBenchCommands = false;
+    
+    eg::PrinterFactory::Ptr pPrinterFactory = 
+        megastructure::getMegastructurePrinterFactory( 
+            session.getLayout(), 
+            session.getTranslationUnitAnalysis(),
+            project.getCoordinatorName(),
+            project.getHostName() );
 	
 	const eg::TranslationUnitAnalysis& translationUnits =
 		session.getTranslationUnitAnalysis();
@@ -475,14 +478,14 @@ void build_component( const eg::ReadSession& session, const Environment& environ
 	{
 		std::ostringstream osImpl;
 		osImpl << "#include \"structures.hpp\"\n";
-		eg::generate_dynamic_interface( osImpl, session );
-		eg::generateActionInstanceFunctions( osImpl, session );
+		eg::generate_dynamic_interface( osImpl, *pPrinterFactory, session );
+		eg::generateActionInstanceFunctions( osImpl, *pPrinterFactory, session );
 		boost::filesystem::updateFileIfChanged( project.getRuntimeSource(), osImpl.str() );
 		sourceFiles.push_back( project.getRuntimeSource() );
 	}
 	
 	//generate python bindings
-	{
+	/*{
 		std::ostringstream osCmd;
 		osCmd << environment.printPath( environment.expand( "${EG}/bin/python_host.exe" ) ) << " ";
 		
@@ -501,12 +504,17 @@ void build_component( const eg::ReadSession& session, const Environment& environ
 			}
 		}
 		sourceFiles.push_back( project.getPythonSource() );
-	}
+	}*/
 	
 	//generate the eg component interface implementation
 	{
 		std::ostringstream osEGComponent;
-		generate_eg_component( osEGComponent, project.getProjectName(), project.getCoordinatorName(), project.getHostName(), session );
+		megastructure::generate_eg_component( 
+            osEGComponent, 
+            project.getProjectName(), 
+            project.getCoordinatorName(), 
+            project.getHostName(), 
+            session );
 		const boost::filesystem::path egComponentSourceFilePath = project.getEGComponentSource();
 		boost::filesystem::updateFileIfChanged( egComponentSourceFilePath, osEGComponent.str() );
 		sourceFiles.push_back( egComponentSourceFilePath );
@@ -570,7 +578,7 @@ void build_component( const eg::ReadSession& session, const Environment& environ
 			{
 				//LogEntry log( std::cout, "Generating implementation: " + pTranslationUnit->getName(), bBenchCommands );
 				std::ostringstream osImpl;
-				eg::generateImplementationSource( osImpl, session, *pTranslationUnit );
+				eg::generateImplementationSource( osImpl, *pPrinterFactory, session, *pTranslationUnit );
 				boost::filesystem::updateFileIfChanged( project.getImplementationSource( pTranslationUnit->getName() ), osImpl.str() );
 			}
 			
@@ -638,7 +646,7 @@ void command_build( bool bHelp, const std::string& strBuildCommand, const std::v
 	std::vector< std::string > flags;
     
     namespace po = boost::program_options;
-    po::options_description commandOptions(" Create Project Command");
+    po::options_description commandOptions(" Build Project Command");
     {
         commandOptions.add_options()
             ("dir",     	po::value< std::string >( &strDirectory ), "Project directory")

@@ -34,7 +34,7 @@ void recurseMappedClients( const eg::concrete::Action* pRoot, const NetworkAddre
 			dynamic_cast< const eg::concrete::Action* >( pElement ) )
 		{
 			const std::string& strActionIdentifier = 
-				pClientAction->getAction()->getIdentifier();
+				pClientAction->getContext()->getIdentifier();
 			
 			NetworkAddressTable::ClientMap::const_iterator iFind = 
 				clientMap.find( strActionIdentifier );
@@ -63,7 +63,7 @@ void recurseSlave( const eg::concrete::Action* pRoot,
 			dynamic_cast< const eg::concrete::Action* >( pElement ) )
 		{
 			const std::string& strActionIdentifier = 
-				pCoordinatorAction->getAction()->getIdentifier();
+				pCoordinatorAction->getContext()->getIdentifier();
 			if( strCoordinatorName == strActionIdentifier )
 			{
 				recurseMappedClients( pCoordinatorAction, clientMap, clientIDMap );
@@ -87,7 +87,7 @@ void recurseHost( const eg::concrete::Action* pRoot,
 			dynamic_cast< const eg::concrete::Action* >( pElement ) )
 		{
 			const std::string& strActionIdentifier = 
-				pHostAction->getAction()->getIdentifier();
+				pHostAction->getContext()->getIdentifier();
 			if( strHostName == strActionIdentifier )
 			{
 				recurseClient( pHostAction, NetworkAddressTable::SelfID, clientIDMap );
@@ -112,7 +112,7 @@ void recurseHost( const eg::concrete::Action* pRoot,
 			dynamic_cast< const eg::concrete::Action* >( pElement ) )
 		{
 			const std::string& strActionIdentifier = 
-				pCoordinatorAction->getAction()->getIdentifier();
+				pCoordinatorAction->getContext()->getIdentifier();
 			if( strCoordinatorName == strActionIdentifier )
 			{
 				recurseHost( pCoordinatorAction, strHostName, clientIDMap );
@@ -213,4 +213,50 @@ NetworkAddressTable::NetworkAddressTable( const std::string& strCoordinatorName,
     }
 }
 
+
+void recurseTypes( const eg::concrete::Action* pRoot, ClientIDMap& clientIDMap )
+{
+	const std::vector< eg::concrete::Element* >& children = pRoot->getChildren();
+	for( const eg::concrete::Element* pElement : children )
+	{
+		if( const eg::concrete::Action* pAction = 
+			dynamic_cast< const eg::concrete::Action* >( pElement ) )
+		{
+			bool bIsProgramAction = false;
+			if( const eg::interface::Root* pInterfaceRoot = 
+				dynamic_cast< const eg::interface::Root* >( pAction->getContext() ) )
+			{
+				if( pInterfaceRoot->getRootType() == eg::eHostName )
+				{
+					bIsProgramAction = true;
+				}
+			}
+			
+			if( bIsProgramAction )
+			{
+				recurseClient( pAction, pAction->getIndex(), clientIDMap );
+			}
+			else
+			{
+				recurseTypes( pAction, clientIDMap );
+			}
+		}
+	}
+}
+
+
+ProgramTypeTable::ProgramTypeTable( std::shared_ptr< ProjectTree > pProgramTree )
+{
+	const boost::filesystem::path programDatabasePath = 
+		pProgramTree->getAnalysisFileName();
+
+    if( boost::filesystem::exists( programDatabasePath ) )
+    {
+	    eg::ReadSession session( programDatabasePath );
+	    ClientIDMap clientIDMap;
+	    recurseTypes( getMegaRoot( session.getInstanceRoot() ), clientIDMap );
+		buildTable( clientIDMap, m_table );
+    }
+}
+		
 }

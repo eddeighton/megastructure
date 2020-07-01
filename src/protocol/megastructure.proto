@@ -98,7 +98,7 @@ message Message
 	}
 	
 	//eg protocol
-	//host to coordinator request read,write,call,unlock
+	//host to coordinator request read, write, call, lock, unlock
 	
 	message EG_Msg
 	{

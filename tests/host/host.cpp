@@ -70,6 +70,7 @@ std::string readInput()
 
 bool handleEGTest( megastructure::Component& component, const std::string& strLine/*, boost::optional< std::future< std::string > >& optResult*/ )
 {
+    /*
 	if( strLine.substr( 0, 4 ) == "read" )
 	{
 		std::uint32_t uiType 		= 0U;
@@ -116,7 +117,7 @@ bool handleEGTest( megastructure::Component& component, const std::string& strLi
 		component.egCall( uiType, uiInstance, strBuffer );
 		
 		return true;
-	}
+	}*/
 	
 	return false;
 }

@@ -46,6 +46,21 @@ private:
 	Table m_table;
 };
 
+class ProgramTypeTable
+{
+public:
+	using Table = std::vector< std::uint32_t >;
+	using Ptr = std::shared_ptr< ProgramTypeTable >;
+	
+	ProgramTypeTable( std::shared_ptr< ProjectTree > pProgramTree );
+	
+	inline std::uint32_t getProgramForType( std::uint32_t uiType ) const
+	{
+		return m_table[ uiType ];
+	}
+private:
+	Table m_table;
+};
 
 }
 
