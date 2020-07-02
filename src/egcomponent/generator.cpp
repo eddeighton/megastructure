@@ -24,6 +24,8 @@
 #include "eg_compiler/codegen/codegen.hpp"
 #include "eg_compiler/translation_unit.hpp"
 
+#include "schema/projectTree.hpp"
+
 namespace megastructure
 {
 
@@ -182,9 +184,7 @@ void recurseDecode( const eg::Layout& layout, const ::eg::concrete::Action* pAct
 }
 
 void generate_eg_component( std::ostream& os, 
-		const std::string& strProjectName, 
-		const std::string& strCoordinator, 
-		const std::string& strHost, 
+		const ProjectTree& project,
 		const eg::ReadSession& session )
 {
 	
@@ -197,7 +197,8 @@ void generate_eg_component( std::ostream& os,
 	
 	os << "#include \"egcomponent/egcomponent.hpp\"\n";
     os << "#include \"egcomponent/traits.hpp\"\n";
-    os << "#include \"structures.hpp\"\n";
+    os << "#include \"" << project.getStructuresInclude() << "\"\n";
+    os << "#include \"" << project.getNetStateSourceInclude() << "\"\n";
 	
     const eg::Layout& layout = session.getLayout();
     const eg::IndexedObject::Array& objects = session.getObjects( eg::IndexedObject::MASTER_FILE );
@@ -207,7 +208,7 @@ void generate_eg_component( std::ostream& os,
 		session.getTranslationUnitAnalysis();
         
     BufferTypes bufferTypes;
-    getBufferTypes( layout, translationUnitAnalysis, strCoordinator, strHost, bufferTypes );
+    getBufferTypes( layout, translationUnitAnalysis, project.getCoordinatorName(), project.getHostName(), bufferTypes );
 	
     os << "\n//buffers\n";
     for( const eg::Buffer* pBuffer : layout.getBuffers() )

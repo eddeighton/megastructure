@@ -31,6 +31,8 @@
 #include "eg_compiler/sessions/implementation_session.hpp"
 #include "eg_compiler/codegen/dataAccessPrinter.hpp"
 
+class ProjectTree;
+
 namespace megastructure
 {
     
@@ -51,9 +53,7 @@ void getBufferTypes( const eg::TranslationUnitAnalysis& translationUnitAnalysis,
         const std::string& strCoordinator, const std::string& strHost );
 
 void generate_eg_component( std::ostream& os, 
-		const std::string& strProjectName, 
-		const std::string& strCoordinator, 
-		const std::string& strHost, 
+        const ProjectTree& project,
 		const eg::ReadSession& session );
 
 }

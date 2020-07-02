@@ -264,14 +264,35 @@ public:
 			boost::filesystem::absolute( 
 				getInterfaceFolder() / os.str() ) );
 	}
+    
+    std::string getStructuresInclude() const
+    {
+		std::ostringstream os;
+		os << "structures.hpp";
+        return os.str();
+    }
 
 	boost::filesystem::path getDataStructureSource() const
 	{
-		std::ostringstream os;
-		os << "structures.hpp";
 		return boost::filesystem::edsCannonicalise(
 			boost::filesystem::absolute( 
-				getInterfaceFolder() / os.str() ) );
+				getInterfaceFolder() / getStructuresInclude() ) );
+	}
+    
+	std::string getNetStateSourceInclude() const
+	{
+		VERIFY_RTE( m_coordinatorName && m_hostName );
+		std::ostringstream os;
+		os << m_coordinatorName.get() << '_' << m_hostName.get() << '_' << m_projectName << "_netstate.hpp";
+        return os.str();
+	}
+    
+	boost::filesystem::path getNetStateSource() const
+	{
+		VERIFY_RTE( m_coordinatorName && m_hostName );
+		return boost::filesystem::edsCannonicalise(
+					boost::filesystem::absolute( 
+						getInterfaceFolder() / getNetStateSourceInclude() ) );
 	}
 	
 	boost::filesystem::path getRuntimeSource() const

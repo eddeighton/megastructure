@@ -449,6 +449,95 @@ void objectCompilationCommandSetFileTIme( std::string strMsg, std::string strCom
         boost::filesystem::last_write_time( strSourceFile ) );
 }
 
+void generateMegaBufferStructures( std::ostream& os, const eg::ReadSession& program, const ProjectTree& project )
+{
+    const eg::Layout& layout = program.getLayout();
+    
+    eg::generateIncludeGuard( os, "STRUCTURES" );
+    
+    os << "//data structures\n";
+    for( const eg::Buffer* pBuffer : layout.getBuffers() )
+    {
+        os << "\n//Buffer: " << pBuffer->getTypeName();
+        if( const eg::concrete::Action* pAction = pBuffer->getAction() )
+        {
+            os << " type: " << pAction->getIndex();
+        }
+        
+        os << /*" stride: " << pBuffer->getStride() <<*/ " size: " << pBuffer->getSize() << "\n";
+        os << "struct " << pBuffer->getTypeName() << "\n{\n";
+        for( const eg::DataMember* pDataMember : pBuffer->getDataMembers() )
+        {
+            os << "    ";
+            eg::generateDataMemberType( os, pDataMember );
+            os << " " << pDataMember->getName() << ";\n";
+        }
+        
+        os << "};\n";
+        os << "extern " << pBuffer->getTypeName() << " *" << pBuffer->getVariableName() << ";\n";
+        
+    }
+    
+    os << "\n" << eg::pszLine << eg::pszLine;
+    os << "#endif\n";
+}
+
+void generateMegaStructureNetStateHeader( std::ostream& os, const eg::ReadSession& program, const ProjectTree& project )
+{
+    const eg::Layout& layout = program.getLayout();
+    
+    
+	const std::string& strCoordinatorName   = project.getCoordinatorName();
+	const std::string& strHostName          = project.getHostName();
+	const std::string& strProjectName       = project.getProjectName();
+    
+    eg::generateIncludeGuard( os, "NETSTATE" );
+    os << "\n//network state data\n";
+    
+    const Coordinator::PtrVector& coordinators = project.getCoordinators();
+    for( Coordinator::Ptr pCoordinator : coordinators )
+    {
+        const HostName::PtrVector& hostNames = pCoordinator->getHostNames();
+        for( HostName::Ptr pHostName : hostNames )
+        {
+            const ProjectName::PtrVector& projectNames = pHostName->getProjectNames();
+            for( ProjectName::Ptr pProjectName : projectNames )
+            {
+                if( pProjectName->name() == strProjectName )
+                {
+                    if( strCoordinatorName == pCoordinator->name() )
+                    {
+                        if( strHostName == pHostName->name() )
+                        {
+                            //same process
+                            os << "//" << pCoordinator->name() << "." << pHostName->name() << " same process\n";
+                            
+                            
+                            
+                        }
+                        else
+                        {
+                            //same coordinator 
+                            os << "//" << pCoordinator->name() << "." << pHostName->name() << " same coordinator\n";
+                        }
+                    }
+                    else
+                    {
+                        //different coordinator
+                        os << "//" << pCoordinator->name() << "." << pHostName->name() << " different coordinator\n";
+                        
+                        
+                    }
+                    break;
+                }
+            }
+        }
+    }
+    
+    os << "\n" << eg::pszLine << eg::pszLine;
+    os << "#endif\n";
+}
+
 void build_component( const eg::ReadSession& session, const Environment& environment,
     const ProjectTree& project, const boost::filesystem::path& binPath, const std::string& strCompilationFlags )
 {
@@ -470,14 +559,22 @@ void build_component( const eg::ReadSession& session, const Environment& environ
 	{
 		//LogEntry log( std::cout, "Compiling data structures", bBenchCommands );
 		std::ostringstream osStructures;
-		eg::generateBufferStructures( osStructures, session );
+		generateMegaBufferStructures( osStructures, session, project );
 		boost::filesystem::updateFileIfChanged( project.getDataStructureSource(), osStructures.str() );
 	}
+    
+    //generate the netstate header
+    {
+		std::ostringstream osNetState;
+		generateMegaStructureNetStateHeader( osNetState, session, project );
+		boost::filesystem::updateFileIfChanged( project.getNetStateSource(), osNetState.str() );
+    }
 	
 	//generate the runtime code
 	{
 		std::ostringstream osImpl;
-		osImpl << "#include \"structures.hpp\"\n";
+		osImpl << "#include \"" << project.getStructuresInclude() << "\"\n";
+        osImpl << "#include \"" << project.getNetStateSourceInclude() << "\"\n";
 		eg::generate_dynamic_interface( osImpl, *pPrinterFactory, session );
 		eg::generateActionInstanceFunctions( osImpl, *pPrinterFactory, session );
 		boost::filesystem::updateFileIfChanged( project.getRuntimeSource(), osImpl.str() );
@@ -511,9 +608,7 @@ void build_component( const eg::ReadSession& session, const Environment& environ
 		std::ostringstream osEGComponent;
 		megastructure::generate_eg_component( 
             osEGComponent, 
-            project.getProjectName(), 
-            project.getCoordinatorName(), 
-            project.getHostName(), 
+            project, 
             session );
 		const boost::filesystem::path egComponentSourceFilePath = project.getEGComponentSource();
 		boost::filesystem::updateFileIfChanged( egComponentSourceFilePath, osEGComponent.str() );
@@ -568,6 +663,12 @@ void build_component( const eg::ReadSession& session, const Environment& environ
 			os.str(), osCmd.str(), bBenchCommands, std::ref( logMutex ) ) );
         //}
     }
+    
+    std::vector< std::string > additionalIncludes = 
+    { 
+        project.getStructuresInclude(), 
+        project.getNetStateSourceInclude() 
+    };
 	
 	//generate the implementation files for the coordinator host
     for( const eg::TranslationUnit* pTranslationUnit : translationUnits.getTranslationUnits() )
@@ -578,7 +679,7 @@ void build_component( const eg::ReadSession& session, const Environment& environ
 			{
 				//LogEntry log( std::cout, "Generating implementation: " + pTranslationUnit->getName(), bBenchCommands );
 				std::ostringstream osImpl;
-				eg::generateImplementationSource( osImpl, *pPrinterFactory, session, *pTranslationUnit );
+				eg::generateImplementationSource( osImpl, *pPrinterFactory, session, *pTranslationUnit, additionalIncludes );
 				boost::filesystem::updateFileIfChanged( project.getImplementationSource( pTranslationUnit->getName() ), osImpl.str() );
 			}
 			
