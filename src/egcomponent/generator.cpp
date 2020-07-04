@@ -28,47 +28,63 @@
 
 namespace megastructure
 {
-
-NetworkAnalysis::NetworkAnalysis( const eg::Layout& layout, const eg::TranslationUnitAnalysis& translationUnitAnalysis, const ProjectTree& project )
-    :   m_project( project )
+    
+static const char* g_NetworkAnalysisRelationTypes[ NetworkAnalysis::TOTAL_RELATION_TYPES ] = 
 {
-    getBufferTypes( layout, translationUnitAnalysis, m_project.getCoordinatorName(), m_project.getHostName() );
-    getDataHashBases( layout, translationUnitAnalysis, m_project.getCoordinatorName(), m_project.getHostName() );
-    getHostStructures( m_project );
+    "eComponent",
+    "eProcess",
+    "ePlanet"
+};
+
+inline std::ostream& operator<<( std::ostream& os, const NetworkAnalysis::BufferRelation type )
+{
+    return os << g_NetworkAnalysisRelationTypes[ type ];
 }
 
-
-void NetworkAnalysis::getBufferTypes( const eg::Layout& layout, const eg::TranslationUnitAnalysis& translationUnitAnalysis, 
-	const std::string& strCoordinator, const std::string& strHost )
+NetworkAnalysis::NetworkAnalysis( const eg::ReadSession& session, const ProjectTree& project )
+    :   m_session( session ),
+        m_project( project )
 {
+    getBufferTypes();
+    getDataHashBases();
+    getHostStructures();
+}
+
+void NetworkAnalysis::getBufferTypes()
+{
+    const eg::Layout& layout = m_session.getLayout();
     for( const eg::Buffer* pBuffer : layout.getBuffers() )
     {
         const eg::concrete::Action* pConcreteAction = pBuffer->getAction();
         const eg::interface::Context* pInterfaceAction = pConcreteAction->getContext();
-        const eg::TranslationUnit* pUnit = translationUnitAnalysis.getActionTU( pInterfaceAction );
+        
+        const eg::interface::Root* pCoordinatorRoot = nullptr;
+        const eg::interface::Root* pHostNameRoot = nullptr;
+        
+        const bool bSuccess = pInterfaceAction->getCoordinatorHostname( pCoordinatorRoot, pHostNameRoot );
+        VERIFY_RTE( bSuccess );
             
-        if( pUnit->getCoordinatorHostnameDefinitionFile().isCoordinator( strCoordinator ) )
+        BufferRelation relation = ePlanet;
+        if( pCoordinatorRoot->getIdentifier() == m_project.getCoordinatorName() )
         {
-            if( pUnit->getCoordinatorHostnameDefinitionFile().isHost( strHost ) )
+            if( pHostNameRoot->getIdentifier() == m_project.getHostName() )
             {
-                m_bufferTypes[ pBuffer ] = eComponent;
+                relation = eComponent;
             }
             else
             {
-                m_bufferTypes[ pBuffer ] = eProcess;
+                relation = eProcess;
             }
         }
-        else
-        {
-            m_bufferTypes[ pBuffer ] = ePlanet;
-        }
-    }
+        
+        m_bufferTypes[ pBuffer ] = relation;
+        
+        //std::cout << "Coord: " << m_project.getCoordinatorName() << " Host: " << 
+        //    m_project.getHostName() << " buffer: " << pBuffer->getTypeName() << " relation: " << relation << std::endl;
+    }             
 }
 
-
-void NetworkAnalysis::getDataHashBases( const eg::Layout& layout, 
-    const eg::TranslationUnitAnalysis& translationUnitAnalysis, 
-	const std::string& strCoordinator, const std::string& strHost )
+void NetworkAnalysis::getDataHashBases()
 {
     m_hashTotal = 0U;
     
@@ -84,10 +100,13 @@ void NetworkAnalysis::getDataHashBases( const eg::Layout& layout,
             switch( relation )
             {
                 case eComponent:
-                    m_hashBases.insert( std::make_pair( pDataMember, eNothing ) );
                     break;
                 case eProcess:
-                    m_hashBases.insert( std::make_pair( pDataMember, eSimLock ) );
+                    if( !pBuffer->isSimple() )
+                    {
+                        m_hashBases.insert( std::make_pair( pDataMember, m_hashTotal ) );
+                        m_hashTotal += pBuffer->getSize();
+                    }
                     break;
                 case ePlanet:
                     m_hashBases.insert( std::make_pair( pDataMember, m_hashTotal ) );
@@ -98,23 +117,83 @@ void NetworkAnalysis::getDataHashBases( const eg::Layout& layout,
     }
 }
 
-void NetworkAnalysis::getHostStructures( const ProjectTree& project )
+const NetworkAnalysis::HostStructures& NetworkAnalysis::getHostStructures( const eg::Buffer* pBuffer ) const
 {
-    const Coordinator::PtrVector& coordinators = project.getCoordinators();
+    HostNameBufferMap::const_iterator iFind = m_bufferHostNames.find( pBuffer );
+    VERIFY_RTE( iFind != m_bufferHostNames.end() );
+    
+    HostStructureMap::const_iterator iFind2 = m_hostStructures.find( iFind->second );
+    VERIFY_RTE( iFind2 != m_hostStructures.end() );
+    return iFind2->second;
+}
+
+void NetworkAnalysis::getHostStructures()
+{
+    const eg::Layout& layout = m_session.getLayout();
+	//const eg::TranslationUnitAnalysis& translationUnits =
+	//	m_session.getTranslationUnitAnalysis();
+        
+    const eg::interface::Root* pRootRoot = m_session.getTreeRoot();
+    VERIFY_RTE( pRootRoot->getRootType() == eg::eInterfaceRoot );
+    
+    const eg::interface::Root* pRoot = nullptr;
+    {
+        std::vector< eg::interface::Context* > roots;
+        pRootRoot->getChildContexts( roots );
+        VERIFY_RTE( roots.size() == 1U );
+        pRoot = dynamic_cast< const eg::interface::Root* >( roots.front() );
+        VERIFY_RTE( pRoot );
+    }
+    VERIFY_RTE( pRoot->getRootType() == eg::eMegaRoot );
+    
+    std::map< const eg::interface::Root*, HostName::Ptr > hostNameMap;
+    
+    const Coordinator::PtrVector& coordinators = m_project.getCoordinators();
     for( Coordinator::Ptr pCoordinator : coordinators )
     {
+        const eg::interface::Root* pCoordinatorContext = dynamic_cast< const eg::interface::Root* >( 
+            pRoot->getChildContext( pCoordinator->name() ) );
+        VERIFY_RTE( pCoordinatorContext );
+        VERIFY_RTE( pCoordinatorContext->getRootType() == eg::eCoordinator );
+        
         const HostName::PtrVector& hostNames = pCoordinator->getHostNames();
         for( HostName::Ptr pHostName : hostNames )
         {
+            const eg::interface::Root* pHostNameContext = dynamic_cast< const eg::interface::Root* >( 
+                pCoordinatorContext->getChildContext( pHostName->name() ) );
+            VERIFY_RTE( pHostNameContext );
+            VERIFY_RTE( pHostNameContext->getRootType() == eg::eHostName );
+            
+            //const eg::TranslationUnit* pUnit = translationUnits.getActionTU( pHostNameContext );
+            //VERIFY_RTE( pHostNameContext == pUnit->getCoordinatorHostnameDefinitionFile().pHostName );
+            
+            hostNameMap.insert( std::make_pair( pHostNameContext, pHostName ) );
+            
+            bool bFoundHostNameProject = false;
             const ProjectName::PtrVector& projectNames = pHostName->getProjectNames();
             for( ProjectName::Ptr pProjectName : projectNames )
             {
-                if( pProjectName->name() == project.getProjectName() )
+                const eg::interface::Root* pProjectContext = dynamic_cast< const eg::interface::Root* >( 
+                    pHostNameContext->getChildContext( pProjectName->name() ) );
+                VERIFY_RTE( pProjectContext );
+                VERIFY_RTE( pProjectContext->getRootType() == eg::eProjectName );
+                
+                const eg::concrete::Action* pProjectRoot = nullptr;
                 {
-                    if( ( project.getCoordinatorName() == pCoordinator->name() ) && 
-                        ( project.getHostName() == pHostName->name() ) )
+                    std::vector< const eg::concrete::Element* > instances;
+                    m_session.getDerivationAnalysis().getInstances( pHostNameContext, instances, true );
+                    VERIFY_RTE( instances.size() == 1U );
+                    pProjectRoot = dynamic_cast< const eg::concrete::Action* >( instances.front() );
+                    VERIFY_RTE( pProjectRoot );
+                }
+                
+                if( pProjectName->name() == m_project.getProjectName() )
+                {
+                    if( ( m_project.getCoordinatorName() == pCoordinator->name() ) && 
+                        ( m_project.getHostName() == pHostName->name() ) )
                     {
                         //same process - do nothing
+                        bFoundHostNameProject = true;
                     }
                     else
                     {
@@ -134,19 +213,95 @@ void NetworkAnalysis::getHostStructures( const ProjectTree& project )
                             os << "std::set< eg::TypeInstance > g_" << pCoordinator->name() << '_' << pHostName->name() << "_activations";
                             structures.strActivationSetName = os.str();
                         }
+                        
+                        //determine root Run time type
+                        structures.pRoot = pProjectRoot;
+                        
                         m_hostStructures.insert( std::make_pair( pHostName, structures ) );
+                        bFoundHostNameProject = true;
                     }
                     break;
                 }
             }
+            VERIFY_RTE( bFoundHostNameProject );
         }
     }
+    
+    for( const eg::Buffer* pBuffer : layout.getBuffers() )
+    {
+        const eg::interface::Context* pBufferContext = pBuffer->getAction()->getContext();
+        VERIFY_RTE( pBufferContext );
+        bool bFound = false;
+        while( pBufferContext )
+        {
+            if( const eg::interface::Root* pRoot = dynamic_cast< const eg::interface::Root* >( pBufferContext ) )
+            {
+                if( pRoot->getRootType() == eg::eHostName )
+                {
+                    std::map< const eg::interface::Root*, HostName::Ptr >::iterator 
+                        iFind = hostNameMap.find( pRoot );
+                    VERIFY_RTE( iFind != hostNameMap.end() );
+                    m_bufferHostNames.insert( std::make_pair( pBuffer, iFind->second ) );
+                    bFound = true;
+                    break;
+                }
+            }
+            pBufferContext = dynamic_cast< const eg::interface::Context* >( pBufferContext->getParent() );
+        }
+        VERIFY_RTE( bFound );
+        
+        const BufferRelation relation = getBufferRelation( pBuffer );
+        switch( relation )
+        {
+            case NetworkAnalysis::eComponent:
+                break;
+            case NetworkAnalysis::eProcess:
+            case NetworkAnalysis::ePlanet:
+                {
+                    HostNameBufferMap::const_iterator iFind = m_bufferHostNames.find( pBuffer );
+                    VERIFY_RTE( iFind != m_bufferHostNames.end() );
+                    
+                    HostStructureMap::const_iterator iFind2 = m_hostStructures.find( iFind->second );
+                    VERIFY_RTE_MSG( iFind2 != m_hostStructures.end(), 
+                        "Could not find host structures " << 
+                        " buffer: " << pBuffer->getTypeName() << 
+                        " host: " << iFind->second->name() << 
+                        " for coordinator: " << m_project.getCoordinatorName() << 
+                        " hostname: " << m_project.getHostName()
+                        );
+                }
+                break;
+            default:
+                THROW_RTE( "Unknown buffer relation" );
+        }
+            
+    }
+    
 }
     
 
 struct MegastructurePrinter : public ::eg::Printer
 {
-    MegastructurePrinter( NetworkAnalysis& networkAnalysis, const ::eg::DataMember* pDataMember, const char* pszIndex )
+    MegastructurePrinter( const ::eg::DataMember* pDataMember, const char* pszIndex )
+         :  m_pDataMember( pDataMember ),
+            m_pszIndex( pszIndex)
+    {
+    }
+private:
+    const ::eg::DataMember* m_pDataMember;
+    const char* m_pszIndex;
+protected:
+    virtual void print( std::ostream& os ) const
+    {
+        os << m_pDataMember->getBuffer()->getVariableName() << 
+            "[ " << m_pszIndex << " ]." << m_pDataMember->getName();
+    }
+};
+
+
+struct MegastructureReader : public ::eg::Printer
+{
+    MegastructureReader( NetworkAnalysis& networkAnalysis, const ::eg::DataMember* pDataMember, const char* pszIndex )
         :   m_networkAnalysis( networkAnalysis ),
             m_pDataMember( pDataMember ),
             m_pszIndex( pszIndex)
@@ -159,28 +314,131 @@ private:
 protected:
     virtual void print( std::ostream& os ) const
     {
-        
-        const int iHashBash = m_networkAnalysis.getDataMemberReadHashBase( m_pDataMember );
-        if( iHashBash == NetworkAnalysis::eNothing )
-        {
-            os << m_pDataMember->getBuffer()->getVariableName() << 
-                "[ " << m_pszIndex << " ]." << m_pDataMember->getName();
-        }
-        /*else if( iHashBash == NetworkAnalysis::eSimLock )
-        {
+        const eg::Buffer* pBuffer = m_pDataMember->getBuffer();
+        VERIFY_RTE( pBuffer );
+        const NetworkAnalysis::BufferRelation relation = 
+            m_networkAnalysis.getBufferRelation( pBuffer );
             
-        }*/
-        else
+        switch( relation )
         {
-            os << "eg::read< "; generateDataMemberType( os, m_pDataMember ); os << ", " << 
-                iHashBash << " >( " <<
-                m_pDataMember->getInstanceDimension()->getIndex() << ", " << m_pszIndex << ", " <<
-                m_pDataMember->getBuffer()->getVariableName() << 
-                "[ " << m_pszIndex << " ]." << m_pDataMember->getName() << " )";
+            case NetworkAnalysis::eComponent:
+                {
+                    os << m_pDataMember->getBuffer()->getVariableName() << 
+                        "[ " << m_pszIndex << " ]." << m_pDataMember->getName();
+                }
+                break;
+            case NetworkAnalysis::eProcess:
+                {
+                    const NetworkAnalysis::HostStructures& hostStructures =
+                        m_networkAnalysis.getHostStructures( pBuffer );
+                    if( pBuffer->isSimple() )
+                    {
+                        os << "eg::readlock< ";
+                        eg::generateDataMemberType( os, m_pDataMember );
+                        os << ", " << hostStructures.strIdentityEnumName << "_read, " << hostStructures.pRoot->getIndex() << " >( " <<
+                            m_pDataMember->getBuffer()->getVariableName() << 
+                            "[ " << m_pszIndex << " ]." << m_pDataMember->getName() << " )";
+                    }
+                    else
+                    {
+                        const int iHashBash = m_networkAnalysis.getDataMemberReadHashBase( m_pDataMember );
+                        os << "eg::readlock< ";
+                        eg::generateDataMemberType( os, m_pDataMember );
+                        os << ", " << hostStructures.strIdentityEnumName << "_read, " << hostStructures.pRoot->getIndex() << 
+                                ", " << iHashBash << ", " << m_pDataMember->getInstanceDimension()->getIndex() << " >( " << m_pszIndex << ", " <<
+                            m_pDataMember->getBuffer()->getVariableName() << 
+                            "[ " << m_pszIndex << " ]." << m_pDataMember->getName() << " )";
+                    }
+                }
+                break;
+            case NetworkAnalysis::ePlanet:
+                {
+                    const NetworkAnalysis::HostStructures& hostStructures =
+                        m_networkAnalysis.getHostStructures( pBuffer );
+                    const int iHashBash = m_networkAnalysis.getDataMemberReadHashBase( m_pDataMember );
+                    os << "eg::readlock< ";
+                    eg::generateDataMemberType( os, m_pDataMember );
+                    os << ", " << hostStructures.strIdentityEnumName << "_read, " << hostStructures.pRoot->getIndex() << 
+                            ", " << iHashBash << ", " << m_pDataMember->getInstanceDimension()->getIndex() << " >( " << m_pszIndex << ", " <<
+                        m_pDataMember->getBuffer()->getVariableName() << 
+                        "[ " << m_pszIndex << " ]." << m_pDataMember->getName() << " )";
+                }
+                break;
+            default:
+                THROW_RTE( "Unknown buffer relation" );
         }
     }
 };
 
+struct MegastructureWriter : public ::eg::Printer
+{
+    MegastructureWriter( NetworkAnalysis& networkAnalysis, const ::eg::DataMember* pDataMember, const char* pszIndex )
+        :   m_networkAnalysis( networkAnalysis ),
+            m_pDataMember( pDataMember ),
+            m_pszIndex( pszIndex)
+    {
+    }
+private:
+    NetworkAnalysis& m_networkAnalysis;
+    const ::eg::DataMember* m_pDataMember;
+    const char* m_pszIndex;
+protected:
+    virtual void print( std::ostream& os ) const
+    {
+        const eg::Buffer* pBuffer = m_pDataMember->getBuffer();
+        const NetworkAnalysis::BufferRelation relation = 
+            m_networkAnalysis.getBufferRelation( pBuffer );
+        
+        switch( relation )
+        {
+            case NetworkAnalysis::eComponent:
+                {
+                    os << m_pDataMember->getBuffer()->getVariableName() << 
+                        "[ " << m_pszIndex << " ]." << m_pDataMember->getName();
+                }
+                break;
+            case NetworkAnalysis::eProcess:
+                {
+                    const NetworkAnalysis::HostStructures& hostStructures =
+                        m_networkAnalysis.getHostStructures( pBuffer );
+                    if( pBuffer->isSimple() )
+                    {
+                        os << "eg::writelock< ";
+                        eg::generateDataMemberType( os, m_pDataMember );
+                        os << ", " << hostStructures.strIdentityEnumName << "_read, " << hostStructures.pRoot->getIndex() << " >( " <<
+                            m_pDataMember->getBuffer()->getVariableName() << 
+                            "[ " << m_pszIndex << " ]." << m_pDataMember->getName() << " )";
+                    }
+                    else
+                    {
+                        const int iHashBash = m_networkAnalysis.getDataMemberReadHashBase( m_pDataMember );
+                        os << "eg::writelock< ";
+                        eg::generateDataMemberType( os, m_pDataMember ); 
+                        os << ", " << hostStructures.strIdentityEnumName << "_read, " << hostStructures.pRoot->getIndex() << 
+                                ", " << iHashBash << " >( " << m_pszIndex << ", " <<
+                            m_pDataMember->getBuffer()->getVariableName() << 
+                            "[ " << m_pszIndex << " ]." << m_pDataMember->getName() << " )";
+                    }
+                }
+                break;
+            case NetworkAnalysis::ePlanet:
+                {
+                    const NetworkAnalysis::HostStructures& hostStructures =
+                        m_networkAnalysis.getHostStructures( pBuffer );
+                    const int iHashBash = m_networkAnalysis.getDataMemberReadHashBase( m_pDataMember );
+                    os << "eg::writelock< ";
+                    eg::generateDataMemberType( os, m_pDataMember ); 
+                    os << ", " << hostStructures.strIdentityEnumName << "_read, " << hostStructures.pRoot->getIndex() << 
+                            ", " << iHashBash << " >( " << m_pszIndex << ", " <<
+                        m_pDataMember->getBuffer()->getVariableName() << 
+                        "[ " << m_pszIndex << " ]." << m_pDataMember->getName() << " )";
+                }
+                break;
+            default:
+                THROW_RTE( "Unknown buffer relation" );
+        }
+    }
+};
 
 
 struct MegastructurePrinterFactory : public ::eg::PrinterFactory
@@ -194,15 +452,15 @@ struct MegastructurePrinterFactory : public ::eg::PrinterFactory
     
     ::eg::Printer::Ptr getPrinter( const ::eg::DataMember* pDataMember, const char* pszIndex )
     {
-        return std::make_shared< MegastructurePrinter >( m_networkAnalysis, pDataMember, pszIndex );
+        return std::make_shared< MegastructurePrinter >( pDataMember, pszIndex );
     }
     ::eg::Printer::Ptr read( const ::eg::DataMember* pDataMember, const char* pszIndex )
     {
-        return std::make_shared< MegastructurePrinter >( m_networkAnalysis, pDataMember, pszIndex );
+        return std::make_shared< MegastructureReader >( m_networkAnalysis, pDataMember, pszIndex );
     }
     ::eg::Printer::Ptr write( const ::eg::DataMember* pDataMember, const char* pszIndex )
     {
-        return std::make_shared< MegastructurePrinter >( m_networkAnalysis, pDataMember, pszIndex );
+        return std::make_shared< MegastructureWriter >( m_networkAnalysis, pDataMember, pszIndex );
     }
 };
 
@@ -307,6 +565,7 @@ void generate_eg_component( std::ostream& os,
         
     os << "\n//network state\n";
     os << "std::bitset< " << networkAnalysis.getReadBitSetSize() << " > g_reads;\n";
+    os << "std::bitset< g_TotalHostLocks > g_hostLocks;\n";
     
     const NetworkAnalysis::HostStructureMap& hostStructures = networkAnalysis.getHostStructures();
     
@@ -416,6 +675,8 @@ void generate_eg_component( std::ostream& os,
 	
 
 	const char szStuff[] = R"(
+    
+    
 	
 namespace megastructure
 {
@@ -472,6 +733,23 @@ public:
 	{
 		m_pMegaProtocol->send( type, timestamp, value, size );
 	}
+    
+    //networking
+    void readlock( eg::TypeID component )
+    {
+        
+    }
+
+    void writelock( eg::TypeID component )
+    {
+        
+    }
+
+    void read( eg::TypeID component, eg::TypeID type, eg::Instance instance )
+    {
+        
+    }
+
 };
 
 extern "C" BOOST_SYMBOL_EXPORT EGComponentImpl g_pluginSymbol;
@@ -504,6 +782,24 @@ void events::put( const char* type, eg::TimeStamp timestamp, const void* value, 
 bool events::update()
 {
     return true;
+}
+
+namespace eg
+{
+    void Component::readlock( eg::TypeID component )
+    {
+        megastructure::g_pluginSymbol.readlock( component );
+    }
+
+    void Component::writelock( eg::TypeID component )
+    {
+        megastructure::g_pluginSymbol.writelock( component );
+    }
+
+    void Component::read( eg::TypeID component, eg::TypeID type, eg::Instance instance )
+    {
+        megastructure::g_pluginSymbol.read( component, type, instance );
+    }
 }
 
 	)";

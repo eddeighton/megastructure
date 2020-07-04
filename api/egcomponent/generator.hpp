@@ -44,31 +44,31 @@ public:
     {
         eComponent,
         eProcess,
-        ePlanet
+        ePlanet,
+        TOTAL_RELATION_TYPES
     };
 
+    using HostNameBufferMap = std::map< const eg::Buffer*, std::shared_ptr< HostName > >;
     using BufferTypes = std::map< const eg::Buffer*, BufferRelation >;
-
-    enum DataRelation
-    {
-        eNothing = -1,
-        eSimLock = 0
-    };
-
     using DataTypeHashBases = std::map< const eg::DataMember*, int >;
-    
     
     struct HostStructures
     {
         std::string strWriteSetName, strActivationSetName, strIdentityEnumName;
+        const eg::concrete::Action* pRoot;
     };
     using HostStructureMap = std::map< std::shared_ptr< HostName >, HostStructures >;
     
-
-    NetworkAnalysis( const eg::Layout& layout, const eg::TranslationUnitAnalysis& translationUnitAnalysis, const ProjectTree& project );
+    NetworkAnalysis( const eg::ReadSession& session, const ProjectTree& project );
     
     inline std::size_t getReadBitSetSize() const { return m_hashTotal; }
         
+    inline BufferRelation getBufferRelation( const eg::Buffer* pBuffer ) const
+    {
+        BufferTypes::const_iterator iFind = m_bufferTypes.find( pBuffer );
+        VERIFY_RTE( iFind != m_bufferTypes.end() );
+        return iFind->second;
+    }
     inline bool isBufferForThisComponent( const eg::Buffer* pBuffer ) const
     {
         BufferTypes::const_iterator iFind = m_bufferTypes.find( pBuffer );
@@ -93,17 +93,17 @@ public:
     }
     const HostStructureMap& getHostStructures() const { return m_hostStructures; }
     
+    const HostStructures& getHostStructures( const eg::Buffer* pBuffer ) const;
+    
 private:
-    void getBufferTypes( const eg::Layout& layout, const eg::TranslationUnitAnalysis& translationUnitAnalysis, 
-        const std::string& strCoordinator, const std::string& strHost );
-        
-    void getDataHashBases( const eg::Layout& layout, const eg::TranslationUnitAnalysis& translationUnitAnalysis, 
-        const std::string& strCoordinator, const std::string& strHost );
-        
-    void getHostStructures( const ProjectTree& project );
+    void getBufferTypes();
+    void getDataHashBases();
+    void getHostStructures();
 
 private:
+    const eg::ReadSession& m_session;
     const ProjectTree& m_project;
+    HostNameBufferMap m_bufferHostNames;
     BufferTypes m_bufferTypes;
     DataTypeHashBases m_hashBases;
     std::size_t m_hashTotal;

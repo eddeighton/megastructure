@@ -500,9 +500,12 @@ void generateMegaStructureNetStateHeader( std::ostream& os, const eg::ReadSessio
     os << "enum mega_HostID\n{\n";
     for( const auto& i : hostStructures )
     {
-        os << "    " << i.second.strIdentityEnumName << ",\n";
+        os << "    " << i.second.strIdentityEnumName << "_read,\n";
+        os << "    " << i.second.strIdentityEnumName << "_write,\n";
     }
+    os << "    g_TotalHostLocks\n";
     os << "};\n";
+    os << "extern std::bitset< g_TotalHostLocks > g_hostLocks;\n";
     
     //generate all externs
     for( const auto& i : hostStructures )
@@ -523,7 +526,7 @@ void build_component( const eg::ReadSession& session, const Environment& environ
 	const eg::TranslationUnitAnalysis& translationUnits =
 		session.getTranslationUnitAnalysis();
     
-    megastructure::NetworkAnalysis networkAnalysis( session.getLayout(), translationUnits, project );
+    megastructure::NetworkAnalysis networkAnalysis( session, project );
     
     eg::PrinterFactory::Ptr pPrinterFactory = 
         networkAnalysis.getMegastructurePrinterFactory();
