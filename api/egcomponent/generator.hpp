@@ -32,29 +32,89 @@
 #include "eg_compiler/codegen/dataAccessPrinter.hpp"
 
 class ProjectTree;
+class HostName;
 
 namespace megastructure
 {
-    
-enum BufferRelation
+
+class NetworkAnalysis
 {
-    eComponent,
-    eProcess,
-    ePlanet
+public:
+    enum BufferRelation
+    {
+        eComponent,
+        eProcess,
+        ePlanet
+    };
+
+    using BufferTypes = std::map< const eg::Buffer*, BufferRelation >;
+
+    enum DataRelation
+    {
+        eNothing = -1,
+        eSimLock = 0
+    };
+
+    using DataTypeHashBases = std::map< const eg::DataMember*, int >;
+    
+    
+    struct HostStructures
+    {
+        std::string strWriteSetName, strActivationSetName, strIdentityEnumName;
+    };
+    using HostStructureMap = std::map< std::shared_ptr< HostName >, HostStructures >;
+    
+
+    NetworkAnalysis( const eg::Layout& layout, const eg::TranslationUnitAnalysis& translationUnitAnalysis, const ProjectTree& project );
+    
+    inline std::size_t getReadBitSetSize() const { return m_hashTotal; }
+        
+    inline bool isBufferForThisComponent( const eg::Buffer* pBuffer ) const
+    {
+        BufferTypes::const_iterator iFind = m_bufferTypes.find( pBuffer );
+        VERIFY_RTE( iFind != m_bufferTypes.end() );
+        return iFind->second == eComponent;
+    }
+    
+    int getDataMemberReadHashBase( const eg::DataMember* pDataMember ) const
+    {
+        DataTypeHashBases::const_iterator iFind = m_hashBases.find( pDataMember );
+        VERIFY_RTE( iFind != m_hashBases.end() );
+        return iFind->second;
+    }
+        
+    ::eg::PrinterFactory::Ptr getMegastructurePrinterFactory();
+    
+    const HostStructures& getHostStructures( std::shared_ptr< HostName > pHostName ) const
+    {
+        HostStructureMap::const_iterator iFind = m_hostStructures.find( pHostName );
+        VERIFY_RTE( iFind != m_hostStructures.end() );
+        return iFind->second;
+    }
+    const HostStructureMap& getHostStructures() const { return m_hostStructures; }
+    
+private:
+    void getBufferTypes( const eg::Layout& layout, const eg::TranslationUnitAnalysis& translationUnitAnalysis, 
+        const std::string& strCoordinator, const std::string& strHost );
+        
+    void getDataHashBases( const eg::Layout& layout, const eg::TranslationUnitAnalysis& translationUnitAnalysis, 
+        const std::string& strCoordinator, const std::string& strHost );
+        
+    void getHostStructures( const ProjectTree& project );
+
+private:
+    const ProjectTree& m_project;
+    BufferTypes m_bufferTypes;
+    DataTypeHashBases m_hashBases;
+    std::size_t m_hashTotal;
+    HostStructureMap m_hostStructures;
 };
 
-using BufferTypes = std::map< const eg::Buffer*, BufferRelation >;
-
-void getBufferTypes( const eg::TranslationUnitAnalysis& translationUnitAnalysis, 
-	const std::string& strCoordinator, const std::string& strHost, BufferTypes& bufferTypes );
-
-::eg::PrinterFactory::Ptr getMegastructurePrinterFactory( 
-    const eg::Layout& layout, const eg::TranslationUnitAnalysis& translationUnitAnalysis, 
-        const std::string& strCoordinator, const std::string& strHost );
 
 void generate_eg_component( std::ostream& os, 
         const ProjectTree& project,
-		const eg::ReadSession& session );
+		const eg::ReadSession& session,
+        const NetworkAnalysis& networkAnalysis );
 
 }
 

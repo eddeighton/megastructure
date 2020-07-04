@@ -6,7 +6,6 @@
 
 #include "traits.hpp"
 
-//#include "boost/fiber/all.hpp"
 #include "boost/config.hpp"
 
 #include <string>

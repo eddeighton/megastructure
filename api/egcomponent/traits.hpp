@@ -7,9 +7,8 @@
 
 #include "msgpack.hpp"
 
-#include <boost/fiber/all.hpp>
-
 #include <vector>
+#include <bitset>
 
 namespace eg
 {
@@ -71,32 +70,6 @@ inline void decode( Decoder& decoder, eg::reference& value )
 	decode( decoder, value.timestamp );
 }
 
-template<>
-inline void encode( Encoder& encoder, const boost::fibers::fiber& value )
-{
-	throw std::runtime_error( "Attempting to encode fiber" );
-}
-
-template<>
-inline void decode( Decoder& decoder, boost::fibers::fiber& value )
-{
-	throw std::runtime_error( "Attempting to decode fiber" );
-}
-
-
-template<>
-inline void encode( Encoder& encoder, const std::atomic< unsigned long long >& value )
-{
-	throw std::runtime_error( "Attempting to encode std::atomic" );
-}
-
-template<>
-inline void decode( Decoder& decoder, std::atomic< unsigned long long >& value )
-{
-	throw std::runtime_error( "Attempting to decode std::atomic" );
-}
-
-
 
 template< typename T >
 struct DimensionTraits
@@ -126,7 +99,22 @@ struct DimensionTraits
 	}
 };
 
+class Component
+{
+public:
+    static void read( eg::TypeID type, eg::Instance instance );
+};
 
+template< typename T, std::size_t szHashBase >
+inline T& read( eg::TypeID type, eg::Instance instance, T& value )
+{
+    if( !g_reads.test( szHashBase + instance ) )
+    {
+        //Component::read( type, instance );
+        g_reads.set( szHashBase + instance );
+    }
+    return value;
+}
 
 }
 

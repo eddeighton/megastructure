@@ -29,8 +29,17 @@
 namespace megastructure
 {
 
-void getBufferTypes( const eg::Layout& layout, const eg::TranslationUnitAnalysis& translationUnitAnalysis, 
-	const std::string& strCoordinator, const std::string& strHost, BufferTypes& bufferTypes )
+NetworkAnalysis::NetworkAnalysis( const eg::Layout& layout, const eg::TranslationUnitAnalysis& translationUnitAnalysis, const ProjectTree& project )
+    :   m_project( project )
+{
+    getBufferTypes( layout, translationUnitAnalysis, m_project.getCoordinatorName(), m_project.getHostName() );
+    getDataHashBases( layout, translationUnitAnalysis, m_project.getCoordinatorName(), m_project.getHostName() );
+    getHostStructures( m_project );
+}
+
+
+void NetworkAnalysis::getBufferTypes( const eg::Layout& layout, const eg::TranslationUnitAnalysis& translationUnitAnalysis, 
+	const std::string& strCoordinator, const std::string& strHost )
 {
     for( const eg::Buffer* pBuffer : layout.getBuffers() )
     {
@@ -42,35 +51,133 @@ void getBufferTypes( const eg::Layout& layout, const eg::TranslationUnitAnalysis
         {
             if( pUnit->getCoordinatorHostnameDefinitionFile().isHost( strHost ) )
             {
-                bufferTypes[ pBuffer ] = eComponent;
+                m_bufferTypes[ pBuffer ] = eComponent;
             }
             else
             {
-                bufferTypes[ pBuffer ] = eProcess;
+                m_bufferTypes[ pBuffer ] = eProcess;
             }
         }
         else
         {
-            bufferTypes[ pBuffer ] = ePlanet;
+            m_bufferTypes[ pBuffer ] = ePlanet;
         }
     }
 }
 
+
+void NetworkAnalysis::getDataHashBases( const eg::Layout& layout, 
+    const eg::TranslationUnitAnalysis& translationUnitAnalysis, 
+	const std::string& strCoordinator, const std::string& strHost )
+{
+    m_hashTotal = 0U;
+    
+    for( BufferTypes::const_iterator 
+        i = m_bufferTypes.begin(),
+        iEnd = m_bufferTypes.end(); i!=iEnd; ++i )
+    {
+        const eg::Buffer* pBuffer = i->first;
+        BufferRelation relation = i->second;
+        
+        for( const eg::DataMember* pDataMember : pBuffer->getDataMembers() )
+        {
+            switch( relation )
+            {
+                case eComponent:
+                    m_hashBases.insert( std::make_pair( pDataMember, eNothing ) );
+                    break;
+                case eProcess:
+                    m_hashBases.insert( std::make_pair( pDataMember, eSimLock ) );
+                    break;
+                case ePlanet:
+                    m_hashBases.insert( std::make_pair( pDataMember, m_hashTotal ) );
+                    m_hashTotal += pBuffer->getSize();
+                    break;
+            }
+        }
+    }
+}
+
+void NetworkAnalysis::getHostStructures( const ProjectTree& project )
+{
+    const Coordinator::PtrVector& coordinators = project.getCoordinators();
+    for( Coordinator::Ptr pCoordinator : coordinators )
+    {
+        const HostName::PtrVector& hostNames = pCoordinator->getHostNames();
+        for( HostName::Ptr pHostName : hostNames )
+        {
+            const ProjectName::PtrVector& projectNames = pHostName->getProjectNames();
+            for( ProjectName::Ptr pProjectName : projectNames )
+            {
+                if( pProjectName->name() == project.getProjectName() )
+                {
+                    if( ( project.getCoordinatorName() == pCoordinator->name() ) && 
+                        ( project.getHostName() == pHostName->name() ) )
+                    {
+                        //same process - do nothing
+                    }
+                    else
+                    {
+                        HostStructures structures;
+                        {
+                            std::ostringstream os;
+                            os << "e_" << pCoordinator->name() << '_' << pHostName->name();
+                            structures.strIdentityEnumName = os.str();
+                        }
+                        {
+                            std::ostringstream os;
+                            os << "std::set< eg::TypeInstance > g_" << pCoordinator->name() << '_' << pHostName->name() << "_writes";
+                            structures.strWriteSetName = os.str();
+                        }
+                        {
+                            std::ostringstream os;
+                            os << "std::set< eg::TypeInstance > g_" << pCoordinator->name() << '_' << pHostName->name() << "_activations";
+                            structures.strActivationSetName = os.str();
+                        }
+                        m_hostStructures.insert( std::make_pair( pHostName, structures ) );
+                    }
+                    break;
+                }
+            }
+        }
+    }
+}
+    
+
 struct MegastructurePrinter : public ::eg::Printer
 {
-    MegastructurePrinter( const ::eg::DataMember* pDataMember, const char* pszIndex )
-        :   m_pDataMember( pDataMember ),
+    MegastructurePrinter( NetworkAnalysis& networkAnalysis, const ::eg::DataMember* pDataMember, const char* pszIndex )
+        :   m_networkAnalysis( networkAnalysis ),
+            m_pDataMember( pDataMember ),
             m_pszIndex( pszIndex)
     {
     }
 private:
+    NetworkAnalysis& m_networkAnalysis;
     const ::eg::DataMember* m_pDataMember;
     const char* m_pszIndex;
 protected:
     virtual void print( std::ostream& os ) const
     {
-        os << m_pDataMember->getBuffer()->getVariableName() << 
-            "[ " << m_pszIndex << " ]." << m_pDataMember->getName();
+        
+        const int iHashBash = m_networkAnalysis.getDataMemberReadHashBase( m_pDataMember );
+        if( iHashBash == NetworkAnalysis::eNothing )
+        {
+            os << m_pDataMember->getBuffer()->getVariableName() << 
+                "[ " << m_pszIndex << " ]." << m_pDataMember->getName();
+        }
+        /*else if( iHashBash == NetworkAnalysis::eSimLock )
+        {
+            
+        }*/
+        else
+        {
+            os << "eg::read< "; generateDataMemberType( os, m_pDataMember ); os << ", " << 
+                iHashBash << " >( " <<
+                m_pDataMember->getInstanceDimension()->getIndex() << ", " << m_pszIndex << ", " <<
+                m_pDataMember->getBuffer()->getVariableName() << 
+                "[ " << m_pszIndex << " ]." << m_pDataMember->getName() << " )";
+        }
     }
 };
 
@@ -78,41 +185,30 @@ protected:
 
 struct MegastructurePrinterFactory : public ::eg::PrinterFactory
 {
-    const eg::Layout& m_layout;
-    const eg::TranslationUnitAnalysis& m_translationUnitAnalysis;
-    const std::string& m_strCoordinator; 
-    const std::string& m_strHost;
-        
-    MegastructurePrinterFactory( const eg::Layout& layout, 
-        const eg::TranslationUnitAnalysis& translationUnitAnalysis, 
-        const std::string& strCoordinator, const std::string& strHost )
-            :   m_layout( layout ),
-                m_translationUnitAnalysis( translationUnitAnalysis ),
-                m_strCoordinator( strCoordinator ),
-                m_strHost( strHost )
+    NetworkAnalysis& m_networkAnalysis;
+    
+    MegastructurePrinterFactory( NetworkAnalysis& networkAnalysis )
+        :   m_networkAnalysis( networkAnalysis )
     {
     }
     
     ::eg::Printer::Ptr getPrinter( const ::eg::DataMember* pDataMember, const char* pszIndex )
     {
-        return std::make_shared< MegastructurePrinter >( pDataMember, pszIndex );
+        return std::make_shared< MegastructurePrinter >( m_networkAnalysis, pDataMember, pszIndex );
     }
     ::eg::Printer::Ptr read( const ::eg::DataMember* pDataMember, const char* pszIndex )
     {
-        return std::make_shared< MegastructurePrinter >( pDataMember, pszIndex );
+        return std::make_shared< MegastructurePrinter >( m_networkAnalysis, pDataMember, pszIndex );
     }
     ::eg::Printer::Ptr write( const ::eg::DataMember* pDataMember, const char* pszIndex )
     {
-        return std::make_shared< MegastructurePrinter >( pDataMember, pszIndex );
+        return std::make_shared< MegastructurePrinter >( m_networkAnalysis, pDataMember, pszIndex );
     }
 };
 
-::eg::PrinterFactory::Ptr getMegastructurePrinterFactory( 
-    const eg::Layout& layout, const eg::TranslationUnitAnalysis& translationUnitAnalysis, 
-        const std::string& strCoordinator, const std::string& strHost )
+::eg::PrinterFactory::Ptr NetworkAnalysis::getMegastructurePrinterFactory()
 {
-    return std::make_shared< MegastructurePrinterFactory >( 
-        layout, translationUnitAnalysis, strCoordinator, strHost );
+    return std::make_shared< MegastructurePrinterFactory >( *this );
 }
 
 void recurseEncodeDecode( const ::eg::concrete::Action* pAction, std::ostream& os )
@@ -185,7 +281,8 @@ void recurseDecode( const eg::Layout& layout, const ::eg::concrete::Action* pAct
 
 void generate_eg_component( std::ostream& os, 
 		const ProjectTree& project,
-		const eg::ReadSession& session )
+		const eg::ReadSession& session,
+        const NetworkAnalysis& networkAnalysis )
 {
 	
 	os << "//ed was here\n";
@@ -207,15 +304,23 @@ void generate_eg_component( std::ostream& os,
     const eg::TranslationUnitAnalysis& translationUnitAnalysis =
 		session.getTranslationUnitAnalysis();
         
-    BufferTypes bufferTypes;
-    getBufferTypes( layout, translationUnitAnalysis, project.getCoordinatorName(), project.getHostName(), bufferTypes );
+        
+    os << "\n//network state\n";
+    os << "std::bitset< " << networkAnalysis.getReadBitSetSize() << " > g_reads;\n";
+    
+    const NetworkAnalysis::HostStructureMap& hostStructures = networkAnalysis.getHostStructures();
+    
+    //define network data structures
+    for( const auto& i : hostStructures )
+    {
+        os << i.second.strWriteSetName << ";\n";
+        os << i.second.strActivationSetName << ";\n";
+    }
 	
     os << "\n//buffers\n";
     for( const eg::Buffer* pBuffer : layout.getBuffers() )
     {
-		auto r  = bufferTypes[ pBuffer ];
-		std::cout << "Buffer: " << pBuffer->getVariableName() << " relation: " << r << std::endl;
-        if( r == eComponent )
+        if( networkAnalysis.isBufferForThisComponent( pBuffer ) )
         {
             os << "megastructure::SharedBuffer* " << pBuffer->getVariableName() << "_mega;\n";
         }
@@ -231,7 +336,7 @@ void generate_eg_component( std::ostream& os,
     os << "{\n";
     for( const eg::Buffer* pBuffer : layout.getBuffers() )
     {
-        if( bufferTypes[ pBuffer ] == eComponent )
+        if( networkAnalysis.isBufferForThisComponent( pBuffer ) )
         {
             os << "    " << pBuffer->getVariableName() << "_mega = pMemorySystem->getSharedBuffer( \"" << 
                 pBuffer->getVariableName() << "\" , " <<  pBuffer->getSize() << " * sizeof( " << pBuffer->getTypeName() << " ) );\n";

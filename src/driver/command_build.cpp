@@ -247,8 +247,6 @@ void build_parser_session( const Environment& environment, const ProjectTree& pr
 		std::cout << std::endl;
 		
 		const eg::interface::Root* pInterfaceRoot = pParserSession->getTreeRoot();
-		//std::string strIndent;
-		//pInterfaceRoot->print( std::cout, strIndent, true );
 		
 		build_include_header( environment, pInterfaceRoot, project, strCompilationFlags );
 		build_interface_header( environment, pParserSession.get(), project, strCompilationFlags );
@@ -263,7 +261,6 @@ void build_parser_session( const Environment& environment, const ProjectTree& pr
 		//perform the analysis
 		pInterfaceSession->instanceAnalysis();
 		pInterfaceSession->linkAnalysis();
-		//pInterfaceSession->dependencyAnalysis();
 		
 		pInterfaceSession->translationUnitAnalysis( project.getRootPath(), 
 			[ &project ]( const std::string& strName )
@@ -482,10 +479,10 @@ void generateMegaBufferStructures( std::ostream& os, const eg::ReadSession& prog
     os << "#endif\n";
 }
 
-void generateMegaStructureNetStateHeader( std::ostream& os, const eg::ReadSession& program, const ProjectTree& project )
+void generateMegaStructureNetStateHeader( std::ostream& os, const eg::ReadSession& program, 
+        const ProjectTree& project, const megastructure::NetworkAnalysis& networkAnalysis )
 {
     const eg::Layout& layout = program.getLayout();
-    
     
 	const std::string& strCoordinatorName   = project.getCoordinatorName();
 	const std::string& strHostName          = project.getHostName();
@@ -494,46 +491,26 @@ void generateMegaStructureNetStateHeader( std::ostream& os, const eg::ReadSessio
     eg::generateIncludeGuard( os, "NETSTATE" );
     os << "\n//network state data\n";
     
-    const Coordinator::PtrVector& coordinators = project.getCoordinators();
-    for( Coordinator::Ptr pCoordinator : coordinators )
-    {
-        const HostName::PtrVector& hostNames = pCoordinator->getHostNames();
-        for( HostName::Ptr pHostName : hostNames )
-        {
-            const ProjectName::PtrVector& projectNames = pHostName->getProjectNames();
-            for( ProjectName::Ptr pProjectName : projectNames )
-            {
-                if( pProjectName->name() == strProjectName )
-                {
-                    if( strCoordinatorName == pCoordinator->name() )
-                    {
-                        if( strHostName == pHostName->name() )
-                        {
-                            //same process
-                            os << "//" << pCoordinator->name() << "." << pHostName->name() << " same process\n";
-                            
-                            
-                            
-                        }
-                        else
-                        {
-                            //same coordinator 
-                            os << "//" << pCoordinator->name() << "." << pHostName->name() << " same coordinator\n";
-                        }
-                    }
-                    else
-                    {
-                        //different coordinator
-                        os << "//" << pCoordinator->name() << "." << pHostName->name() << " different coordinator\n";
-                        
-                        
-                    }
-                    break;
-                }
-            }
-        }
-    }
+    os << "extern std::bitset< " << networkAnalysis.getReadBitSetSize() << " > g_reads;\n";
     
+    const megastructure::NetworkAnalysis::HostStructureMap& hostStructures = 
+        networkAnalysis.getHostStructures();
+    
+    //generate the host id enum
+    os << "enum mega_HostID\n{\n";
+    for( const auto& i : hostStructures )
+    {
+        os << "    " << i.second.strIdentityEnumName << ",\n";
+    }
+    os << "};\n";
+    
+    //generate all externs
+    for( const auto& i : hostStructures )
+    {
+        os << "extern " << i.second.strWriteSetName << ";\n";
+        os << "extern " << i.second.strActivationSetName << ";\n";
+    }
+        
     os << "\n" << eg::pszLine << eg::pszLine;
     os << "#endif\n";
 }
@@ -542,16 +519,14 @@ void build_component( const eg::ReadSession& session, const Environment& environ
     const ProjectTree& project, const boost::filesystem::path& binPath, const std::string& strCompilationFlags )
 {
 	bool bBenchCommands = false;
-    
-    eg::PrinterFactory::Ptr pPrinterFactory = 
-        megastructure::getMegastructurePrinterFactory( 
-            session.getLayout(), 
-            session.getTranslationUnitAnalysis(),
-            project.getCoordinatorName(),
-            project.getHostName() );
 	
 	const eg::TranslationUnitAnalysis& translationUnits =
 		session.getTranslationUnitAnalysis();
+    
+    megastructure::NetworkAnalysis networkAnalysis( session.getLayout(), translationUnits, project );
+    
+    eg::PrinterFactory::Ptr pPrinterFactory = 
+        networkAnalysis.getMegastructurePrinterFactory();
 	
 	std::vector< boost::filesystem::path > sourceFiles;
 	
@@ -566,7 +541,7 @@ void build_component( const eg::ReadSession& session, const Environment& environ
     //generate the netstate header
     {
 		std::ostringstream osNetState;
-		generateMegaStructureNetStateHeader( osNetState, session, project );
+		generateMegaStructureNetStateHeader( osNetState, session, project, networkAnalysis );
 		boost::filesystem::updateFileIfChanged( project.getNetStateSource(), osNetState.str() );
     }
 	
@@ -609,7 +584,8 @@ void build_component( const eg::ReadSession& session, const Environment& environ
 		megastructure::generate_eg_component( 
             osEGComponent, 
             project, 
-            session );
+            session,
+            networkAnalysis );
 		const boost::filesystem::path egComponentSourceFilePath = project.getEGComponentSource();
 		boost::filesystem::updateFileIfChanged( egComponentSourceFilePath, osEGComponent.str() );
 		sourceFiles.push_back( egComponentSourceFilePath );
