@@ -148,20 +148,15 @@ inline T& writelock( T& value )
     return value;
 }
 
-template< typename T, std::size_t szComponentBit, eg::TypeID szComponentRTT, std::size_t szHashBase >
-inline T& writelock( eg::Instance instance, T& value )
+template< typename T, std::size_t szComponentBit, eg::TypeID szComponentRTT, eg::TypeID szTypeID >
+inline T& writelock( eg::Instance instance, std::set< eg::TypeInstance >& writeSet, T& value )
 {
     if( !g_hostLocks.test( szComponentBit ) )
     {
         Component::writelock( szComponentRTT );
         g_hostLocks.set( szComponentBit );
-        g_reads.set( szHashBase + instance );
     }
-    else if( !g_reads.test( szHashBase + instance ) )
-    {
-        Component::writelock( szComponentRTT );
-        g_reads.set( szHashBase + instance );
-    }
+    writeSet.insert( TypeInstance{ instance, szTypeID } );
     return value;
 }
 

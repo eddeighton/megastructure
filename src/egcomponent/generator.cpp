@@ -205,12 +205,12 @@ void NetworkAnalysis::getHostStructures()
                         }
                         {
                             std::ostringstream os;
-                            os << "std::set< eg::TypeInstance > g_" << pCoordinator->name() << '_' << pHostName->name() << "_writes";
+                            os << "g_" << pCoordinator->name() << '_' << pHostName->name() << "_writes";
                             structures.strWriteSetName = os.str();
                         }
                         {
                             std::ostringstream os;
-                            os << "std::set< eg::TypeInstance > g_" << pCoordinator->name() << '_' << pHostName->name() << "_activations";
+                            os << "g_" << pCoordinator->name() << '_' << pHostName->name() << "_activations";
                             structures.strActivationSetName = os.str();
                         }
                         
@@ -405,19 +405,24 @@ protected:
                     {
                         os << "eg::writelock< ";
                         eg::generateDataMemberType( os, m_pDataMember );
-                        os << ", " << hostStructures.strIdentityEnumName << "_read, " << hostStructures.pRoot->getIndex() << " >( " <<
+                        os << ", " << hostStructures.strIdentityEnumName << "_write, " << hostStructures.pRoot->getIndex() << " >( " <<
                             m_pDataMember->getBuffer()->getVariableName() << 
                             "[ " << m_pszIndex << " ]." << m_pDataMember->getName() << " )";
                     }
                     else
                     {
-                        const int iHashBash = m_networkAnalysis.getDataMemberReadHashBase( m_pDataMember );
+                        const std::string& strSet = m_pDataMember->isActivationState() ? 
+                            hostStructures.strActivationSetName : hostStructures.strWriteSetName;
+                        
+                        const eg::TypeID dimensionTypeID = m_pDataMember->getInstanceDimension()->getIndex();
                         os << "eg::writelock< ";
                         eg::generateDataMemberType( os, m_pDataMember ); 
-                        os << ", " << hostStructures.strIdentityEnumName << "_read, " << hostStructures.pRoot->getIndex() << 
-                                ", " << iHashBash << " >( " << m_pszIndex << ", " <<
-                            m_pDataMember->getBuffer()->getVariableName() << 
-                            "[ " << m_pszIndex << " ]." << m_pDataMember->getName() << " )";
+                        os << ", " << hostStructures.strIdentityEnumName << "_write, " << 
+                            hostStructures.pRoot->getIndex() << ", " << 
+                            dimensionTypeID << " >( " << 
+                                m_pszIndex << ", " <<
+                                strSet << ", " <<
+                                m_pDataMember->getBuffer()->getVariableName() << "[ " << m_pszIndex << " ]." << m_pDataMember->getName() << " )";
                     }
                 }
                 break;
@@ -425,13 +430,19 @@ protected:
                 {
                     const NetworkAnalysis::HostStructures& hostStructures =
                         m_networkAnalysis.getHostStructures( pBuffer );
-                    const int iHashBash = m_networkAnalysis.getDataMemberReadHashBase( m_pDataMember );
+                        
+                    const std::string& strSet = m_pDataMember->isActivationState() ? 
+                        hostStructures.strActivationSetName : hostStructures.strWriteSetName;
+                        
+                    const eg::TypeID dimensionTypeID = m_pDataMember->getInstanceDimension()->getIndex();
                     os << "eg::writelock< ";
                     eg::generateDataMemberType( os, m_pDataMember ); 
-                    os << ", " << hostStructures.strIdentityEnumName << "_read, " << hostStructures.pRoot->getIndex() << 
-                            ", " << iHashBash << " >( " << m_pszIndex << ", " <<
-                        m_pDataMember->getBuffer()->getVariableName() << 
-                        "[ " << m_pszIndex << " ]." << m_pDataMember->getName() << " )";
+                    os << ", " << hostStructures.strIdentityEnumName << "_write, " << 
+                        hostStructures.pRoot->getIndex() << ", " << 
+                        dimensionTypeID << " >( " << 
+                            m_pszIndex << ", " <<
+                            strSet << ", " <<
+                            m_pDataMember->getBuffer()->getVariableName() << "[ " << m_pszIndex << " ]." << m_pDataMember->getName() << " )";
                 }
                 break;
             default:
@@ -547,6 +558,7 @@ void generate_eg_component( std::ostream& os,
 	os << "#include <chrono>\n";
 	os << "#include <thread>\n";
 	os << "#include <vector>\n";
+	os << "#include <set>\n";
 
 	os << "\n";
 	
@@ -572,8 +584,8 @@ void generate_eg_component( std::ostream& os,
     //define network data structures
     for( const auto& i : hostStructures )
     {
-        os << i.second.strWriteSetName << ";\n";
-        os << i.second.strActivationSetName << ";\n";
+        os << "std::set< eg::TypeInstance > " << i.second.strWriteSetName << ";\n";
+        os << "std::set< eg::TypeInstance > " << i.second.strActivationSetName << ";\n";
     }
 	
     os << "\n//buffers\n";

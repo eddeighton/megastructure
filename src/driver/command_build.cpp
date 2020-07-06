@@ -510,8 +510,8 @@ void generateMegaStructureNetStateHeader( std::ostream& os, const eg::ReadSessio
     //generate all externs
     for( const auto& i : hostStructures )
     {
-        os << "extern " << i.second.strWriteSetName << ";\n";
-        os << "extern " << i.second.strActivationSetName << ";\n";
+        os << "extern std::set< eg::TypeInstance > " << i.second.strWriteSetName << ";\n";
+        os << "extern std::set< eg::TypeInstance > " << i.second.strActivationSetName << ";\n";
     }
         
     os << "\n" << eg::pszLine << eg::pszLine;
