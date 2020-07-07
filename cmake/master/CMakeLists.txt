@@ -38,15 +38,10 @@ add_executable( master
 set_target_properties( master PROPERTIES FOLDER core )
 set_target_properties( master PROPERTIES DEBUG_POSTFIX d )
 
-
-
-
-
 link_boost( master program_options )
 link_boost( master filesystem )
 link_boost( master system )
 link_boost( master date_time )
-link_boost( master fiber )
 link_xsde( master )
 link_clang( master )
 link_schemalib( master )

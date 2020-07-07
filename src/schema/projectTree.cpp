@@ -227,3 +227,32 @@ void ProjectTree::getSourceFilesMap( std::multimap< boost::filesystem::path, boo
 		p->getSourceFilesMap( pathMap );
 	}
 }
+
+
+const Project& ProjectTree::getProject() const
+{
+    VERIFY_RTE( m_coordinatorName && m_hostName );
+    
+	for( Coordinator::Ptr pCoordinator : m_coordinators )
+	{
+        if( pCoordinator->name() == m_coordinatorName )
+        {
+            for( HostName::Ptr pHost : pCoordinator->getHostNames() )
+            {
+                if( pHost->name() == m_hostName )
+                {
+                    for( ProjectName::Ptr pProject : pHost->getProjectNames() )
+                    {
+                        if( pProject->name() == m_projectName )
+                        {
+                            return pProject->getProject();
+                        }
+                    }
+                    break;
+                }
+            }
+            break;
+        }
+	}
+    THROW_RTE( "Failed to locate project" );
+}

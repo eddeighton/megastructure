@@ -92,10 +92,8 @@ namespace megaxml
 {
   class Package_pskel;
   class Host_pskel;
-  class Stack_pskel;
-  class Fibers_pskel;
-  class Defaults_pskel;
   class Build_pskel;
+  class Defaults_pskel;
   class Project_pskel;
   class Files_pskel;
   class EG_pskel;
@@ -314,13 +312,7 @@ namespace megaxml
     Name (const ::std::string&);
 
     virtual void
-    Repository (const ::std::string&);
-
-    virtual void
-    License (const ::std::string&);
-
-    virtual void
-    Description (const ::std::string&);
+    Type (const ::std::string&);
 
     virtual void
     Directories (::megaxml::Directories*);
@@ -338,9 +330,7 @@ namespace megaxml
     //
     void
     parsers (::xml_schema::string_pskel& /* Name */,
-             ::xml_schema::string_pskel& /* Repository */,
-             ::xml_schema::string_pskel& /* License */,
-             ::xml_schema::string_pskel& /* Description */,
+             ::xml_schema::string_pskel& /* Type */,
              ::megaxml::Directories_pskel& /* Directories */,
              ::megaxml::Files_pskel& /* Files */,
              ::xml_schema::string_pskel& /* Command */);
@@ -351,13 +341,7 @@ namespace megaxml
     Name_parser (::xml_schema::string_pskel&);
 
     void
-    Repository_parser (::xml_schema::string_pskel&);
-
-    void
-    License_parser (::xml_schema::string_pskel&);
-
-    void
-    Description_parser (::xml_schema::string_pskel&);
+    Type_parser (::xml_schema::string_pskel&);
 
     void
     Directories_parser (::megaxml::Directories_pskel&);
@@ -392,9 +376,7 @@ namespace megaxml
 
     protected:
     ::xml_schema::string_pskel* Name_parser_;
-    ::xml_schema::string_pskel* Repository_parser_;
-    ::xml_schema::string_pskel* License_parser_;
-    ::xml_schema::string_pskel* Description_parser_;
+    ::xml_schema::string_pskel* Type_parser_;
     ::megaxml::Directories_pskel* Directories_parser_;
     ::megaxml::Files_pskel* Files_parser_;
     ::xml_schema::string_pskel* Command_parser_;
@@ -459,270 +441,6 @@ namespace megaxml
     protected:
     Host_pskel* Host_impl_;
     Host_pskel (Host_pskel*, void*);
-  };
-
-  class Stack_pskel: public ::xsde::cxx::parser::validating::complex_content
-  {
-    public:
-    // Parser callbacks. Override them in your implementation.
-    //
-    // virtual void
-    // pre ();
-
-    // Elements.
-    //
-    virtual void
-    Size (unsigned int);
-
-    virtual ::megaxml::Stack
-    post_Stack () = 0;
-
-    // Parser construction API.
-    //
-    void
-    parsers (::xml_schema::unsigned_int_pskel& /* Size */);
-
-    // Individual element parsers.
-    //
-    void
-    Size_parser (::xml_schema::unsigned_int_pskel&);
-
-    virtual void
-    _reset ();
-
-    // Constructor.
-    //
-    Stack_pskel ();
-
-    // Implementation details.
-    //
-    protected:
-    Stack_pskel* Stack_impl_;
-    Stack_pskel (Stack_pskel*, void*);
-
-    protected:
-    virtual bool
-    _start_element_impl (const ::xsde::cxx::ro_string&,
-                         const ::xsde::cxx::ro_string&);
-
-    virtual bool
-    _end_element_impl (const ::xsde::cxx::ro_string&,
-                       const ::xsde::cxx::ro_string&);
-
-    protected:
-    ::xml_schema::unsigned_int_pskel* Size_parser_;
-
-    public:
-    struct v_state_descr_
-    {
-      void (::megaxml::Stack_pskel::*func) (
-        unsigned long&,
-        unsigned long&,
-        const ::xsde::cxx::ro_string&,
-        const ::xsde::cxx::ro_string&,
-        bool);
-      unsigned long state;
-      unsigned long count;
-    };
-
-    struct v_state_
-    {
-      v_state_descr_ data[2UL];
-      unsigned long size;
-    };
-
-    protected:
-    v_state_ v_state_first_;
-    ::xsde::cxx::stack v_state_stack_;
-
-    virtual void
-    _pre_e_validate ();
-
-    virtual void
-    _post_e_validate ();
-
-    void
-    sequence_0 (unsigned long&,
-                unsigned long&,
-                const ::xsde::cxx::ro_string&,
-                const ::xsde::cxx::ro_string&,
-                bool);
-  };
-
-  class Fibers_pskel: public ::xsde::cxx::parser::validating::complex_content
-  {
-    public:
-    // Parser callbacks. Override them in your implementation.
-    //
-    // virtual void
-    // pre ();
-
-    // Elements.
-    //
-    virtual void
-    Stack (const ::megaxml::Stack&);
-
-    virtual ::megaxml::Fibers
-    post_Fibers () = 0;
-
-    // Parser construction API.
-    //
-    void
-    parsers (::megaxml::Stack_pskel& /* Stack */);
-
-    // Individual element parsers.
-    //
-    void
-    Stack_parser (::megaxml::Stack_pskel&);
-
-    virtual void
-    _reset ();
-
-    // Constructor.
-    //
-    Fibers_pskel ();
-
-    // Implementation details.
-    //
-    protected:
-    Fibers_pskel* Fibers_impl_;
-    Fibers_pskel (Fibers_pskel*, void*);
-
-    protected:
-    virtual bool
-    _start_element_impl (const ::xsde::cxx::ro_string&,
-                         const ::xsde::cxx::ro_string&);
-
-    virtual bool
-    _end_element_impl (const ::xsde::cxx::ro_string&,
-                       const ::xsde::cxx::ro_string&);
-
-    protected:
-    ::megaxml::Stack_pskel* Stack_parser_;
-
-    public:
-    struct v_state_descr_
-    {
-      void (::megaxml::Fibers_pskel::*func) (
-        unsigned long&,
-        unsigned long&,
-        const ::xsde::cxx::ro_string&,
-        const ::xsde::cxx::ro_string&,
-        bool);
-      unsigned long state;
-      unsigned long count;
-    };
-
-    struct v_state_
-    {
-      v_state_descr_ data[2UL];
-      unsigned long size;
-    };
-
-    protected:
-    v_state_ v_state_first_;
-    ::xsde::cxx::stack v_state_stack_;
-
-    virtual void
-    _pre_e_validate ();
-
-    virtual void
-    _post_e_validate ();
-
-    void
-    sequence_0 (unsigned long&,
-                unsigned long&,
-                const ::xsde::cxx::ro_string&,
-                const ::xsde::cxx::ro_string&,
-                bool);
-  };
-
-  class Defaults_pskel: public ::xsde::cxx::parser::validating::complex_content
-  {
-    public:
-    // Parser callbacks. Override them in your implementation.
-    //
-    // virtual void
-    // pre ();
-
-    // Elements.
-    //
-    virtual void
-    Fibers (const ::megaxml::Fibers&);
-
-    virtual ::megaxml::Defaults
-    post_Defaults () = 0;
-
-    // Parser construction API.
-    //
-    void
-    parsers (::megaxml::Fibers_pskel& /* Fibers */);
-
-    // Individual element parsers.
-    //
-    void
-    Fibers_parser (::megaxml::Fibers_pskel&);
-
-    virtual void
-    _reset ();
-
-    // Constructor.
-    //
-    Defaults_pskel ();
-
-    // Implementation details.
-    //
-    protected:
-    Defaults_pskel* Defaults_impl_;
-    Defaults_pskel (Defaults_pskel*, void*);
-
-    protected:
-    virtual bool
-    _start_element_impl (const ::xsde::cxx::ro_string&,
-                         const ::xsde::cxx::ro_string&);
-
-    virtual bool
-    _end_element_impl (const ::xsde::cxx::ro_string&,
-                       const ::xsde::cxx::ro_string&);
-
-    protected:
-    ::megaxml::Fibers_pskel* Fibers_parser_;
-
-    public:
-    struct v_state_descr_
-    {
-      void (::megaxml::Defaults_pskel::*func) (
-        unsigned long&,
-        unsigned long&,
-        const ::xsde::cxx::ro_string&,
-        const ::xsde::cxx::ro_string&,
-        bool);
-      unsigned long state;
-      unsigned long count;
-    };
-
-    struct v_state_
-    {
-      v_state_descr_ data[2UL];
-      unsigned long size;
-    };
-
-    protected:
-    v_state_ v_state_first_;
-    ::xsde::cxx::stack v_state_stack_;
-
-    virtual void
-    _pre_e_validate ();
-
-    virtual void
-    _post_e_validate ();
-
-    void
-    sequence_0 (unsigned long&,
-                unsigned long&,
-                const ::xsde::cxx::ro_string&,
-                const ::xsde::cxx::ro_string&,
-                bool);
   };
 
   class Build_pskel: public ::xsde::cxx::parser::validating::complex_content
@@ -829,6 +547,28 @@ namespace megaxml
                 bool);
   };
 
+  class Defaults_pskel: public ::xsde::cxx::parser::validating::complex_content
+  {
+    public:
+    // Parser callbacks. Override them in your implementation.
+    //
+    // virtual void
+    // pre ();
+
+    virtual ::megaxml::Defaults
+    post_Defaults () = 0;
+
+    // Constructor.
+    //
+    Defaults_pskel ();
+
+    // Implementation details.
+    //
+    protected:
+    Defaults_pskel* Defaults_impl_;
+    Defaults_pskel (Defaults_pskel*, void*);
+  };
+
   class Project_pskel: public ::xsde::cxx::parser::validating::complex_content
   {
     public:
@@ -839,9 +579,6 @@ namespace megaxml
 
     // Elements.
     //
-    virtual void
-    Name (const ::std::string&);
-
     virtual void
     Host (const ::std::string&);
 
@@ -869,8 +606,7 @@ namespace megaxml
     // Parser construction API.
     //
     void
-    parsers (::xml_schema::string_pskel& /* Name */,
-             ::xml_schema::string_pskel& /* Host */,
+    parsers (::xml_schema::string_pskel& /* Host */,
              ::xml_schema::string_pskel& /* Description */,
              ::xml_schema::string_pskel& /* Package */,
              ::megaxml::Files_pskel& /* Files */,
@@ -880,9 +616,6 @@ namespace megaxml
 
     // Individual element parsers.
     //
-    void
-    Name_parser (::xml_schema::string_pskel&);
-
     void
     Host_parser (::xml_schema::string_pskel&);
 
@@ -927,7 +660,6 @@ namespace megaxml
                        const ::xsde::cxx::ro_string&);
 
     protected:
-    ::xml_schema::string_pskel* Name_parser_;
     ::xml_schema::string_pskel* Host_parser_;
     ::xml_schema::string_pskel* Description_parser_;
     ::xml_schema::string_pskel* Package_parser_;

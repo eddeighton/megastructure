@@ -722,10 +722,6 @@ public:
 		clock::next();
 	}
 	
-	virtual void WaitForReadResponse( std::int32_t iType, std::uint32_t uiInstance )
-	{
-	}
-	
 	virtual void encode( std::int32_t iType, std::uint32_t uiInstance, eg::Encoder& buffer )
 	{
 		::encode( iType, uiInstance, buffer );
@@ -735,16 +731,7 @@ public:
 	{
 		::decode( iType, uiInstance, buffer );
 	}
-	
-	bool receive( Event& event )
-	{
-		return m_pMegaProtocol->receive( event.data.type, event.data.instance, event.data.timestamp );
-	}
-	
-	void send( const char* type, eg::TimeStamp timestamp, const void* value, std::size_t size )
-	{
-		m_pMegaProtocol->send( type, timestamp, value, size );
-	}
+    
     
     //networking
     void readlock( eg::TypeID component )
@@ -783,12 +770,11 @@ eg::event_iterator events::getIterator()
 
 bool events::get( eg::event_iterator& iterator, Event& event )
 {
-	return megastructure::g_pluginSymbol.receive( event );
+	return false;
 }
 
 void events::put( const char* type, eg::TimeStamp timestamp, const void* value, std::size_t size )
 {
-	megastructure::g_pluginSymbol.send( type, timestamp, value, size );
 }
     
 bool events::update()

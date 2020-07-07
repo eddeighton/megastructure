@@ -16,9 +16,7 @@
 	<xs:complexType name="Package">
 		<xs:sequence>
 			<xs:element name="Name" type="xs:string"/>
-			<xs:element name="Repository" type="xs:string" minOccurs="0"/>
-			<xs:element name="License" type="xs:string"/>
-			<xs:element name="Description" type="xs:string" minOccurs="0"/>
+			<xs:element name="Type" type="xs:string"/>
 			<xs:element name="Directories" minOccurs="0">
 				<xs:complexType>
 					<xs:sequence>
@@ -38,7 +36,6 @@
 	</xs:complexType>
 	<xs:complexType name="Project">
 		<xs:sequence>
-			<xs:element name="Name" type="xs:string"/>
 			<xs:element name="Host" type="xs:string"/>
 			<xs:element name="Description" type="xs:string" minOccurs="0"/>
 			<xs:element name="Package" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
@@ -63,21 +60,7 @@
 			</xs:element>
 			<xs:element name="Defaults" minOccurs="0">
 				<xs:complexType>
-					<xs:sequence>
-						<xs:element name="Fibers" minOccurs="0">
-							<xs:complexType>
-								<xs:sequence>
-									<xs:element name="Stack" minOccurs="0">
-										<xs:complexType>
-											<xs:sequence>
-												<xs:element name="Size" type="xs:unsignedInt" minOccurs="0"/>
-											</xs:sequence>
-										</xs:complexType>
-									</xs:element>
-								</xs:sequence>
-							</xs:complexType>
-						</xs:element>
-					</xs:sequence>
+					<xs:sequence/>
 				</xs:complexType>
 			</xs:element>
 		</xs:sequence>

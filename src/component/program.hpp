@@ -41,8 +41,8 @@ namespace megastructure
 		virtual LocalBuffer* getLocalBuffer( const char* pszName, std::size_t szSize );
         
         //MegaProtocol
-		virtual bool receive( std::int32_t& iType, std::uint32_t& uiInstance, std::uint32_t& uiTimestamp );
-		virtual void send( const char* type, std::size_t timestamp, const void* value, std::size_t size );
+		//virtual bool receive( std::int32_t& iType, std::uint32_t& uiInstance, std::uint32_t& uiTimestamp );
+		//virtual void send( const char* type, std::size_t timestamp, const void* value, std::size_t size );
 		
 		//test routines
         /*

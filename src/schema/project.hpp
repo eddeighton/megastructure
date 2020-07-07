@@ -82,58 +82,13 @@ public:
         const Environment& environment, const megaxml::Project& project, const std::string& strBuildCommand );
     
     const boost::filesystem::path& getProjectDir() const { return m_projectDir; }
-    
     const megaxml::Project& getProject() const { return m_project; }
-    
-    const std::string& getCompilerFlags()   const;
-    const std::string& getLinkerFlags()     const;
-    
-    std::size_t getFiberStackSize() const;
-    
-    std::vector< boost::filesystem::path > getEGSourceCode() const;
-    std::vector< boost::filesystem::path > getHostSystemIncludes() const;
-    std::vector< boost::filesystem::path > getHostUserIncludes() const;
-    std::vector< boost::filesystem::path > getIncludeDirectories() const;
-    std::vector< boost::filesystem::path > getLibraryDirectories() const;
-    std::vector< boost::filesystem::path > getCPPSourceCode() const;
-    std::vector< boost::filesystem::path > getCPPLibs() const;
-    
-    boost::filesystem::path getIntermediateFolder() const;
-    
-    boost::filesystem::path getParserDBFileName() const;
-    boost::filesystem::path getInterfaceDBFileName() const;
-    
-    boost::filesystem::path getIncludeHeader() const;
-    boost::filesystem::path getPreprocessedFile() const;
-    boost::filesystem::path getPreprocessedCompareFile() const;
-    boost::filesystem::path getIncludePCH() const;
-    boost::filesystem::path getInterfaceHeader() const;
-    boost::filesystem::path getInterfacePCH() const;
-    
-    boost::filesystem::path getOperationsHeader( const std::string& strTUName ) const;
-    boost::filesystem::path getTUDBName( const std::string& strTUName ) const;
-    boost::filesystem::path getOperationsPCH( const std::string& strTUName ) const;
-    
-    boost::filesystem::path getAnalysisFileName() const;
-    boost::filesystem::path getDataStructureSource() const;
-    boost::filesystem::path getImplementationSource( const std::string& strTUName ) const;
-    boost::filesystem::path getRuntimeSource() const;
-    
-    boost::filesystem::path getObjectName( const std::string& strTUName ) const;
-    boost::filesystem::path getObjectFile( const boost::filesystem::path& sourceFile ) const;
-    
-    std::vector< boost::filesystem::path > getCommands() const;
-    std::vector< std::string > getPackages() const;
-    boost::filesystem::path getProgramName() const;
-	
 	const megaxml::Host& getHost() const { return m_host; }
 private:
     const boost::filesystem::path m_projectDir;
     Environment m_environment;
     const megaxml::Project& m_project;
-    const std::string m_strBuildCommand;
     const megaxml::Host& m_host;
-    std::vector< std::reference_wrapper< const megaxml::Package > > m_packages;
 };
 
 #endif //EG_PROJECT_UTIL_10_06_2019

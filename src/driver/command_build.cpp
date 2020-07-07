@@ -115,7 +115,7 @@ private:
 };*/
 
 
-void build_include_header( const Environment& environment, const eg::interface::Root* pInterfaceRoot, const ProjectTree& project, const std::string& strCompilationFlags  )
+void build_include_header( const Environment& environment, const eg::interface::Root* pInterfaceRoot, const ProjectTree& projectTree, const std::string& strCompilationFlags  )
 {
 	//generate the includes header
 	{
@@ -124,16 +124,16 @@ void build_include_header( const Environment& environment, const eg::interface::
 		std::ostringstream osInclude;
 		eg::generateIncludeHeader( osInclude, 
 			pInterfaceRoot, 
-			project.getSystemIncludes(), 
-			project.getUserIncludes( environment ) );
+			projectTree.getSystemIncludes(), 
+			projectTree.getUserIncludes( environment ) );
 		boost::filesystem::updateFileIfChanged( 
-			project.getIncludeHeader(), osInclude.str() );
+			projectTree.getIncludeHeader(), osInclude.str() );
 		
 		/*if( bNoReUsePCH )
 		{
 			//force the file timestamp to have changed to prevent reusing the pch
-			boost::filesystem::last_write_time( project.getIncludeHeader(),
-				boost::filesystem::last_write_time( project.getIncludeHeader() ) + 1 );
+			boost::filesystem::last_write_time( projectTree.getIncludeHeader(),
+				boost::filesystem::last_write_time( projectTree.getIncludeHeader() ) + 1 );
 		}*/
 	}
 	
@@ -144,13 +144,13 @@ void build_include_header( const Environment& environment, const eg::interface::
 		environment.startCompilationCommand( osCmd );
 		osCmd << " " << strCompilationFlags << " ";
 		
-		osCmd << "-Xclang -emit-pch -o " << environment.printPath( project.getIncludePCH() ) << " ";
+		osCmd << "-Xclang -emit-pch -o " << environment.printPath( projectTree.getIncludePCH() ) << " ";
 		
-		osCmd << environment.printPath( project.getIncludeHeader() ) << " ";
+		osCmd << environment.printPath( projectTree.getIncludeHeader() ) << " ";
 		
 		osCmd << "-I " << environment.getEGLibraryInclude().generic_string() << " ";
 		
-		for( const boost::filesystem::path& includeDirectory : project.getIncludeDirectories( environment ) )
+		for( const boost::filesystem::path& includeDirectory : projectTree.getIncludeDirectories( environment ) )
 		{
 			osCmd << "-I " << environment.printPath( includeDirectory ) << " ";
 		}
@@ -169,15 +169,15 @@ void build_include_header( const Environment& environment, const eg::interface::
 			else
 			{
 				//artificially set the file time stamp to match the include file
-				//boost::filesystem::last_write_time( project.getIncludePCH(), 
-				//	boost::filesystem::last_write_time( project.getIncludeHeader() ) );
+				//boost::filesystem::last_write_time( projectTree.getIncludePCH(), 
+				//	boost::filesystem::last_write_time( projectTree.getIncludeHeader() ) );
 			}
 		}
 	}
 	
 }
 
-void build_interface_header( const Environment& environment, eg::ParserSession* pParserSession, const ProjectTree& project, const std::string& strCompilationFlags )
+void build_interface_header( const Environment& environment, eg::ParserSession* pParserSession, const ProjectTree& projectTree, const std::string& strCompilationFlags )
 {
 	
     //generate the interface
@@ -186,8 +186,8 @@ void build_interface_header( const Environment& environment, eg::ParserSession* 
         VERIFY_RTE( pParserSession );
         std::ostringstream osInterface;
         eg::generateInterface( osInterface, 
-            pParserSession->getTreeRoot(), pParserSession->getIdentifiers(), project.getFiberStackSize() );
-        boost::filesystem::updateFileIfChanged( project.getInterfaceHeader(), osInterface.str() );
+            pParserSession->getTreeRoot(), pParserSession->getIdentifiers() );
+        boost::filesystem::updateFileIfChanged( projectTree.getInterfaceHeader(), osInterface.str() );
     }
 	
 	{
@@ -197,15 +197,15 @@ void build_interface_header( const Environment& environment, eg::ParserSession* 
 		osCmd << " " << strCompilationFlags << " ";
 		
 		osCmd << "-Xclang -include-pch ";
-		osCmd << "-Xclang " << environment.printPath( project.getIncludePCH() ) << " ";
+		osCmd << "-Xclang " << environment.printPath( projectTree.getIncludePCH() ) << " ";
 		
-		osCmd << "-Xclang -emit-pch -o " << environment.printPath( project.getInterfacePCH() ) << " ";
-		osCmd << "-Xclang -egdb=" << environment.printPath( project.getParserDatabaseFile() ) << " ";
+		osCmd << "-Xclang -emit-pch -o " << environment.printPath( projectTree.getInterfacePCH() ) << " ";
+		osCmd << "-Xclang -egdb=" << environment.printPath( projectTree.getParserDatabaseFile() ) << " ";
 		osCmd << "-Xclang -egdll=" << environment.printPath( environment.getClangPluginDll() ) << " ";
 		
 		osCmd << "-I " << environment.getEGLibraryInclude().generic_string() << " ";
 		
-		osCmd << environment.printPath( project.getInterfaceHeader() ) << " ";
+		osCmd << environment.printPath( projectTree.getInterfaceHeader() ) << " ";
 		
 		//if( bLogCommands )
 		//{
@@ -222,15 +222,15 @@ void build_interface_header( const Environment& environment, eg::ParserSession* 
 	}
 }
 
-void build_parser_session( const Environment& environment, const ProjectTree& project, const std::string& strCompilationFlags )
+void build_parser_session( const Environment& environment, const ProjectTree& projectTree, const std::string& strCompilationFlags )
 {
 	
-	eg::ParserDiagnosticSystem diagnostics( project.getRootPath(), std::cout );
+	eg::ParserDiagnosticSystem diagnostics( projectTree.getRootPath(), std::cout );
 	
 	eg::ParserSession::SourceCodeTree sourceCodeTree;
 	{
-		sourceCodeTree.root = project.getRootPath();
-		project.getSourceFilesMap( sourceCodeTree.files );
+		sourceCodeTree.root = projectTree.getRootPath();
+		projectTree.getSourceFilesMap( sourceCodeTree.files );
 	}
 	
 	{
@@ -241,33 +241,33 @@ void build_parser_session( const Environment& environment, const ProjectTree& pr
 		
 		pParserSession->buildAbstractTree();
 		
-		pParserSession->store( project.getParserDatabaseFile() );
+		pParserSession->store( projectTree.getParserDatabaseFile() );
 		
-		std::cout << "Generated: " << project.getParserDatabaseFile() << std::endl;
+		std::cout << "Generated: " << projectTree.getParserDatabaseFile() << std::endl;
 		std::cout << std::endl;
 		
 		const eg::interface::Root* pInterfaceRoot = pParserSession->getTreeRoot();
 		
-		build_include_header( environment, pInterfaceRoot, project, strCompilationFlags );
-		build_interface_header( environment, pParserSession.get(), project, strCompilationFlags );
+		build_include_header( environment, pInterfaceRoot, projectTree, strCompilationFlags );
+		build_interface_header( environment, pParserSession.get(), projectTree, strCompilationFlags );
 	}
 	
 	{
 		//LogEntry log( std::cout, "Performing interface analysis", bBenchCommands );
 		
 		std::unique_ptr< eg::InterfaceSession > pInterfaceSession
-			= std::make_unique< eg::InterfaceSession >( project.getParserDatabaseFile() );
+			= std::make_unique< eg::InterfaceSession >( projectTree.getParserDatabaseFile() );
 			
 		//perform the analysis
 		pInterfaceSession->instanceAnalysis();
 		pInterfaceSession->linkAnalysis();
 		
-		pInterfaceSession->translationUnitAnalysis( project.getRootPath(), 
-			[ &project ]( const std::string& strName )
+		pInterfaceSession->translationUnitAnalysis( projectTree.getRootPath(), 
+			[ &projectTree ]( const std::string& strName )
 			{
 				eg::IndexedObject::FileID fileID = eg::IndexedObject::NO_FILE;
 				
-				const boost::filesystem::path dbPath = project.getTUDBName( strName );
+				const boost::filesystem::path dbPath = projectTree.getTUDBName( strName );
 				if( boost::filesystem::exists( dbPath ) )
 				{
 					//read the fileID out of the file
@@ -278,12 +278,12 @@ void build_parser_session( const Environment& environment, const ProjectTree& pr
 			}
 		);
 		
-		pInterfaceSession->store( project.getInterfaceDatabaseFile() );
+		pInterfaceSession->store( projectTree.getInterfaceDatabaseFile() );
 	}
 }
 
 void build_operations( eg::InterfaceSession& interfaceSession, const Environment& environment, 
-    const ProjectTree& project, const std::string& strCompilationFlags )
+    const ProjectTree& projectTree, const std::string& strCompilationFlags )
 {
     //interface session MUST NOT store beyond this point - compiler will be loaded TU analysis sessions
     const eg::TranslationUnitAnalysis& tuAnalysis = interfaceSession.getTranslationUnitAnalysis();
@@ -297,16 +297,16 @@ void build_operations( eg::InterfaceSession& interfaceSession, const Environment
 			std::cout << "\nGenerating operations: " << strTUName << std::endl;
             std::ostringstream osOperations;
             eg::generateOperationSource( osOperations, interfaceSession.getTreeRoot(), *pTranslationUnit );
-            boost::filesystem::updateFileIfChanged( project.getOperationsHeader( strTUName ), osOperations.str() );
+            boost::filesystem::updateFileIfChanged( projectTree.getOperationsHeader( strTUName ), osOperations.str() );
         }
             
         //compile the operations to pch file
-        /*if( fileTracker.isModified( project.getIncludePCH() ) ||
-            fileTracker.isModified( project.getInterfacePCH() ) ||
-            fileTracker.isModified( project.getOperationsPCH( strTUName ) ) ||
-            fileTracker.isModified( project.getOperationsHeader( strTUName ) ) ||
-            //fileTracker.isModified( project.getInterfaceDatabaseFile() ) || 
-            fileTracker.isModified( project.getTUDBName( strTUName ) ) )
+        /*if( fileTracker.isModified( projectTree.getIncludePCH() ) ||
+            fileTracker.isModified( projectTree.getInterfacePCH() ) ||
+            fileTracker.isModified( projectTree.getOperationsPCH( strTUName ) ) ||
+            fileTracker.isModified( projectTree.getOperationsHeader( strTUName ) ) ||
+            //fileTracker.isModified( projectTree.getInterfaceDatabaseFile() ) || 
+            fileTracker.isModified( projectTree.getTUDBName( strTUName ) ) )
         {*/
             //LogEntry log( std::cout, "Compiling operations to pch: " + strTUName, bBenchCommands );
             
@@ -315,19 +315,19 @@ void build_operations( eg::InterfaceSession& interfaceSession, const Environment
             osCmd << " " << strCompilationFlags << " ";
             
             osCmd << "-Xclang -include-pch ";
-            osCmd << "-Xclang " << environment.printPath( project.getIncludePCH() ) << " ";
+            osCmd << "-Xclang " << environment.printPath( projectTree.getIncludePCH() ) << " ";
             
             osCmd << "-Xclang -include-pch ";
-            osCmd << "-Xclang " << environment.printPath( project.getInterfacePCH() ) << " ";
+            osCmd << "-Xclang " << environment.printPath( projectTree.getInterfacePCH() ) << " ";
             
-            osCmd << "-Xclang -emit-pch -o " << environment.printPath( project.getOperationsPCH( strTUName ) ) << " ";
-            osCmd << "-Xclang -egdb=" << environment.printPath( project.getInterfaceDatabaseFile() ) << " ";
+            osCmd << "-Xclang -emit-pch -o " << environment.printPath( projectTree.getOperationsPCH( strTUName ) ) << " ";
+            osCmd << "-Xclang -egdb=" << environment.printPath( projectTree.getInterfaceDatabaseFile() ) << " ";
             osCmd << "-Xclang -egdll=" << environment.printPath( environment.getClangPluginDll() ) << " ";
             
-            osCmd << "-Xclang -egtu=" << environment.printPath( project.getTUDBName( strTUName ) ) << " ";
+            osCmd << "-Xclang -egtu=" << environment.printPath( projectTree.getTUDBName( strTUName ) ) << " ";
             osCmd << "-Xclang -egtuid=" << pTranslationUnit->getDatabaseFileID() << " ";
             
-            osCmd << environment.printPath( project.getOperationsHeader( strTUName ) ) << " ";
+            osCmd << environment.printPath( projectTree.getOperationsHeader( strTUName ) ) << " ";
             
             //if( bLogCommands )
             //{
@@ -347,20 +347,20 @@ void build_operations( eg::InterfaceSession& interfaceSession, const Environment
 
 
 void generate_objects( const eg::TranslationUnitAnalysis& translationUnits, const Environment& environment,
-    const ProjectTree& project, const std::string& strCompilationFlags )
+    const ProjectTree& projectTree, const std::string& strCompilationFlags )
 {
     eg::IndexedFile::FileIDtoPathMap allFiles;
     
     //use the interface session to determine the files
     {
-        allFiles.insert( std::make_pair( eg::IndexedObject::MASTER_FILE, project.getInterfaceDatabaseFile() ) );
+        allFiles.insert( std::make_pair( eg::IndexedObject::MASTER_FILE, projectTree.getInterfaceDatabaseFile() ) );
         
         //load all the translation unit analysis files
         for( const eg::TranslationUnit* pTranslationUnit : translationUnits.getTranslationUnits() )
         {
             allFiles.insert( std::make_pair( 
 				pTranslationUnit->getDatabaseFileID(), 
-				project.getTUDBName( pTranslationUnit->getName() ) ) );
+				projectTree.getTUDBName( pTranslationUnit->getName() ) ) );
         }
     }
     
@@ -370,7 +370,7 @@ void generate_objects( const eg::TranslationUnitAnalysis& translationUnits, cons
             std::make_unique< eg::ImplementationSession >( allFiles );
                 
         pImplementationSession->fullProgramAnalysis();
-        pImplementationSession->store( project.getAnalysisFileName() );
+        pImplementationSession->store( projectTree.getAnalysisFileName() );
         
     }
     
@@ -378,14 +378,14 @@ void generate_objects( const eg::TranslationUnitAnalysis& translationUnits, cons
     /*std::ostringstream osPackages;
     bool bHasPackages = false;
     {
-        const std::vector< std::string > packages = project.getPackages();
+        const std::vector< std::string > packages = projectTree.getPackages();
         std::copy( packages.begin(), packages.end(),
             std::ostream_iterator< std::string >( osPackages, " " ) );
         bHasPackages = !packages.empty();
     }
     
     //executing all commands
-    std::vector< boost::filesystem::path > commands =  project.getCommands();
+    std::vector< boost::filesystem::path > commands =  projectTree.getCommands();
     for( const boost::filesystem::path& strCommand : commands )
     {
         std::ostringstream os;
@@ -395,9 +395,9 @@ void generate_objects( const eg::TranslationUnitAnalysis& translationUnits, cons
         std::ostringstream osCmd;
         osCmd << strCommand << " ";
         
-        osCmd << "--name " << project.getProject().Name() << " ";
-        osCmd << "--database " << project.getAnalysisFileName() << " ";
-        osCmd << "--dir " << project.getIntermediateFolder().generic_string() << " ";
+        osCmd << "--name " << projectTree.getProject().Name() << " ";
+        osCmd << "--database " << projectTree.getAnalysisFileName() << " ";
+        osCmd << "--dir " << projectTree.getIntermediateFolder().generic_string() << " ";
         if( bHasPackages )
         {
             osCmd << "--package " << osPackages.str() << " ";
@@ -446,7 +446,7 @@ void objectCompilationCommandSetFileTIme( std::string strMsg, std::string strCom
         boost::filesystem::last_write_time( strSourceFile ) );
 }
 
-void generateMegaBufferStructures( std::ostream& os, const eg::ReadSession& program, const ProjectTree& project )
+void generateMegaBufferStructures( std::ostream& os, const eg::ReadSession& program, const ProjectTree& projectTree )
 {
     const eg::Layout& layout = program.getLayout();
     
@@ -480,13 +480,13 @@ void generateMegaBufferStructures( std::ostream& os, const eg::ReadSession& prog
 }
 
 void generateMegaStructureNetStateHeader( std::ostream& os, const eg::ReadSession& program, 
-        const ProjectTree& project, const megastructure::NetworkAnalysis& networkAnalysis )
+        const ProjectTree& projectTree, const megastructure::NetworkAnalysis& networkAnalysis )
 {
     const eg::Layout& layout = program.getLayout();
     
-	const std::string& strCoordinatorName   = project.getCoordinatorName();
-	const std::string& strHostName          = project.getHostName();
-	const std::string& strProjectName       = project.getProjectName();
+	const std::string& strCoordinatorName   = projectTree.getCoordinatorName();
+	const std::string& strHostName          = projectTree.getHostName();
+	const std::string& strProjectName       = projectTree.getProjectName();
     
     eg::generateIncludeGuard( os, "NETSTATE" );
     os << "\n//network state data\n";
@@ -518,15 +518,17 @@ void generateMegaStructureNetStateHeader( std::ostream& os, const eg::ReadSessio
     os << "#endif\n";
 }
 
+extern void generatePythonBindings( std::ostream&, const eg::ReadSession&, const Environment&, const ProjectTree& );
+
 void build_component( const eg::ReadSession& session, const Environment& environment,
-    const ProjectTree& project, const boost::filesystem::path& binPath, const std::string& strCompilationFlags )
+    const ProjectTree& projectTree, const boost::filesystem::path& binPath, const std::string& strCompilationFlags )
 {
 	bool bBenchCommands = false;
 	
 	const eg::TranslationUnitAnalysis& translationUnits =
 		session.getTranslationUnitAnalysis();
     
-    megastructure::NetworkAnalysis networkAnalysis( session, project );
+    megastructure::NetworkAnalysis networkAnalysis( session, projectTree );
     
     eg::PrinterFactory::Ptr pPrinterFactory = 
         networkAnalysis.getMegastructurePrinterFactory();
@@ -537,37 +539,57 @@ void build_component( const eg::ReadSession& session, const Environment& environ
 	{
 		//LogEntry log( std::cout, "Compiling data structures", bBenchCommands );
 		std::ostringstream osStructures;
-		generateMegaBufferStructures( osStructures, session, project );
-		boost::filesystem::updateFileIfChanged( project.getDataStructureSource(), osStructures.str() );
+		generateMegaBufferStructures( osStructures, session, projectTree );
+		boost::filesystem::updateFileIfChanged( projectTree.getDataStructureSource(), osStructures.str() );
 	}
     
     //generate the netstate header
     {
 		std::ostringstream osNetState;
-		generateMegaStructureNetStateHeader( osNetState, session, project, networkAnalysis );
-		boost::filesystem::updateFileIfChanged( project.getNetStateSource(), osNetState.str() );
+		generateMegaStructureNetStateHeader( osNetState, session, projectTree, networkAnalysis );
+		boost::filesystem::updateFileIfChanged( projectTree.getNetStateSource(), osNetState.str() );
     }
 	
 	//generate the runtime code
 	{
 		std::ostringstream osImpl;
-		osImpl << "#include \"" << project.getStructuresInclude() << "\"\n";
-        osImpl << "#include \"" << project.getNetStateSourceInclude() << "\"\n";
+		osImpl << "#include \"" << projectTree.getStructuresInclude() << "\"\n";
+        osImpl << "#include \"" << projectTree.getNetStateSourceInclude() << "\"\n";
 		eg::generate_dynamic_interface( osImpl, *pPrinterFactory, session );
 		eg::generateActionInstanceFunctions( osImpl, *pPrinterFactory, session );
-		boost::filesystem::updateFileIfChanged( project.getRuntimeSource(), osImpl.str() );
-		sourceFiles.push_back( project.getRuntimeSource() );
+		boost::filesystem::updateFileIfChanged( projectTree.getRuntimeSource(), osImpl.str() );
+		sourceFiles.push_back( projectTree.getRuntimeSource() );
 	}
+    
+    const Project& project = projectTree.getProject();
+    const std::string& strProjectType = project.getHost().Type();
+    
+    if( strProjectType == "basic" )
+    {
+        //do nothing
+    }
+    else if( strProjectType == "python" )
+    {
+        //generate python bindings
+		std::ostringstream osPython;
+        generatePythonBindings( osPython, session, environment, projectTree );
+		boost::filesystem::updateFileIfChanged( projectTree.getPythonSource(), osPython.str() );
+		sourceFiles.push_back( projectTree.getPythonSource() );
+    }
+    else
+    {
+        THROW_RTE( "Unknown project type: " << strProjectType );
+    }
 	
 	//generate python bindings
 	/*{
 		std::ostringstream osCmd;
 		osCmd << environment.printPath( environment.expand( "${EG}/bin/python_host.exe" ) ) << " ";
 		
-		osCmd << "--name " << project.getProjectName() << " ";
-		osCmd << "--database " << project.getAnalysisFileName() << " ";
-		osCmd << "--dir " << project.getInterfaceFolder().generic_string() << " ";
-		osCmd << "--target " << project.getPythonFileName().generic_string() << " ";
+		osCmd << "--name " << projectTree.getProjectName() << " ";
+		osCmd << "--database " << projectTree.getAnalysisFileName() << " ";
+		osCmd << "--dir " << projectTree.getInterfaceFolder().generic_string() << " ";
+		osCmd << "--target " << projectTree.getPythonFileName().generic_string() << " ";
 		
 		{
 			std::cout << "\n" << osCmd.str() << std::endl;
@@ -578,7 +600,7 @@ void build_component( const eg::ReadSession& session, const Environment& environ
 				THROW_RTE( "Error invoking python_host.exe " << iResult );
 			}
 		}
-		sourceFiles.push_back( project.getPythonSource() );
+		sourceFiles.push_back( projectTree.getPythonSource() );
 	}*/
 	
 	//generate the eg component interface implementation
@@ -586,10 +608,10 @@ void build_component( const eg::ReadSession& session, const Environment& environ
 		std::ostringstream osEGComponent;
 		megastructure::generate_eg_component( 
             osEGComponent, 
-            project, 
+            projectTree, 
             session,
             networkAnalysis );
-		const boost::filesystem::path egComponentSourceFilePath = project.getEGComponentSource();
+		const boost::filesystem::path egComponentSourceFilePath = projectTree.getEGComponentSource();
 		boost::filesystem::updateFileIfChanged( egComponentSourceFilePath, osEGComponent.str() );
 		sourceFiles.push_back( egComponentSourceFilePath );
 	}
@@ -599,12 +621,12 @@ void build_component( const eg::ReadSession& session, const Environment& environ
 	
 	for( const boost::filesystem::path& strSourceFile : sourceFiles )
     {
-        //const boost::filesystem::path strSourceFile = project.getRuntimeSource();
-        boost::filesystem::path objectFilePath = project.getObjectFile( strSourceFile, binPath );
+        //const boost::filesystem::path strSourceFile = projectTree.getRuntimeSource();
+        boost::filesystem::path objectFilePath = projectTree.getObjectFile( strSourceFile, binPath );
         //objectFiles.push_back( objectFilePath );
         
-        /*if( fileTracker.isModified( project.getIncludePCH() ) ||
-            fileTracker.isModified( project.getInterfacePCH() ) ||
+        /*if( fileTracker.isModified( projectTree.getIncludePCH() ) ||
+            fileTracker.isModified( projectTree.getInterfacePCH() ) ||
             fileTracker.isModified( strSourceFile ) ||
             fileTracker.isModified( objectFilePath ) )
         {*/
@@ -618,15 +640,15 @@ void build_component( const eg::ReadSession& session, const Environment& environ
 		osCmd << "-c -o " << environment.printPath( objectFilePath ) << " ";
 		
 		osCmd << "-Xclang -include-pch ";
-		osCmd << "-Xclang " << environment.printPath( project.getIncludePCH() ) << " ";
+		osCmd << "-Xclang " << environment.printPath( projectTree.getIncludePCH() ) << " ";
 		
 		osCmd << "-Xclang -include-pch ";
-		osCmd << "-Xclang " << environment.printPath( project.getInterfacePCH() ) << " ";
+		osCmd << "-Xclang " << environment.printPath( projectTree.getInterfacePCH() ) << " ";
 	
 		osCmd << "-I " << environment.printPath( environment.getEGLibraryInclude() ) << " ";
-		osCmd << "-I " << environment.printPath( project.getInterfaceFolder() ) << " ";
+		osCmd << "-I " << environment.printPath( projectTree.getInterfaceFolder() ) << " ";
 		
-		for( const boost::filesystem::path& includeDirectory : project.getIncludeDirectories( environment ) )
+		for( const boost::filesystem::path& includeDirectory : projectTree.getIncludeDirectories( environment ) )
 		{
 			osCmd << "-I " << environment.printPath( includeDirectory ) << " ";
 		}
@@ -645,29 +667,29 @@ void build_component( const eg::ReadSession& session, const Environment& environ
     
     std::vector< std::string > additionalIncludes = 
     { 
-        project.getStructuresInclude(), 
-        project.getNetStateSourceInclude() 
+        projectTree.getStructuresInclude(), 
+        projectTree.getNetStateSourceInclude() 
     };
 	
 	//generate the implementation files for the coordinator host
     for( const eg::TranslationUnit* pTranslationUnit : translationUnits.getTranslationUnits() )
     {
-		if( pTranslationUnit->getCoordinatorHostnameDefinitionFile().isHost( project.getHostName() ) )
+		if( pTranslationUnit->getCoordinatorHostnameDefinitionFile().isHost( projectTree.getHostName() ) )
 		{
 			//generate the implementation source code
 			{
 				//LogEntry log( std::cout, "Generating implementation: " + pTranslationUnit->getName(), bBenchCommands );
 				std::ostringstream osImpl;
 				eg::generateImplementationSource( osImpl, *pPrinterFactory, session, *pTranslationUnit, additionalIncludes );
-				boost::filesystem::updateFileIfChanged( project.getImplementationSource( pTranslationUnit->getName() ), osImpl.str() );
+				boost::filesystem::updateFileIfChanged( projectTree.getImplementationSource( pTranslationUnit->getName() ), osImpl.str() );
 			}
 			
-			boost::filesystem::path objectFilePath = project.getObjectName( pTranslationUnit->getName(), binPath );
+			boost::filesystem::path objectFilePath = projectTree.getObjectName( pTranslationUnit->getName(), binPath );
 			//objectFiles.push_back( objectFilePath );
 			
-			/*if( fileTracker.isModified( project.getIncludePCH() ) ||
-				fileTracker.isModified( project.getInterfacePCH() ) ||
-				fileTracker.isModified( project.getOperationsPCH( pTranslationUnit->getName() ) ) ||
+			/*if( fileTracker.isModified( projectTree.getIncludePCH() ) ||
+				fileTracker.isModified( projectTree.getInterfacePCH() ) ||
+				fileTracker.isModified( projectTree.getOperationsPCH( pTranslationUnit->getName() ) ) ||
 				fileTracker.isModified( objectFilePath ) )
 			{*/
 				std::ostringstream os;
@@ -680,15 +702,15 @@ void build_component( const eg::ReadSession& session, const Environment& environ
 				osCmd << "-c -o " << environment.printPath( objectFilePath ) << " ";
 					
 				osCmd << "-Xclang -include-pch ";
-				osCmd << "-Xclang " << environment.printPath( project.getIncludePCH() ) << " ";
+				osCmd << "-Xclang " << environment.printPath( projectTree.getIncludePCH() ) << " ";
 				
 				osCmd << "-Xclang -include-pch ";
-				osCmd << "-Xclang " << environment.printPath( project.getInterfacePCH() ) << " ";
+				osCmd << "-Xclang " << environment.printPath( projectTree.getInterfacePCH() ) << " ";
 				
 				osCmd << "-Xclang -include-pch ";
-				osCmd << "-Xclang " << environment.printPath( project.getOperationsPCH( pTranslationUnit->getName() ) ) << " ";
+				osCmd << "-Xclang " << environment.printPath( projectTree.getOperationsPCH( pTranslationUnit->getName() ) ) << " ";
 					
-				osCmd << environment.printPath( project.getImplementationSource( pTranslationUnit->getName() ) ) << " ";
+				osCmd << environment.printPath( projectTree.getImplementationSource( pTranslationUnit->getName() ) ) << " ";
 					
 				//if( bLogCommands )
 				//{

@@ -38,7 +38,9 @@ set( DRIVER_SOURCES
 set( GENERATOR_SOURCE_DIR ${MEGA_ROOT_DIR}/src/egcomponent )
 
 set( GENERATOR_SOURCES 
-	${GENERATOR_SOURCE_DIR}/generator.cpp )
+	${GENERATOR_SOURCE_DIR}/generator.cpp 
+    ${GENERATOR_SOURCE_DIR}/python_generator.cpp
+    )
 
 source_group( src FILES ${DRIVER_SOURCES} )
 

@@ -8,7 +8,6 @@
 #include "common/assert_verify.hpp"
 #include "common/file.hpp"
 
-#include "boost/fiber/all.hpp"
 #include "boost/dll/import.hpp" // for import_alias
 
 
@@ -163,6 +162,7 @@ void Program::writeBuffer( std::int32_t iType, std::uint32_t uiInstance, const s
 }
 		
 //MegaProtocol
+/*
 bool Program::receive( std::int32_t& iType, std::size_t& uiInstance, std::uint32_t& uiTimestamp )
 {
 	megastructure::Message message;
@@ -239,7 +239,7 @@ bool Program::receive( std::int32_t& iType, std::size_t& uiInstance, std::uint32
 void Program::send( const char* type, std::size_t timestamp, const void* value, std::size_t size )
 {
 }
-
+*/
 		
 //eg
 /*

@@ -78,21 +78,9 @@ namespace megaxml
   }
 
   void Package_pimpl::
-  Repository (const ::std::string& x)
+  Type (const ::std::string& x)
   {
-    this->Package_pimpl_state_.Package_->Repository (x);
-  }
-
-  void Package_pimpl::
-  License (const ::std::string& x)
-  {
-    this->Package_pimpl_state_.Package_->License (x);
-  }
-
-  void Package_pimpl::
-  Description (const ::std::string& x)
-  {
-    this->Package_pimpl_state_.Package_->Description (x);
+    this->Package_pimpl_state_.Package_->Type (x);
   }
 
   void Package_pimpl::
@@ -175,69 +163,6 @@ namespace megaxml
     return r;
   }
 
-  // Stack_pimpl
-  //
-
-  void Stack_pimpl::
-  pre ()
-  {
-    this->Stack_pimpl_state_.Stack_ = ::megaxml::Stack ();
-  }
-
-  void Stack_pimpl::
-  Size (unsigned int x)
-  {
-    this->Stack_pimpl_state_.Stack_.Size (x);
-  }
-
-  ::megaxml::Stack Stack_pimpl::
-  post_Stack ()
-  {
-    return this->Stack_pimpl_state_.Stack_;
-  }
-
-  // Fibers_pimpl
-  //
-
-  void Fibers_pimpl::
-  pre ()
-  {
-    this->Fibers_pimpl_state_.Fibers_ = ::megaxml::Fibers ();
-  }
-
-  void Fibers_pimpl::
-  Stack (const ::megaxml::Stack& x)
-  {
-    this->Fibers_pimpl_state_.Fibers_.Stack (x);
-  }
-
-  ::megaxml::Fibers Fibers_pimpl::
-  post_Fibers ()
-  {
-    return this->Fibers_pimpl_state_.Fibers_;
-  }
-
-  // Defaults_pimpl
-  //
-
-  void Defaults_pimpl::
-  pre ()
-  {
-    this->Defaults_pimpl_state_.Defaults_ = ::megaxml::Defaults ();
-  }
-
-  void Defaults_pimpl::
-  Fibers (const ::megaxml::Fibers& x)
-  {
-    this->Defaults_pimpl_state_.Defaults_.Fibers (x);
-  }
-
-  ::megaxml::Defaults Defaults_pimpl::
-  post_Defaults ()
-  {
-    return this->Defaults_pimpl_state_.Defaults_;
-  }
-
   // Build_pimpl
   //
 
@@ -269,6 +194,21 @@ namespace megaxml
   post_Build ()
   {
     return this->Build_pimpl_state_.Build_;
+  }
+
+  // Defaults_pimpl
+  //
+
+  void Defaults_pimpl::
+  pre ()
+  {
+    this->Defaults_pimpl_state_.Defaults_ = ::megaxml::Defaults ();
+  }
+
+  ::megaxml::Defaults Defaults_pimpl::
+  post_Defaults ()
+  {
+    return this->Defaults_pimpl_state_.Defaults_;
   }
 
   // Project_pimpl
@@ -311,12 +251,6 @@ namespace megaxml
   {
     ::megaxml::Project* x = new ::megaxml::Project;
     this->pre_impl (x);
-  }
-
-  void Project_pimpl::
-  Name (const ::std::string& x)
-  {
-    this->Project_pimpl_state_.Project_->Name (x);
   }
 
   void Project_pimpl::
@@ -657,42 +591,17 @@ namespace megaxml
   EG_paggr::
   EG_paggr ()
   {
-    this->Defaults_p_.parsers (this->Fibers_p_);
-
-    this->Fibers_p_.parsers (this->Stack_p_);
-
-    this->Stack_p_.parsers (this->unsigned_int_p_);
-
-    this->Files_p_.parsers (this->string_p_,
-                            this->string_p_,
-                            this->string_p_,
-                            this->string_p_);
-
     this->EG_p_.parsers (this->Package_p_,
                          this->Host_p_,
                          this->Project_p_);
 
-    this->Package_p_.parsers (this->string_p_,
-                              this->string_p_,
-                              this->string_p_,
-                              this->string_p_,
-                              this->Directories_p_,
-                              this->Files_p_,
-                              this->string_p_);
-
-    this->Directories_p_.parsers (this->string_p_,
-                                  this->string_p_);
-
     this->Host_p_.parsers (this->string_p_,
-                           this->string_p_,
-                           this->string_p_,
                            this->string_p_,
                            this->Directories_p_,
                            this->Files_p_,
                            this->string_p_);
 
     this->Project_p_.parsers (this->string_p_,
-                              this->string_p_,
                               this->string_p_,
                               this->string_p_,
                               this->Files_p_,
@@ -707,6 +616,20 @@ namespace megaxml
     this->Run_p_.parsers (this->string_p_,
                           this->string_p_,
                           this->string_p_);
+
+    this->Files_p_.parsers (this->string_p_,
+                            this->string_p_,
+                            this->string_p_,
+                            this->string_p_);
+
+    this->Package_p_.parsers (this->string_p_,
+                              this->string_p_,
+                              this->Directories_p_,
+                              this->Files_p_,
+                              this->string_p_);
+
+    this->Directories_p_.parsers (this->string_p_,
+                                  this->string_p_);
   }
 
   const char* EG_paggr::

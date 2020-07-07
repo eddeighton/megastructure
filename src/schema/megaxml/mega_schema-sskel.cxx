@@ -37,21 +37,9 @@ namespace megaxml
   }
 
   void Package_sskel::
-  Repository_serializer (::xml_schema::string_sskel& s)
+  Type_serializer (::xml_schema::string_sskel& s)
   {
-    this->Repository_serializer_ = &s;
-  }
-
-  void Package_sskel::
-  License_serializer (::xml_schema::string_sskel& s)
-  {
-    this->License_serializer_ = &s;
-  }
-
-  void Package_sskel::
-  Description_serializer (::xml_schema::string_sskel& s)
-  {
-    this->Description_serializer_ = &s;
+    this->Type_serializer_ = &s;
   }
 
   void Package_sskel::
@@ -74,17 +62,13 @@ namespace megaxml
 
   void Package_sskel::
   serializers (::xml_schema::string_sskel& Name,
-               ::xml_schema::string_sskel& Repository,
-               ::xml_schema::string_sskel& License,
-               ::xml_schema::string_sskel& Description,
+               ::xml_schema::string_sskel& Type,
                ::megaxml::Directories_sskel& Directories,
                ::megaxml::Files_sskel& Files,
                ::xml_schema::string_sskel& Command)
   {
     this->Name_serializer_ = &Name;
-    this->Repository_serializer_ = &Repository;
-    this->License_serializer_ = &License;
-    this->Description_serializer_ = &Description;
+    this->Type_serializer_ = &Type;
     this->Directories_serializer_ = &Directories;
     this->Files_serializer_ = &Files;
     this->Command_serializer_ = &Command;
@@ -94,9 +78,7 @@ namespace megaxml
   Package_sskel ()
   : Package_impl_ (0),
     Name_serializer_ (0),
-    Repository_serializer_ (0),
-    License_serializer_ (0),
-    Description_serializer_ (0),
+    Type_serializer_ (0),
     Directories_serializer_ (0),
     Files_serializer_ (0),
     Command_serializer_ (0)
@@ -108,9 +90,7 @@ namespace megaxml
   : ::xsde::cxx::serializer::validating::complex_content (impl, 0),
     Package_impl_ (impl),
     Name_serializer_ (0),
-    Repository_serializer_ (0),
-    License_serializer_ (0),
-    Description_serializer_ (0),
+    Type_serializer_ (0),
     Directories_serializer_ (0),
     Files_serializer_ (0),
     Command_serializer_ (0)
@@ -131,96 +111,6 @@ namespace megaxml
   Host_sskel (Host_sskel* impl, void*)
   : ::megaxml::Package_sskel (impl, 0),
     Host_impl_ (impl)
-  {
-  }
-
-  // Stack_sskel
-  //
-
-  void Stack_sskel::
-  Size_serializer (::xml_schema::unsigned_int_sskel& s)
-  {
-    this->Size_serializer_ = &s;
-  }
-
-  void Stack_sskel::
-  serializers (::xml_schema::unsigned_int_sskel& Size)
-  {
-    this->Size_serializer_ = &Size;
-  }
-
-  Stack_sskel::
-  Stack_sskel ()
-  : Stack_impl_ (0),
-    Size_serializer_ (0)
-  {
-  }
-
-  Stack_sskel::
-  Stack_sskel (Stack_sskel* impl, void*)
-  : ::xsde::cxx::serializer::validating::complex_content (impl, 0),
-    Stack_impl_ (impl),
-    Size_serializer_ (0)
-  {
-  }
-
-  // Fibers_sskel
-  //
-
-  void Fibers_sskel::
-  Stack_serializer (::megaxml::Stack_sskel& s)
-  {
-    this->Stack_serializer_ = &s;
-  }
-
-  void Fibers_sskel::
-  serializers (::megaxml::Stack_sskel& Stack)
-  {
-    this->Stack_serializer_ = &Stack;
-  }
-
-  Fibers_sskel::
-  Fibers_sskel ()
-  : Fibers_impl_ (0),
-    Stack_serializer_ (0)
-  {
-  }
-
-  Fibers_sskel::
-  Fibers_sskel (Fibers_sskel* impl, void*)
-  : ::xsde::cxx::serializer::validating::complex_content (impl, 0),
-    Fibers_impl_ (impl),
-    Stack_serializer_ (0)
-  {
-  }
-
-  // Defaults_sskel
-  //
-
-  void Defaults_sskel::
-  Fibers_serializer (::megaxml::Fibers_sskel& s)
-  {
-    this->Fibers_serializer_ = &s;
-  }
-
-  void Defaults_sskel::
-  serializers (::megaxml::Fibers_sskel& Fibers)
-  {
-    this->Fibers_serializer_ = &Fibers;
-  }
-
-  Defaults_sskel::
-  Defaults_sskel ()
-  : Defaults_impl_ (0),
-    Fibers_serializer_ (0)
-  {
-  }
-
-  Defaults_sskel::
-  Defaults_sskel (Defaults_sskel* impl, void*)
-  : ::xsde::cxx::serializer::validating::complex_content (impl, 0),
-    Defaults_impl_ (impl),
-    Fibers_serializer_ (0)
   {
   }
 
@@ -274,14 +164,24 @@ namespace megaxml
   {
   }
 
-  // Project_sskel
+  // Defaults_sskel
   //
 
-  void Project_sskel::
-  Name_serializer (::xml_schema::string_sskel& s)
+  Defaults_sskel::
+  Defaults_sskel ()
+  : Defaults_impl_ (0)
   {
-    this->Name_serializer_ = &s;
   }
+
+  Defaults_sskel::
+  Defaults_sskel (Defaults_sskel* impl, void*)
+  : ::xsde::cxx::serializer::validating::complex_content (impl, 0),
+    Defaults_impl_ (impl)
+  {
+  }
+
+  // Project_sskel
+  //
 
   void Project_sskel::
   Host_serializer (::xml_schema::string_sskel& s)
@@ -326,8 +226,7 @@ namespace megaxml
   }
 
   void Project_sskel::
-  serializers (::xml_schema::string_sskel& Name,
-               ::xml_schema::string_sskel& Host,
+  serializers (::xml_schema::string_sskel& Host,
                ::xml_schema::string_sskel& Description,
                ::xml_schema::string_sskel& Package,
                ::megaxml::Files_sskel& Files,
@@ -335,7 +234,6 @@ namespace megaxml
                ::megaxml::Run_sskel& Run,
                ::megaxml::Defaults_sskel& Defaults)
   {
-    this->Name_serializer_ = &Name;
     this->Host_serializer_ = &Host;
     this->Description_serializer_ = &Description;
     this->Package_serializer_ = &Package;
@@ -348,7 +246,6 @@ namespace megaxml
   Project_sskel::
   Project_sskel ()
   : Project_impl_ (0),
-    Name_serializer_ (0),
     Host_serializer_ (0),
     Description_serializer_ (0),
     Package_serializer_ (0),
@@ -363,7 +260,6 @@ namespace megaxml
   Project_sskel (Project_sskel* impl, void*)
   : ::xsde::cxx::serializer::validating::complex_content (impl, 0),
     Project_impl_ (impl),
-    Name_serializer_ (0),
     Host_serializer_ (0),
     Description_serializer_ (0),
     Package_serializer_ (0),
@@ -583,18 +479,6 @@ namespace megaxml
   //
 
   bool Package_sskel::
-  Repository_present ()
-  {
-    return this->Package_impl_ ? this->Package_impl_->Repository_present () : false;
-  }
-
-  bool Package_sskel::
-  Description_present ()
-  {
-    return this->Package_impl_ ? this->Package_impl_->Description_present () : false;
-  }
-
-  bool Package_sskel::
   Directories_present ()
   {
     return this->Package_impl_ ? this->Package_impl_->Directories_present () : false;
@@ -626,14 +510,8 @@ namespace megaxml
     if (this->Name_serializer_)
       this->Name_serializer_->_reset ();
 
-    if (this->Repository_serializer_)
-      this->Repository_serializer_->_reset ();
-
-    if (this->License_serializer_)
-      this->License_serializer_->_reset ();
-
-    if (this->Description_serializer_)
-      this->Description_serializer_->_reset ();
+    if (this->Type_serializer_)
+      this->Type_serializer_->_reset ();
 
     if (this->Directories_serializer_)
       this->Directories_serializer_->_reset ();
@@ -665,24 +543,10 @@ namespace megaxml
   }
 
   ::std::string Host_sskel::
-  Repository ()
+  Type ()
   {
     assert (this->Package_impl_);
-    return this->Package_impl_->Repository ();
-  }
-
-  ::std::string Host_sskel::
-  License ()
-  {
-    assert (this->Package_impl_);
-    return this->Package_impl_->License ();
-  }
-
-  ::std::string Host_sskel::
-  Description ()
-  {
-    assert (this->Package_impl_);
-    return this->Package_impl_->Description ();
+    return this->Package_impl_->Type ();
   }
 
   const ::megaxml::Directories& Host_sskel::
@@ -704,84 +568,6 @@ namespace megaxml
   {
     assert (this->Package_impl_);
     return this->Package_impl_->Command ();
-  }
-
-  // Stack_sskel
-  //
-
-  bool Stack_sskel::
-  Size_present ()
-  {
-    return this->Stack_impl_ ? this->Stack_impl_->Size_present () : false;
-  }
-
-  void Stack_sskel::
-  _reset ()
-  {
-    if (this->resetting_)
-      return;
-
-    typedef ::xsde::cxx::serializer::validating::complex_content base;
-    base::_reset ();
-
-    this->resetting_ = true;
-
-    if (this->Size_serializer_)
-      this->Size_serializer_->_reset ();
-
-    this->resetting_ = false;
-  }
-
-  // Fibers_sskel
-  //
-
-  bool Fibers_sskel::
-  Stack_present ()
-  {
-    return this->Fibers_impl_ ? this->Fibers_impl_->Stack_present () : false;
-  }
-
-  void Fibers_sskel::
-  _reset ()
-  {
-    if (this->resetting_)
-      return;
-
-    typedef ::xsde::cxx::serializer::validating::complex_content base;
-    base::_reset ();
-
-    this->resetting_ = true;
-
-    if (this->Stack_serializer_)
-      this->Stack_serializer_->_reset ();
-
-    this->resetting_ = false;
-  }
-
-  // Defaults_sskel
-  //
-
-  bool Defaults_sskel::
-  Fibers_present ()
-  {
-    return this->Defaults_impl_ ? this->Defaults_impl_->Fibers_present () : false;
-  }
-
-  void Defaults_sskel::
-  _reset ()
-  {
-    if (this->resetting_)
-      return;
-
-    typedef ::xsde::cxx::serializer::validating::complex_content base;
-    base::_reset ();
-
-    this->resetting_ = true;
-
-    if (this->Fibers_serializer_)
-      this->Fibers_serializer_->_reset ();
-
-    this->resetting_ = false;
   }
 
   // Build_sskel
@@ -809,6 +595,9 @@ namespace megaxml
 
     this->resetting_ = false;
   }
+
+  // Defaults_sskel
+  //
 
   // Project_sskel
   //
@@ -859,9 +648,6 @@ namespace megaxml
     base::_reset ();
 
     this->resetting_ = true;
-
-    if (this->Name_serializer_)
-      this->Name_serializer_->_reset ();
 
     if (this->Host_serializer_)
       this->Host_serializer_->_reset ();
@@ -1082,112 +868,42 @@ namespace megaxml
       }
     }
 
-    // Repository
+    // Type
     //
-    if (this->Repository_present ())
     {
-      const ::std::string& r = this->Repository ();
+      const ::std::string& r = this->Type ();
 
-      if (this->Repository_serializer_)
+      if (this->Type_serializer_)
       {
-        this->Repository_serializer_->pre (r);
-        this->_start_element ("Repository");
-        this->Repository_serializer_->_pre_impl (ctx);
+        this->Type_serializer_->pre (r);
+        this->_start_element ("Type");
+        this->Type_serializer_->_pre_impl (ctx);
 
         if (ctx.error_type ())
           return;
 
-        this->Repository_serializer_->_serialize_attributes ();
+        this->Type_serializer_->_serialize_attributes ();
 
         if (ctx.error_type ())
           return;
 
-        this->Repository_serializer_->_serialize_content ();
+        this->Type_serializer_->_serialize_content ();
 
         if (ctx.error_type ())
           return;
 
-        this->Repository_serializer_->_post_impl ();
+        this->Type_serializer_->_post_impl ();
 
         if (ctx.error_type ())
           return;
 
         this->_end_element ();
-        this->Repository_serializer_->post ();
-      }
-    }
-
-    // License
-    //
-    {
-      const ::std::string& r = this->License ();
-
-      if (this->License_serializer_)
-      {
-        this->License_serializer_->pre (r);
-        this->_start_element ("License");
-        this->License_serializer_->_pre_impl (ctx);
-
-        if (ctx.error_type ())
-          return;
-
-        this->License_serializer_->_serialize_attributes ();
-
-        if (ctx.error_type ())
-          return;
-
-        this->License_serializer_->_serialize_content ();
-
-        if (ctx.error_type ())
-          return;
-
-        this->License_serializer_->_post_impl ();
-
-        if (ctx.error_type ())
-          return;
-
-        this->_end_element ();
-        this->License_serializer_->post ();
+        this->Type_serializer_->post ();
       }
       else
       {
         this->_schema_error (::xsde::cxx::schema_error::expected_element);
         return;
-      }
-    }
-
-    // Description
-    //
-    if (this->Description_present ())
-    {
-      const ::std::string& r = this->Description ();
-
-      if (this->Description_serializer_)
-      {
-        this->Description_serializer_->pre (r);
-        this->_start_element ("Description");
-        this->Description_serializer_->_pre_impl (ctx);
-
-        if (ctx.error_type ())
-          return;
-
-        this->Description_serializer_->_serialize_attributes ();
-
-        if (ctx.error_type ())
-          return;
-
-        this->Description_serializer_->_serialize_content ();
-
-        if (ctx.error_type ())
-          return;
-
-        this->Description_serializer_->_post_impl ();
-
-        if (ctx.error_type ())
-          return;
-
-        this->_end_element ();
-        this->Description_serializer_->post ();
       }
     }
 
@@ -1293,135 +1009,6 @@ namespace megaxml
 
         this->_end_element ();
         this->Command_serializer_->post ();
-      }
-    }
-  }
-
-  // Element validation and serialization for Stack_sskel.
-  //
-  void Stack_sskel::
-  _serialize_content ()
-  {
-    ::xsde::cxx::serializer::context& ctx = this->_context ();
-
-    // Size
-    //
-    if (this->Size_present ())
-    {
-      unsigned int r = this->Size ();
-
-      if (this->Size_serializer_)
-      {
-        this->Size_serializer_->pre (r);
-        this->_start_element ("Size");
-        this->Size_serializer_->_pre_impl (ctx);
-
-        if (ctx.error_type ())
-          return;
-
-        this->Size_serializer_->_serialize_attributes ();
-
-        if (ctx.error_type ())
-          return;
-
-        this->Size_serializer_->_serialize_content ();
-
-        if (ctx.error_type ())
-          return;
-
-        this->Size_serializer_->_post_impl ();
-
-        if (ctx.error_type ())
-          return;
-
-        this->_end_element ();
-        this->Size_serializer_->post ();
-      }
-    }
-  }
-
-  // Element validation and serialization for Fibers_sskel.
-  //
-  void Fibers_sskel::
-  _serialize_content ()
-  {
-    ::xsde::cxx::serializer::context& ctx = this->_context ();
-
-    // Stack
-    //
-    if (this->Stack_present ())
-    {
-      const ::megaxml::Stack& r = this->Stack ();
-
-      if (this->Stack_serializer_)
-      {
-        this->Stack_serializer_->pre (r);
-        this->_start_element ("Stack");
-        this->Stack_serializer_->_pre_impl (ctx);
-
-        if (ctx.error_type ())
-          return;
-
-        this->Stack_serializer_->_serialize_attributes ();
-
-        if (ctx.error_type ())
-          return;
-
-        this->Stack_serializer_->_serialize_content ();
-
-        if (ctx.error_type ())
-          return;
-
-        this->Stack_serializer_->_post_impl ();
-
-        if (ctx.error_type ())
-          return;
-
-        this->_end_element ();
-        this->Stack_serializer_->post ();
-      }
-    }
-  }
-
-  // Element validation and serialization for Defaults_sskel.
-  //
-  void Defaults_sskel::
-  _serialize_content ()
-  {
-    ::xsde::cxx::serializer::context& ctx = this->_context ();
-
-    // Fibers
-    //
-    if (this->Fibers_present ())
-    {
-      const ::megaxml::Fibers& r = this->Fibers ();
-
-      if (this->Fibers_serializer_)
-      {
-        this->Fibers_serializer_->pre (r);
-        this->_start_element ("Fibers");
-        this->Fibers_serializer_->_pre_impl (ctx);
-
-        if (ctx.error_type ())
-          return;
-
-        this->Fibers_serializer_->_serialize_attributes ();
-
-        if (ctx.error_type ())
-          return;
-
-        this->Fibers_serializer_->_serialize_content ();
-
-        if (ctx.error_type ())
-          return;
-
-        this->Fibers_serializer_->_post_impl ();
-
-        if (ctx.error_type ())
-          return;
-
-        this->_end_element ();
-        this->Fibers_serializer_->post ();
       }
     }
   }
@@ -1557,45 +1144,6 @@ namespace megaxml
   _serialize_content ()
   {
     ::xsde::cxx::serializer::context& ctx = this->_context ();
-
-    // Name
-    //
-    {
-      const ::std::string& r = this->Name ();
-
-      if (this->Name_serializer_)
-      {
-        this->Name_serializer_->pre (r);
-        this->_start_element ("Name");
-        this->Name_serializer_->_pre_impl (ctx);
-
-        if (ctx.error_type ())
-          return;
-
-        this->Name_serializer_->_serialize_attributes ();
-
-        if (ctx.error_type ())
-          return;
-
-        this->Name_serializer_->_serialize_content ();
-
-        if (ctx.error_type ())
-          return;
-
-        this->Name_serializer_->_post_impl ();
-
-        if (ctx.error_type ())
-          return;
-
-        this->_end_element ();
-        this->Name_serializer_->post ();
-      }
-      else
-      {
-        this->_schema_error (::xsde::cxx::schema_error::expected_element);
-        return;
-      }
-    }
 
     // Host
     //

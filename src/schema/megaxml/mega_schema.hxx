@@ -168,10 +168,8 @@ namespace megaxml
 {
   class Package;
   class Host;
-  class Stack;
-  class Fibers;
-  class Defaults;
   class Build;
+  class Defaults;
   class Project;
   class Files;
   class EG;
@@ -206,50 +204,16 @@ namespace megaxml
     void
     Name (const ::std::string&);
 
-    // Repository
-    //
-    bool
-    Repository_present () const;
-
-    void
-    Repository_present (bool);
-
-    const ::std::string&
-    Repository () const;
-
-    ::std::string&
-    Repository ();
-
-    void
-    Repository (const ::std::string&);
-
-    // License
+    // Type
     //
     const ::std::string&
-    License () const;
+    Type () const;
 
     ::std::string&
-    License ();
+    Type ();
 
     void
-    License (const ::std::string&);
-
-    // Description
-    //
-    bool
-    Description_present () const;
-
-    void
-    Description_present (bool);
-
-    const ::std::string&
-    Description () const;
-
-    ::std::string&
-    Description ();
-
-    void
-    Description (const ::std::string&);
+    Type (const ::std::string&);
 
     // Directories
     //
@@ -293,11 +257,7 @@ namespace megaxml
 
     private:
     ::std::string Name_;
-    ::std::string Repository_;
-    unsigned char Repository_present_;
-    ::std::string License_;
-    ::std::string Description_;
-    unsigned char Description_present_;
+    ::std::string Type_;
     ::megaxml::Directories* Directories_;
     ::megaxml::Files* Files_;
     Command_sequence Command_;
@@ -317,108 +277,6 @@ namespace megaxml
     ~Host ();
 
     private:
-  };
-
-  // Stack (fixed-length)
-  //
-  class Stack
-  {
-    public:
-    Stack ();
-
-    Stack (const Stack&);
-    Stack& operator= (const Stack&);
-
-    ~Stack ();
-
-    // Size
-    //
-    bool
-    Size_present () const;
-
-    void
-    Size_present (bool);
-
-    unsigned int
-    Size () const;
-
-    unsigned int&
-    Size ();
-
-    void
-    Size (unsigned int);
-
-    private:
-    unsigned int Size_;
-    unsigned char Size_present_;
-  };
-
-  // Fibers (fixed-length)
-  //
-  class Fibers
-  {
-    public:
-    Fibers ();
-
-    Fibers (const Fibers&);
-    Fibers& operator= (const Fibers&);
-
-    ~Fibers ();
-
-    // Stack
-    //
-    bool
-    Stack_present () const;
-
-    void
-    Stack_present (bool);
-
-    const ::megaxml::Stack&
-    Stack () const;
-
-    ::megaxml::Stack&
-    Stack ();
-
-    void
-    Stack (const ::megaxml::Stack&);
-
-    private:
-    ::megaxml::Stack Stack_;
-    unsigned char Stack_present_;
-  };
-
-  // Defaults (fixed-length)
-  //
-  class Defaults
-  {
-    public:
-    Defaults ();
-
-    Defaults (const Defaults&);
-    Defaults& operator= (const Defaults&);
-
-    ~Defaults ();
-
-    // Fibers
-    //
-    bool
-    Fibers_present () const;
-
-    void
-    Fibers_present (bool);
-
-    const ::megaxml::Fibers&
-    Fibers () const;
-
-    ::megaxml::Fibers&
-    Fibers ();
-
-    void
-    Fibers (const ::megaxml::Fibers&);
-
-    private:
-    ::megaxml::Fibers Fibers_;
-    unsigned char Fibers_present_;
   };
 
   // Build (fixed-length)
@@ -472,6 +330,21 @@ namespace megaxml
     ::std::string LinkerFlags_;
   };
 
+  // Defaults (fixed-length)
+  //
+  class Defaults
+  {
+    public:
+    Defaults ();
+
+    Defaults (const Defaults&);
+    Defaults& operator= (const Defaults&);
+
+    ~Defaults ();
+
+    private:
+  };
+
   // Project (variable-length)
   //
   class Project
@@ -484,17 +357,6 @@ namespace megaxml
     Project ();
 
     ~Project ();
-
-    // Name
-    //
-    const ::std::string&
-    Name () const;
-
-    ::std::string&
-    Name ();
-
-    void
-    Name (const ::std::string&);
 
     // Host
     //
@@ -592,7 +454,6 @@ namespace megaxml
     Defaults (const ::megaxml::Defaults&);
 
     private:
-    ::std::string Name_;
     ::std::string Host_;
     ::std::string Description_;
     unsigned char Description_present_;

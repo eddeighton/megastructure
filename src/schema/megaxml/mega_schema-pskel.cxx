@@ -37,21 +37,9 @@ namespace megaxml
   }
 
   void Package_pskel::
-  Repository_parser (::xml_schema::string_pskel& p)
+  Type_parser (::xml_schema::string_pskel& p)
   {
-    this->Repository_parser_ = &p;
-  }
-
-  void Package_pskel::
-  License_parser (::xml_schema::string_pskel& p)
-  {
-    this->License_parser_ = &p;
-  }
-
-  void Package_pskel::
-  Description_parser (::xml_schema::string_pskel& p)
-  {
-    this->Description_parser_ = &p;
+    this->Type_parser_ = &p;
   }
 
   void Package_pskel::
@@ -74,17 +62,13 @@ namespace megaxml
 
   void Package_pskel::
   parsers (::xml_schema::string_pskel& Name,
-           ::xml_schema::string_pskel& Repository,
-           ::xml_schema::string_pskel& License,
-           ::xml_schema::string_pskel& Description,
+           ::xml_schema::string_pskel& Type,
            ::megaxml::Directories_pskel& Directories,
            ::megaxml::Files_pskel& Files,
            ::xml_schema::string_pskel& Command)
   {
     this->Name_parser_ = &Name;
-    this->Repository_parser_ = &Repository;
-    this->License_parser_ = &License;
-    this->Description_parser_ = &Description;
+    this->Type_parser_ = &Type;
     this->Directories_parser_ = &Directories;
     this->Files_parser_ = &Files;
     this->Command_parser_ = &Command;
@@ -94,9 +78,7 @@ namespace megaxml
   Package_pskel ()
   : Package_impl_ (0),
     Name_parser_ (0),
-    Repository_parser_ (0),
-    License_parser_ (0),
-    Description_parser_ (0),
+    Type_parser_ (0),
     Directories_parser_ (0),
     Files_parser_ (0),
     Command_parser_ (0),
@@ -109,9 +91,7 @@ namespace megaxml
   : ::xsde::cxx::parser::validating::complex_content (impl, 0),
     Package_impl_ (impl),
     Name_parser_ (0),
-    Repository_parser_ (0),
-    License_parser_ (0),
-    Description_parser_ (0),
+    Type_parser_ (0),
     Directories_parser_ (0),
     Files_parser_ (0),
     Command_parser_ (0),
@@ -133,102 +113,6 @@ namespace megaxml
   Host_pskel (Host_pskel* impl, void*)
   : ::megaxml::Package_pskel (impl, 0),
     Host_impl_ (impl)
-  {
-  }
-
-  // Stack_pskel
-  //
-
-  void Stack_pskel::
-  Size_parser (::xml_schema::unsigned_int_pskel& p)
-  {
-    this->Size_parser_ = &p;
-  }
-
-  void Stack_pskel::
-  parsers (::xml_schema::unsigned_int_pskel& Size)
-  {
-    this->Size_parser_ = &Size;
-  }
-
-  Stack_pskel::
-  Stack_pskel ()
-  : Stack_impl_ (0),
-    Size_parser_ (0),
-    v_state_stack_ (sizeof (v_state_), &v_state_first_)
-  {
-  }
-
-  Stack_pskel::
-  Stack_pskel (Stack_pskel* impl, void*)
-  : ::xsde::cxx::parser::validating::complex_content (impl, 0),
-    Stack_impl_ (impl),
-    Size_parser_ (0),
-    v_state_stack_ (sizeof (v_state_), &v_state_first_)
-  {
-  }
-
-  // Fibers_pskel
-  //
-
-  void Fibers_pskel::
-  Stack_parser (::megaxml::Stack_pskel& p)
-  {
-    this->Stack_parser_ = &p;
-  }
-
-  void Fibers_pskel::
-  parsers (::megaxml::Stack_pskel& Stack)
-  {
-    this->Stack_parser_ = &Stack;
-  }
-
-  Fibers_pskel::
-  Fibers_pskel ()
-  : Fibers_impl_ (0),
-    Stack_parser_ (0),
-    v_state_stack_ (sizeof (v_state_), &v_state_first_)
-  {
-  }
-
-  Fibers_pskel::
-  Fibers_pskel (Fibers_pskel* impl, void*)
-  : ::xsde::cxx::parser::validating::complex_content (impl, 0),
-    Fibers_impl_ (impl),
-    Stack_parser_ (0),
-    v_state_stack_ (sizeof (v_state_), &v_state_first_)
-  {
-  }
-
-  // Defaults_pskel
-  //
-
-  void Defaults_pskel::
-  Fibers_parser (::megaxml::Fibers_pskel& p)
-  {
-    this->Fibers_parser_ = &p;
-  }
-
-  void Defaults_pskel::
-  parsers (::megaxml::Fibers_pskel& Fibers)
-  {
-    this->Fibers_parser_ = &Fibers;
-  }
-
-  Defaults_pskel::
-  Defaults_pskel ()
-  : Defaults_impl_ (0),
-    Fibers_parser_ (0),
-    v_state_stack_ (sizeof (v_state_), &v_state_first_)
-  {
-  }
-
-  Defaults_pskel::
-  Defaults_pskel (Defaults_pskel* impl, void*)
-  : ::xsde::cxx::parser::validating::complex_content (impl, 0),
-    Defaults_impl_ (impl),
-    Fibers_parser_ (0),
-    v_state_stack_ (sizeof (v_state_), &v_state_first_)
   {
   }
 
@@ -284,14 +168,24 @@ namespace megaxml
   {
   }
 
-  // Project_pskel
+  // Defaults_pskel
   //
 
-  void Project_pskel::
-  Name_parser (::xml_schema::string_pskel& p)
+  Defaults_pskel::
+  Defaults_pskel ()
+  : Defaults_impl_ (0)
   {
-    this->Name_parser_ = &p;
   }
+
+  Defaults_pskel::
+  Defaults_pskel (Defaults_pskel* impl, void*)
+  : ::xsde::cxx::parser::validating::complex_content (impl, 0),
+    Defaults_impl_ (impl)
+  {
+  }
+
+  // Project_pskel
+  //
 
   void Project_pskel::
   Host_parser (::xml_schema::string_pskel& p)
@@ -336,8 +230,7 @@ namespace megaxml
   }
 
   void Project_pskel::
-  parsers (::xml_schema::string_pskel& Name,
-           ::xml_schema::string_pskel& Host,
+  parsers (::xml_schema::string_pskel& Host,
            ::xml_schema::string_pskel& Description,
            ::xml_schema::string_pskel& Package,
            ::megaxml::Files_pskel& Files,
@@ -345,7 +238,6 @@ namespace megaxml
            ::megaxml::Run_pskel& Run,
            ::megaxml::Defaults_pskel& Defaults)
   {
-    this->Name_parser_ = &Name;
     this->Host_parser_ = &Host;
     this->Description_parser_ = &Description;
     this->Package_parser_ = &Package;
@@ -358,7 +250,6 @@ namespace megaxml
   Project_pskel::
   Project_pskel ()
   : Project_impl_ (0),
-    Name_parser_ (0),
     Host_parser_ (0),
     Description_parser_ (0),
     Package_parser_ (0),
@@ -374,7 +265,6 @@ namespace megaxml
   Project_pskel (Project_pskel* impl, void*)
   : ::xsde::cxx::parser::validating::complex_content (impl, 0),
     Project_impl_ (impl),
-    Name_parser_ (0),
     Host_parser_ (0),
     Description_parser_ (0),
     Package_parser_ (0),
@@ -610,24 +500,10 @@ namespace megaxml
   }
 
   void Package_pskel::
-  Repository (const ::std::string& x)
+  Type (const ::std::string& x)
   {
     if (this->Package_impl_)
-      this->Package_impl_->Repository (x);
-  }
-
-  void Package_pskel::
-  License (const ::std::string& x)
-  {
-    if (this->Package_impl_)
-      this->Package_impl_->License (x);
-  }
-
-  void Package_pskel::
-  Description (const ::std::string& x)
-  {
-    if (this->Package_impl_)
-      this->Package_impl_->Description (x);
+      this->Package_impl_->Type (x);
   }
 
   void Package_pskel::
@@ -667,14 +543,8 @@ namespace megaxml
     if (this->Name_parser_)
       this->Name_parser_->_reset ();
 
-    if (this->Repository_parser_)
-      this->Repository_parser_->_reset ();
-
-    if (this->License_parser_)
-      this->License_parser_->_reset ();
-
-    if (this->Description_parser_)
-      this->Description_parser_->_reset ();
+    if (this->Type_parser_)
+      this->Type_parser_->_reset ();
 
     if (this->Directories_parser_)
       this->Directories_parser_->_reset ();
@@ -696,93 +566,6 @@ namespace megaxml
   {
     assert (this->Package_impl_);
     return this->Package_impl_->post_Package ();
-  }
-
-  // Stack_pskel
-  //
-
-  void Stack_pskel::
-  Size (unsigned int x)
-  {
-    if (this->Stack_impl_)
-      this->Stack_impl_->Size (x);
-  }
-
-  void Stack_pskel::
-  _reset ()
-  {
-    if (this->resetting_)
-      return;
-
-    typedef ::xsde::cxx::parser::validating::complex_content base;
-    base::_reset ();
-
-    this->v_state_stack_.clear ();
-
-    this->resetting_ = true;
-
-    if (this->Size_parser_)
-      this->Size_parser_->_reset ();
-
-    this->resetting_ = false;
-  }
-
-  // Fibers_pskel
-  //
-
-  void Fibers_pskel::
-  Stack (const ::megaxml::Stack& x)
-  {
-    if (this->Fibers_impl_)
-      this->Fibers_impl_->Stack (x);
-  }
-
-  void Fibers_pskel::
-  _reset ()
-  {
-    if (this->resetting_)
-      return;
-
-    typedef ::xsde::cxx::parser::validating::complex_content base;
-    base::_reset ();
-
-    this->v_state_stack_.clear ();
-
-    this->resetting_ = true;
-
-    if (this->Stack_parser_)
-      this->Stack_parser_->_reset ();
-
-    this->resetting_ = false;
-  }
-
-  // Defaults_pskel
-  //
-
-  void Defaults_pskel::
-  Fibers (const ::megaxml::Fibers& x)
-  {
-    if (this->Defaults_impl_)
-      this->Defaults_impl_->Fibers (x);
-  }
-
-  void Defaults_pskel::
-  _reset ()
-  {
-    if (this->resetting_)
-      return;
-
-    typedef ::xsde::cxx::parser::validating::complex_content base;
-    base::_reset ();
-
-    this->v_state_stack_.clear ();
-
-    this->resetting_ = true;
-
-    if (this->Fibers_parser_)
-      this->Fibers_parser_->_reset ();
-
-    this->resetting_ = false;
   }
 
   // Build_pskel
@@ -836,13 +619,6 @@ namespace megaxml
 
   // Project_pskel
   //
-
-  void Project_pskel::
-  Name (const ::std::string& x)
-  {
-    if (this->Project_impl_)
-      this->Project_impl_->Name (x);
-  }
 
   void Project_pskel::
   Host (const ::std::string& x)
@@ -905,9 +681,6 @@ namespace megaxml
     this->v_state_stack_.clear ();
 
     this->resetting_ = true;
-
-    if (this->Name_parser_)
-      this->Name_parser_->_reset ();
 
     if (this->Host_parser_)
       this->Host_parser_->_reset ();
@@ -1331,60 +1104,26 @@ namespace megaxml
       }
       case 1UL:
       {
-        if (n == "Repository" && ns.empty ())
+        if (n == "Type" && ns.empty ())
         {
           if (start)
           {
-            if (this->Repository_parser_)
+            if (this->Type_parser_)
             {
-              this->Repository_parser_->pre ();
-              ctx.nested_parser (this->Repository_parser_);
+              this->Type_parser_->pre ();
+              ctx.nested_parser (this->Type_parser_);
             }
           }
           else
           {
-            if (this->Repository_parser_ != 0)
+            if (this->Type_parser_ != 0)
             {
-              const ::std::string& tmp = this->Repository_parser_->post_string ();
-              this->Repository (tmp);
+              const ::std::string& tmp = this->Type_parser_->post_string ();
+              this->Type (tmp);
             }
 
             count = 0;
             state = 2UL;
-          }
-
-          break;
-        }
-        else
-        {
-          assert (start);
-          count = 0;
-          state = 2UL;
-          // Fall through.
-        }
-      }
-      case 2UL:
-      {
-        if (n == "License" && ns.empty ())
-        {
-          if (start)
-          {
-            if (this->License_parser_)
-            {
-              this->License_parser_->pre ();
-              ctx.nested_parser (this->License_parser_);
-            }
-          }
-          else
-          {
-            if (this->License_parser_ != 0)
-            {
-              const ::std::string& tmp = this->License_parser_->post_string ();
-              this->License (tmp);
-            }
-
-            count = 0;
-            state = 3UL;
           }
 
           break;
@@ -1399,45 +1138,11 @@ namespace megaxml
           }
 
           count = 0;
-          state = 3UL;
+          state = 2UL;
           // Fall through.
         }
       }
-      case 3UL:
-      {
-        if (n == "Description" && ns.empty ())
-        {
-          if (start)
-          {
-            if (this->Description_parser_)
-            {
-              this->Description_parser_->pre ();
-              ctx.nested_parser (this->Description_parser_);
-            }
-          }
-          else
-          {
-            if (this->Description_parser_ != 0)
-            {
-              const ::std::string& tmp = this->Description_parser_->post_string ();
-              this->Description (tmp);
-            }
-
-            count = 0;
-            state = 4UL;
-          }
-
-          break;
-        }
-        else
-        {
-          assert (start);
-          count = 0;
-          state = 4UL;
-          // Fall through.
-        }
-      }
-      case 4UL:
+      case 2UL:
       {
         if (n == "Directories" && ns.empty ())
         {
@@ -1458,7 +1163,7 @@ namespace megaxml
             }
 
             count = 0;
-            state = 5UL;
+            state = 3UL;
           }
 
           break;
@@ -1467,11 +1172,11 @@ namespace megaxml
         {
           assert (start);
           count = 0;
-          state = 5UL;
+          state = 3UL;
           // Fall through.
         }
       }
-      case 5UL:
+      case 3UL:
       {
         if (n == "Files" && ns.empty ())
         {
@@ -1492,7 +1197,7 @@ namespace megaxml
             }
 
             count = 0;
-            state = 6UL;
+            state = 4UL;
           }
 
           break;
@@ -1501,11 +1206,11 @@ namespace megaxml
         {
           assert (start);
           count = 0;
-          state = 6UL;
+          state = 4UL;
           // Fall through.
         }
       }
-      case 6UL:
+      case 4UL:
       {
         if (n == "Command" && ns.empty ())
         {
@@ -1526,543 +1231,6 @@ namespace megaxml
             }
 
             count++;
-          }
-
-          break;
-        }
-        else
-        {
-          assert (start);
-          count = 0;
-          state = ~0UL;
-          // Fall through.
-        }
-      }
-      case ~0UL:
-        break;
-    }
-  }
-
-  // Element validation and dispatch functions for Stack_pskel.
-  //
-  bool Stack_pskel::
-  _start_element_impl (const ::xsde::cxx::ro_string& ns,
-                       const ::xsde::cxx::ro_string& n)
-  {
-    ::xsde::cxx::parser::context& ctx = this->_context ();
-
-    v_state_& vs = *static_cast< v_state_* > (this->v_state_stack_.top ());
-    v_state_descr_* vd = vs.data + (vs.size - 1);
-
-    if (vd->func == 0 && vd->state == 0)
-    {
-      typedef ::xsde::cxx::parser::validating::complex_content base;
-      if (base::_start_element_impl (ns, n))
-        return true;
-      else
-        vd->state = 1;
-    }
-
-    while (vd->func != 0)
-    {
-      (this->*vd->func) (vd->state, vd->count, ns, n, true);
-
-      vd = vs.data + (vs.size - 1);
-
-      if (vd->state == ~0UL && !ctx.error_type ())
-        vd = vs.data + (--vs.size - 1);
-      else
-        break;
-    }
-
-    if (vd->func == 0)
-    {
-      if (vd->state != ~0UL)
-      {
-        unsigned long s = ~0UL;
-
-        if (n == "Size" && ns.empty ())
-          s = 0UL;
-
-        if (s != ~0UL)
-        {
-          vd->count++;
-          vd->state = ~0UL;
-
-          vd = vs.data + vs.size++;
-          vd->func = &Stack_pskel::sequence_0;
-          vd->state = s;
-          vd->count = 0;
-
-          this->sequence_0 (vd->state, vd->count, ns, n, true);
-        }
-        else
-        {
-          return false;
-        }
-      }
-      else
-        return false;
-    }
-
-    return true;
-  }
-
-  bool Stack_pskel::
-  _end_element_impl (const ::xsde::cxx::ro_string& ns,
-                     const ::xsde::cxx::ro_string& n)
-  {
-    v_state_& vs = *static_cast< v_state_* > (this->v_state_stack_.top ());
-    v_state_descr_& vd = vs.data[vs.size - 1];
-
-    if (vd.func == 0 && vd.state == 0)
-    {
-      typedef ::xsde::cxx::parser::validating::complex_content base;
-      if (!base::_end_element_impl (ns, n))
-        assert (false);
-      return true;
-    }
-
-    assert (vd.func != 0);
-    (this->*vd.func) (vd.state, vd.count, ns, n, false);
-
-    if (vd.state == ~0UL)
-      vs.size--;
-
-    return true;
-  }
-
-  void Stack_pskel::
-  _pre_e_validate ()
-  {
-    this->v_state_stack_.push ();
-    static_cast< v_state_* > (this->v_state_stack_.top ())->size = 0;
-
-    v_state_& vs = *static_cast< v_state_* > (this->v_state_stack_.top ());
-    v_state_descr_& vd = vs.data[vs.size++];
-
-    vd.func = 0;
-    vd.state = 0;
-    vd.count = 0;
-  }
-
-  void Stack_pskel::
-  _post_e_validate ()
-  {
-    ::xsde::cxx::parser::context& ctx = this->_context ();
-
-    v_state_& vs = *static_cast< v_state_* > (this->v_state_stack_.top ());
-    v_state_descr_* vd = vs.data + (vs.size - 1);
-
-    ::xsde::cxx::ro_string empty;
-    while (vd->func != 0)
-    {
-      (this->*vd->func) (vd->state, vd->count, empty, empty, true);
-
-      if (ctx.error_type ())
-        return;
-
-      assert (vd->state == ~0UL);
-      vd = vs.data + (--vs.size - 1);
-    }
-
-
-    this->v_state_stack_.pop ();
-  }
-
-  void Stack_pskel::
-  sequence_0 (unsigned long& state,
-              unsigned long& count,
-              const ::xsde::cxx::ro_string& ns,
-              const ::xsde::cxx::ro_string& n,
-              bool start)
-  {
-    ::xsde::cxx::parser::context& ctx = this->_context ();
-
-    XSDE_UNUSED (ctx);
-
-    switch (state)
-    {
-      case 0UL:
-      {
-        if (n == "Size" && ns.empty ())
-        {
-          if (start)
-          {
-            if (this->Size_parser_)
-            {
-              this->Size_parser_->pre ();
-              ctx.nested_parser (this->Size_parser_);
-            }
-          }
-          else
-          {
-            if (this->Size_parser_ != 0)
-            {
-              unsigned int tmp = this->Size_parser_->post_unsigned_int ();
-              this->Size (tmp);
-            }
-
-            count = 0;
-            state = ~0UL;
-          }
-
-          break;
-        }
-        else
-        {
-          assert (start);
-          count = 0;
-          state = ~0UL;
-          // Fall through.
-        }
-      }
-      case ~0UL:
-        break;
-    }
-  }
-
-  // Element validation and dispatch functions for Fibers_pskel.
-  //
-  bool Fibers_pskel::
-  _start_element_impl (const ::xsde::cxx::ro_string& ns,
-                       const ::xsde::cxx::ro_string& n)
-  {
-    ::xsde::cxx::parser::context& ctx = this->_context ();
-
-    v_state_& vs = *static_cast< v_state_* > (this->v_state_stack_.top ());
-    v_state_descr_* vd = vs.data + (vs.size - 1);
-
-    if (vd->func == 0 && vd->state == 0)
-    {
-      typedef ::xsde::cxx::parser::validating::complex_content base;
-      if (base::_start_element_impl (ns, n))
-        return true;
-      else
-        vd->state = 1;
-    }
-
-    while (vd->func != 0)
-    {
-      (this->*vd->func) (vd->state, vd->count, ns, n, true);
-
-      vd = vs.data + (vs.size - 1);
-
-      if (vd->state == ~0UL && !ctx.error_type ())
-        vd = vs.data + (--vs.size - 1);
-      else
-        break;
-    }
-
-    if (vd->func == 0)
-    {
-      if (vd->state != ~0UL)
-      {
-        unsigned long s = ~0UL;
-
-        if (n == "Stack" && ns.empty ())
-          s = 0UL;
-
-        if (s != ~0UL)
-        {
-          vd->count++;
-          vd->state = ~0UL;
-
-          vd = vs.data + vs.size++;
-          vd->func = &Fibers_pskel::sequence_0;
-          vd->state = s;
-          vd->count = 0;
-
-          this->sequence_0 (vd->state, vd->count, ns, n, true);
-        }
-        else
-        {
-          return false;
-        }
-      }
-      else
-        return false;
-    }
-
-    return true;
-  }
-
-  bool Fibers_pskel::
-  _end_element_impl (const ::xsde::cxx::ro_string& ns,
-                     const ::xsde::cxx::ro_string& n)
-  {
-    v_state_& vs = *static_cast< v_state_* > (this->v_state_stack_.top ());
-    v_state_descr_& vd = vs.data[vs.size - 1];
-
-    if (vd.func == 0 && vd.state == 0)
-    {
-      typedef ::xsde::cxx::parser::validating::complex_content base;
-      if (!base::_end_element_impl (ns, n))
-        assert (false);
-      return true;
-    }
-
-    assert (vd.func != 0);
-    (this->*vd.func) (vd.state, vd.count, ns, n, false);
-
-    if (vd.state == ~0UL)
-      vs.size--;
-
-    return true;
-  }
-
-  void Fibers_pskel::
-  _pre_e_validate ()
-  {
-    this->v_state_stack_.push ();
-    static_cast< v_state_* > (this->v_state_stack_.top ())->size = 0;
-
-    v_state_& vs = *static_cast< v_state_* > (this->v_state_stack_.top ());
-    v_state_descr_& vd = vs.data[vs.size++];
-
-    vd.func = 0;
-    vd.state = 0;
-    vd.count = 0;
-  }
-
-  void Fibers_pskel::
-  _post_e_validate ()
-  {
-    ::xsde::cxx::parser::context& ctx = this->_context ();
-
-    v_state_& vs = *static_cast< v_state_* > (this->v_state_stack_.top ());
-    v_state_descr_* vd = vs.data + (vs.size - 1);
-
-    ::xsde::cxx::ro_string empty;
-    while (vd->func != 0)
-    {
-      (this->*vd->func) (vd->state, vd->count, empty, empty, true);
-
-      if (ctx.error_type ())
-        return;
-
-      assert (vd->state == ~0UL);
-      vd = vs.data + (--vs.size - 1);
-    }
-
-
-    this->v_state_stack_.pop ();
-  }
-
-  void Fibers_pskel::
-  sequence_0 (unsigned long& state,
-              unsigned long& count,
-              const ::xsde::cxx::ro_string& ns,
-              const ::xsde::cxx::ro_string& n,
-              bool start)
-  {
-    ::xsde::cxx::parser::context& ctx = this->_context ();
-
-    XSDE_UNUSED (ctx);
-
-    switch (state)
-    {
-      case 0UL:
-      {
-        if (n == "Stack" && ns.empty ())
-        {
-          if (start)
-          {
-            if (this->Stack_parser_)
-            {
-              this->Stack_parser_->pre ();
-              ctx.nested_parser (this->Stack_parser_);
-            }
-          }
-          else
-          {
-            if (this->Stack_parser_ != 0)
-            {
-              const ::megaxml::Stack& tmp = this->Stack_parser_->post_Stack ();
-              this->Stack (tmp);
-            }
-
-            count = 0;
-            state = ~0UL;
-          }
-
-          break;
-        }
-        else
-        {
-          assert (start);
-          count = 0;
-          state = ~0UL;
-          // Fall through.
-        }
-      }
-      case ~0UL:
-        break;
-    }
-  }
-
-  // Element validation and dispatch functions for Defaults_pskel.
-  //
-  bool Defaults_pskel::
-  _start_element_impl (const ::xsde::cxx::ro_string& ns,
-                       const ::xsde::cxx::ro_string& n)
-  {
-    ::xsde::cxx::parser::context& ctx = this->_context ();
-
-    v_state_& vs = *static_cast< v_state_* > (this->v_state_stack_.top ());
-    v_state_descr_* vd = vs.data + (vs.size - 1);
-
-    if (vd->func == 0 && vd->state == 0)
-    {
-      typedef ::xsde::cxx::parser::validating::complex_content base;
-      if (base::_start_element_impl (ns, n))
-        return true;
-      else
-        vd->state = 1;
-    }
-
-    while (vd->func != 0)
-    {
-      (this->*vd->func) (vd->state, vd->count, ns, n, true);
-
-      vd = vs.data + (vs.size - 1);
-
-      if (vd->state == ~0UL && !ctx.error_type ())
-        vd = vs.data + (--vs.size - 1);
-      else
-        break;
-    }
-
-    if (vd->func == 0)
-    {
-      if (vd->state != ~0UL)
-      {
-        unsigned long s = ~0UL;
-
-        if (n == "Fibers" && ns.empty ())
-          s = 0UL;
-
-        if (s != ~0UL)
-        {
-          vd->count++;
-          vd->state = ~0UL;
-
-          vd = vs.data + vs.size++;
-          vd->func = &Defaults_pskel::sequence_0;
-          vd->state = s;
-          vd->count = 0;
-
-          this->sequence_0 (vd->state, vd->count, ns, n, true);
-        }
-        else
-        {
-          return false;
-        }
-      }
-      else
-        return false;
-    }
-
-    return true;
-  }
-
-  bool Defaults_pskel::
-  _end_element_impl (const ::xsde::cxx::ro_string& ns,
-                     const ::xsde::cxx::ro_string& n)
-  {
-    v_state_& vs = *static_cast< v_state_* > (this->v_state_stack_.top ());
-    v_state_descr_& vd = vs.data[vs.size - 1];
-
-    if (vd.func == 0 && vd.state == 0)
-    {
-      typedef ::xsde::cxx::parser::validating::complex_content base;
-      if (!base::_end_element_impl (ns, n))
-        assert (false);
-      return true;
-    }
-
-    assert (vd.func != 0);
-    (this->*vd.func) (vd.state, vd.count, ns, n, false);
-
-    if (vd.state == ~0UL)
-      vs.size--;
-
-    return true;
-  }
-
-  void Defaults_pskel::
-  _pre_e_validate ()
-  {
-    this->v_state_stack_.push ();
-    static_cast< v_state_* > (this->v_state_stack_.top ())->size = 0;
-
-    v_state_& vs = *static_cast< v_state_* > (this->v_state_stack_.top ());
-    v_state_descr_& vd = vs.data[vs.size++];
-
-    vd.func = 0;
-    vd.state = 0;
-    vd.count = 0;
-  }
-
-  void Defaults_pskel::
-  _post_e_validate ()
-  {
-    ::xsde::cxx::parser::context& ctx = this->_context ();
-
-    v_state_& vs = *static_cast< v_state_* > (this->v_state_stack_.top ());
-    v_state_descr_* vd = vs.data + (vs.size - 1);
-
-    ::xsde::cxx::ro_string empty;
-    while (vd->func != 0)
-    {
-      (this->*vd->func) (vd->state, vd->count, empty, empty, true);
-
-      if (ctx.error_type ())
-        return;
-
-      assert (vd->state == ~0UL);
-      vd = vs.data + (--vs.size - 1);
-    }
-
-
-    this->v_state_stack_.pop ();
-  }
-
-  void Defaults_pskel::
-  sequence_0 (unsigned long& state,
-              unsigned long& count,
-              const ::xsde::cxx::ro_string& ns,
-              const ::xsde::cxx::ro_string& n,
-              bool start)
-  {
-    ::xsde::cxx::parser::context& ctx = this->_context ();
-
-    XSDE_UNUSED (ctx);
-
-    switch (state)
-    {
-      case 0UL:
-      {
-        if (n == "Fibers" && ns.empty ())
-        {
-          if (start)
-          {
-            if (this->Fibers_parser_)
-            {
-              this->Fibers_parser_->pre ();
-              ctx.nested_parser (this->Fibers_parser_);
-            }
-          }
-          else
-          {
-            if (this->Fibers_parser_ != 0)
-            {
-              const ::megaxml::Fibers& tmp = this->Fibers_parser_->post_Fibers ();
-              this->Fibers (tmp);
-            }
-
-            count = 0;
-            state = ~0UL;
           }
 
           break;
@@ -2391,7 +1559,7 @@ namespace megaxml
       {
         unsigned long s = ~0UL;
 
-        if (n == "Name" && ns.empty ())
+        if (n == "Host" && ns.empty ())
           s = 0UL;
 
         if (s != ~0UL)
@@ -2503,22 +1671,22 @@ namespace megaxml
     {
       case 0UL:
       {
-        if (n == "Name" && ns.empty ())
+        if (n == "Host" && ns.empty ())
         {
           if (start)
           {
-            if (this->Name_parser_)
+            if (this->Host_parser_)
             {
-              this->Name_parser_->pre ();
-              ctx.nested_parser (this->Name_parser_);
+              this->Host_parser_->pre ();
+              ctx.nested_parser (this->Host_parser_);
             }
           }
           else
           {
-            if (this->Name_parser_ != 0)
+            if (this->Host_parser_ != 0)
             {
-              const ::std::string& tmp = this->Name_parser_->post_string ();
-              this->Name (tmp);
+              const ::std::string& tmp = this->Host_parser_->post_string ();
+              this->Host (tmp);
             }
 
             count = 0;
@@ -2543,46 +1711,6 @@ namespace megaxml
       }
       case 1UL:
       {
-        if (n == "Host" && ns.empty ())
-        {
-          if (start)
-          {
-            if (this->Host_parser_)
-            {
-              this->Host_parser_->pre ();
-              ctx.nested_parser (this->Host_parser_);
-            }
-          }
-          else
-          {
-            if (this->Host_parser_ != 0)
-            {
-              const ::std::string& tmp = this->Host_parser_->post_string ();
-              this->Host (tmp);
-            }
-
-            count = 0;
-            state = 2UL;
-          }
-
-          break;
-        }
-        else
-        {
-          assert (start);
-          if (count < 1UL)
-          {
-            this->_schema_error (::xsde::cxx::schema_error::expected_element);
-            break;
-          }
-
-          count = 0;
-          state = 2UL;
-          // Fall through.
-        }
-      }
-      case 2UL:
-      {
         if (n == "Description" && ns.empty ())
         {
           if (start)
@@ -2602,7 +1730,7 @@ namespace megaxml
             }
 
             count = 0;
-            state = 3UL;
+            state = 2UL;
           }
 
           break;
@@ -2611,11 +1739,11 @@ namespace megaxml
         {
           assert (start);
           count = 0;
-          state = 3UL;
+          state = 2UL;
           // Fall through.
         }
       }
-      case 3UL:
+      case 2UL:
       {
         if (n == "Package" && ns.empty ())
         {
@@ -2644,11 +1772,11 @@ namespace megaxml
         {
           assert (start);
           count = 0;
-          state = 4UL;
+          state = 3UL;
           // Fall through.
         }
       }
-      case 4UL:
+      case 3UL:
       {
         if (n == "Files" && ns.empty ())
         {
@@ -2669,7 +1797,7 @@ namespace megaxml
             }
 
             count = 0;
-            state = 5UL;
+            state = 4UL;
           }
 
           break;
@@ -2678,11 +1806,11 @@ namespace megaxml
         {
           assert (start);
           count = 0;
-          state = 5UL;
+          state = 4UL;
           // Fall through.
         }
       }
-      case 5UL:
+      case 4UL:
       {
         if (n == "Build" && ns.empty ())
         {
@@ -2711,11 +1839,11 @@ namespace megaxml
         {
           assert (start);
           count = 0;
-          state = 6UL;
+          state = 5UL;
           // Fall through.
         }
       }
-      case 6UL:
+      case 5UL:
       {
         if (n == "Run" && ns.empty ())
         {
@@ -2744,11 +1872,11 @@ namespace megaxml
         {
           assert (start);
           count = 0;
-          state = 7UL;
+          state = 6UL;
           // Fall through.
         }
       }
-      case 7UL:
+      case 6UL:
       {
         if (n == "Defaults" && ns.empty ())
         {

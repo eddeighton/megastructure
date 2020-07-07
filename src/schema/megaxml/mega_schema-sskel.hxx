@@ -92,10 +92,8 @@ namespace megaxml
 {
   class Package_sskel;
   class Host_sskel;
-  class Stack_sskel;
-  class Fibers_sskel;
-  class Defaults_sskel;
   class Build_sskel;
+  class Defaults_sskel;
   class Project_sskel;
   class Files_sskel;
   class EG_sskel;
@@ -309,20 +307,8 @@ namespace megaxml
     virtual ::std::string
     Name () = 0;
 
-    virtual bool
-    Repository_present ();
-
     virtual ::std::string
-    Repository () = 0;
-
-    virtual ::std::string
-    License () = 0;
-
-    virtual bool
-    Description_present ();
-
-    virtual ::std::string
-    Description () = 0;
+    Type () = 0;
 
     virtual bool
     Directories_present ();
@@ -349,9 +335,7 @@ namespace megaxml
     //
     void
     serializers (::xml_schema::string_sskel& /* Name */,
-                 ::xml_schema::string_sskel& /* Repository */,
-                 ::xml_schema::string_sskel& /* License */,
-                 ::xml_schema::string_sskel& /* Description */,
+                 ::xml_schema::string_sskel& /* Type */,
                  ::megaxml::Directories_sskel& /* Directories */,
                  ::megaxml::Files_sskel& /* Files */,
                  ::xml_schema::string_sskel& /* Command */);
@@ -362,13 +346,7 @@ namespace megaxml
     Name_serializer (::xml_schema::string_sskel&);
 
     void
-    Repository_serializer (::xml_schema::string_sskel&);
-
-    void
-    License_serializer (::xml_schema::string_sskel&);
-
-    void
-    Description_serializer (::xml_schema::string_sskel&);
+    Type_serializer (::xml_schema::string_sskel&);
 
     void
     Directories_serializer (::megaxml::Directories_sskel&);
@@ -398,9 +376,7 @@ namespace megaxml
 
     protected:
     ::xml_schema::string_sskel* Name_serializer_;
-    ::xml_schema::string_sskel* Repository_serializer_;
-    ::xml_schema::string_sskel* License_serializer_;
-    ::xml_schema::string_sskel* Description_serializer_;
+    ::xml_schema::string_sskel* Type_serializer_;
     ::megaxml::Directories_sskel* Directories_serializer_;
     ::megaxml::Files_sskel* Files_serializer_;
     ::xml_schema::string_sskel* Command_serializer_;
@@ -432,13 +408,7 @@ namespace megaxml
     Name ();
 
     virtual ::std::string
-    Repository ();
-
-    virtual ::std::string
-    License ();
-
-    virtual ::std::string
-    Description ();
+    Type ();
 
     virtual const ::megaxml::Directories&
     Directories ();
@@ -452,159 +422,6 @@ namespace megaxml
     protected:
     Host_sskel* Host_impl_;
     Host_sskel (Host_sskel*, void*);
-  };
-
-  class Stack_sskel: public ::xsde::cxx::serializer::validating::complex_content
-  {
-    public:
-    // Serializer callbacks. Override them in your implementation.
-    //
-
-    virtual void
-    pre (const ::megaxml::Stack&) = 0;
-
-    // Elements.
-    //
-    virtual bool
-    Size_present ();
-
-    virtual unsigned int
-    Size () = 0;
-
-    // virtual void
-    // post ();
-
-    // Serializer construction API.
-    //
-    void
-    serializers (::xml_schema::unsigned_int_sskel& /* Size */);
-
-    // Individual element serializers.
-    //
-    void
-    Size_serializer (::xml_schema::unsigned_int_sskel&);
-
-    virtual void
-    _reset ();
-
-    // Constructor.
-    //
-    Stack_sskel ();
-
-    // Implementation.
-    //
-    public:
-    virtual void
-    _serialize_content ();
-
-    protected:
-    Stack_sskel* Stack_impl_;
-    Stack_sskel (Stack_sskel*, void*);
-
-    protected:
-    ::xml_schema::unsigned_int_sskel* Size_serializer_;
-  };
-
-  class Fibers_sskel: public ::xsde::cxx::serializer::validating::complex_content
-  {
-    public:
-    // Serializer callbacks. Override them in your implementation.
-    //
-
-    virtual void
-    pre (const ::megaxml::Fibers&) = 0;
-
-    // Elements.
-    //
-    virtual bool
-    Stack_present ();
-
-    virtual const ::megaxml::Stack&
-    Stack () = 0;
-
-    // virtual void
-    // post ();
-
-    // Serializer construction API.
-    //
-    void
-    serializers (::megaxml::Stack_sskel& /* Stack */);
-
-    // Individual element serializers.
-    //
-    void
-    Stack_serializer (::megaxml::Stack_sskel&);
-
-    virtual void
-    _reset ();
-
-    // Constructor.
-    //
-    Fibers_sskel ();
-
-    // Implementation.
-    //
-    public:
-    virtual void
-    _serialize_content ();
-
-    protected:
-    Fibers_sskel* Fibers_impl_;
-    Fibers_sskel (Fibers_sskel*, void*);
-
-    protected:
-    ::megaxml::Stack_sskel* Stack_serializer_;
-  };
-
-  class Defaults_sskel: public ::xsde::cxx::serializer::validating::complex_content
-  {
-    public:
-    // Serializer callbacks. Override them in your implementation.
-    //
-
-    virtual void
-    pre (const ::megaxml::Defaults&) = 0;
-
-    // Elements.
-    //
-    virtual bool
-    Fibers_present ();
-
-    virtual const ::megaxml::Fibers&
-    Fibers () = 0;
-
-    // virtual void
-    // post ();
-
-    // Serializer construction API.
-    //
-    void
-    serializers (::megaxml::Fibers_sskel& /* Fibers */);
-
-    // Individual element serializers.
-    //
-    void
-    Fibers_serializer (::megaxml::Fibers_sskel&);
-
-    virtual void
-    _reset ();
-
-    // Constructor.
-    //
-    Defaults_sskel ();
-
-    // Implementation.
-    //
-    public:
-    virtual void
-    _serialize_content ();
-
-    protected:
-    Defaults_sskel* Defaults_impl_;
-    Defaults_sskel (Defaults_sskel*, void*);
-
-    protected:
-    ::megaxml::Fibers_sskel* Fibers_serializer_;
   };
 
   class Build_sskel: public ::xsde::cxx::serializer::validating::complex_content
@@ -671,6 +488,30 @@ namespace megaxml
     ::xml_schema::string_sskel* LinkerFlags_serializer_;
   };
 
+  class Defaults_sskel: public ::xsde::cxx::serializer::validating::complex_content
+  {
+    public:
+    // Serializer callbacks. Override them in your implementation.
+    //
+
+    virtual void
+    pre (const ::megaxml::Defaults&) = 0;
+
+    // virtual void
+    // post ();
+
+    // Constructor.
+    //
+    Defaults_sskel ();
+
+    // Implementation.
+    //
+    public:
+    protected:
+    Defaults_sskel* Defaults_impl_;
+    Defaults_sskel (Defaults_sskel*, void*);
+  };
+
   class Project_sskel: public ::xsde::cxx::serializer::validating::complex_content
   {
     public:
@@ -682,9 +523,6 @@ namespace megaxml
 
     // Elements.
     //
-    virtual ::std::string
-    Name () = 0;
-
     virtual ::std::string
     Host () = 0;
 
@@ -730,8 +568,7 @@ namespace megaxml
     // Serializer construction API.
     //
     void
-    serializers (::xml_schema::string_sskel& /* Name */,
-                 ::xml_schema::string_sskel& /* Host */,
+    serializers (::xml_schema::string_sskel& /* Host */,
                  ::xml_schema::string_sskel& /* Description */,
                  ::xml_schema::string_sskel& /* Package */,
                  ::megaxml::Files_sskel& /* Files */,
@@ -741,9 +578,6 @@ namespace megaxml
 
     // Individual element serializers.
     //
-    void
-    Name_serializer (::xml_schema::string_sskel&);
-
     void
     Host_serializer (::xml_schema::string_sskel&);
 
@@ -783,7 +617,6 @@ namespace megaxml
     Project_sskel (Project_sskel*, void*);
 
     protected:
-    ::xml_schema::string_sskel* Name_serializer_;
     ::xml_schema::string_sskel* Host_serializer_;
     ::xml_schema::string_sskel* Description_serializer_;
     ::xml_schema::string_sskel* Package_serializer_;

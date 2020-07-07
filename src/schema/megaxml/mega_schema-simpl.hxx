@@ -50,20 +50,8 @@ namespace megaxml
     virtual ::std::string
     Name ();
 
-    virtual bool
-    Repository_present ();
-
     virtual ::std::string
-    Repository ();
-
-    virtual ::std::string
-    License ();
-
-    virtual bool
-    Description_present ();
-
-    virtual ::std::string
-    Description ();
+    Type ();
 
     virtual bool
     Directories_present ();
@@ -114,75 +102,6 @@ namespace megaxml
     Host_simpl_state Host_simpl_state_;
   };
 
-  class Stack_simpl: public Stack_sskel
-  {
-    public:
-    virtual void
-    pre (const ::megaxml::Stack&);
-
-    // Elements.
-    //
-    virtual bool
-    Size_present ();
-
-    virtual unsigned int
-    Size ();
-
-    public:
-    struct Stack_simpl_state
-    {
-      const ::megaxml::Stack* Stack_;
-    };
-
-    Stack_simpl_state Stack_simpl_state_;
-  };
-
-  class Fibers_simpl: public Fibers_sskel
-  {
-    public:
-    virtual void
-    pre (const ::megaxml::Fibers&);
-
-    // Elements.
-    //
-    virtual bool
-    Stack_present ();
-
-    virtual const ::megaxml::Stack&
-    Stack ();
-
-    public:
-    struct Fibers_simpl_state
-    {
-      const ::megaxml::Fibers* Fibers_;
-    };
-
-    Fibers_simpl_state Fibers_simpl_state_;
-  };
-
-  class Defaults_simpl: public Defaults_sskel
-  {
-    public:
-    virtual void
-    pre (const ::megaxml::Defaults&);
-
-    // Elements.
-    //
-    virtual bool
-    Fibers_present ();
-
-    virtual const ::megaxml::Fibers&
-    Fibers ();
-
-    public:
-    struct Defaults_simpl_state
-    {
-      const ::megaxml::Defaults* Defaults_;
-    };
-
-    Defaults_simpl_state Defaults_simpl_state_;
-  };
-
   class Build_simpl: public Build_sskel
   {
     public:
@@ -209,6 +128,21 @@ namespace megaxml
     Build_simpl_state Build_simpl_state_;
   };
 
+  class Defaults_simpl: public Defaults_sskel
+  {
+    public:
+    virtual void
+    pre (const ::megaxml::Defaults&);
+
+    public:
+    struct Defaults_simpl_state
+    {
+      const ::megaxml::Defaults* Defaults_;
+    };
+
+    Defaults_simpl_state Defaults_simpl_state_;
+  };
+
   class Project_simpl: public Project_sskel
   {
     public:
@@ -217,9 +151,6 @@ namespace megaxml
 
     // Elements.
     //
-    virtual ::std::string
-    Name ();
-
     virtual ::std::string
     Host ();
 
@@ -463,19 +394,16 @@ namespace megaxml
     }
 
     public:
-    ::megaxml::Defaults_simpl Defaults_s_;
-    ::megaxml::Fibers_simpl Fibers_s_;
-    ::megaxml::Stack_simpl Stack_s_;
-    ::megaxml::Files_simpl Files_s_;
     ::xml_schema::string_simpl string_s_;
-    ::xml_schema::unsigned_int_simpl unsigned_int_s_;
     ::megaxml::EG_simpl EG_s_;
-    ::megaxml::Package_simpl Package_s_;
-    ::megaxml::Directories_simpl Directories_s_;
     ::megaxml::Host_simpl Host_s_;
     ::megaxml::Project_simpl Project_s_;
     ::megaxml::Build_simpl Build_s_;
     ::megaxml::Run_simpl Run_s_;
+    ::megaxml::Defaults_simpl Defaults_s_;
+    ::megaxml::Files_simpl Files_s_;
+    ::megaxml::Package_simpl Package_s_;
+    ::megaxml::Directories_simpl Directories_s_;
   };
 }
 

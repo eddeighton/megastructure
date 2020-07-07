@@ -99,6 +99,9 @@ public:
 	const std::string& getCoordinatorName() const { return m_coordinatorName.get(); }
 	const std::string& getHostName() const { return m_hostName.get(); }
 	const std::string& getProjectName() const { return m_projectName; }
+    
+	const Coordinator::PtrVector& getCoordinators() const { return m_coordinators; }
+    const Project& getProject() const;
 	
 	const boost::filesystem::path& getRootPath() const { return m_path; }
 	
@@ -107,8 +110,6 @@ public:
     std::vector< boost::filesystem::path > getSystemIncludes() const
 	{
 		std::vector< boost::filesystem::path > includes;
-		
-		//includes.push_back( "chrono" );
 		
 		return includes;
 	}
@@ -121,19 +122,12 @@ public:
 		includes.push_back( "pybind11/pybind11.h" );
 		includes.push_back( "pybind11/stl.h" );
 		includes.push_back( "pybind11/stl_bind.h" );
-		includes.push_back( "pybind11/embed.h" );
 		includes.push_back( environment.expand( "${PYBIND}/pybind11_helpers.hpp" ) );
 		
 		includes.push_back( environment.expand( "egcomponent/traits.hpp" ) );
 		
 		includes.push_back( "eg/include.hpp" );
 		includes.push_back( "eg_runtime/eg_runtime.hpp" );
-		
-//#include "W:/root/thirdparty/pybind11/install/include/pybind11/pybind11.h"
-//#include "W:/root/thirdparty/pybind11/install/include/pybind11/stl.h"
-//#include "W:/root/thirdparty/pybind11/install/include/pybind11/stl_bind.h"
-//#include "W:/root/thirdparty/pybind11/install/include/pybind11/embed.h"
-//#include "W:/root/thirdparty/pybind11/install/pybind11_helpers.hpp"
 
 		return includes;
 	}
@@ -230,18 +224,11 @@ public:
 		
 		return directories;
 	}
-
-    std::size_t getFiberStackSize() const
-	{
-		return 4096;
-	}
-	
-	
 	
 	boost::filesystem::path getOperationsHeader( const std::string& strTUName ) const
 	{
 		std::ostringstream os;
-		os << "operations_" << strTUName << ".hpp";
+		os << strTUName << "_operations.hpp";
 		return boost::filesystem::edsCannonicalise(
 			boost::filesystem::absolute( 
 				getInterfaceFolder() / os.str() ) );
@@ -250,7 +237,7 @@ public:
 	boost::filesystem::path getOperationsPCH( const std::string& strTUName ) const
 	{
 		std::ostringstream os;
-		os << "operations_" << strTUName << ".pch";
+		os << strTUName << "_operations.pch";
 		return boost::filesystem::edsCannonicalise(
 			boost::filesystem::absolute( 
 				getInterfaceFolder() / os.str() ) );
@@ -259,7 +246,7 @@ public:
 	boost::filesystem::path getImplementationSource( const std::string& strTUName ) const
 	{
 		std::ostringstream os;
-		os << "operations_" << strTUName << ".cpp";
+		os << strTUName << "_operations.cpp";
 		return boost::filesystem::edsCannonicalise(
 			boost::filesystem::absolute( 
 				getInterfaceFolder() / os.str() ) );
@@ -333,7 +320,7 @@ public:
 	boost::filesystem::path getObjectName( const std::string& strTUName, const boost::filesystem::path& binPath ) const
 	{
 		std::ostringstream os;
-		os << "object_" << strTUName << ".obj";
+		os << strTUName << "_object.obj";
 		return boost::filesystem::edsCannonicalise(
 					boost::filesystem::absolute( 
 						binPath / os.str() ) );
@@ -342,7 +329,7 @@ public:
 	boost::filesystem::path getObjectFile( const boost::filesystem::path& sourceFile, const boost::filesystem::path& binPath ) const
 	{
 		std::ostringstream os;
-		os << "object_" << sourceFile.stem().string() << ".obj";
+		os << sourceFile.stem().string() << "_object.obj";
 		return boost::filesystem::edsCannonicalise(
 					boost::filesystem::absolute( 
 						binPath / os.str() ) );
@@ -358,9 +345,6 @@ public:
 			boost::filesystem::absolute( 
 				getInterfaceFolder() / os.str() ) );
 	}
-	
-	
-	const Coordinator::PtrVector& getCoordinators() const { return m_coordinators; }
 	
 private:
 	boost::filesystem::path m_path;
