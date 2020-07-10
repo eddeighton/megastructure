@@ -2,8 +2,7 @@
 #ifndef COMPONENT_JOBS_01_MAY_2020
 #define COMPONENT_JOBS_01_MAY_2020
 
-#include "program.hpp"
-
+#include "megastructure/program.hpp"
 #include "megastructure/component.hpp"
 
 namespace megastructure

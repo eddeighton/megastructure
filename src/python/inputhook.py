@@ -1,5 +1,6 @@
 import sys
 import os
+import IPython
 from IPython.external.qt_for_kernel import QtCore, QtGui
 
 # If we create a QApplication, keep a reference to it so that it doesn't get
@@ -57,3 +58,6 @@ def mega_input_hook(context):
                 event_loop.exec_()
         finally:
             notifier.setEnabled(False)
+
+IPython.terminal.pt_inputhooks.register( "qt", mega_input_hook )
+

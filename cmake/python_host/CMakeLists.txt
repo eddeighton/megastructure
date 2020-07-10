@@ -39,7 +39,7 @@ link_boost( python_host system )
 link_boost( python_host date_time )
 link_xsde( python_host )
 link_clang( python_host )
-link_pybind11( python_host )
+link_pybind11_as_module( python_host )
 link_common( python_host )
 link_eg( python_host )
 

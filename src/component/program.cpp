@@ -1,5 +1,5 @@
 
-#include "program.hpp"
+#include "megastructure/program.hpp"
 
 #include "egcomponent/egcomponent.hpp"
 
@@ -14,14 +14,6 @@
 namespace megastructure
 {
 	
-std::string getComponentName( const std::string& strCoordinator, const std::string& strHostName, const std::string& strProjectName )
-{
-	std::ostringstream os;
-	//for now always load the debug dll - d post fix
-	os << strCoordinator << '_' << strHostName << '_' << strProjectName << "d.dll";
-	return os.str();
-}
-
 boost::filesystem::path getBinFolderForProject( const boost::filesystem::path& workspacePath, const std::string& strProjectName )
 {
 	return boost::filesystem::edsCannonicalise(
@@ -41,6 +33,8 @@ Program::Program( Component& component, const std::string& strHostName, const st
 			std::make_shared< ProjectTree >( 
 				m_component.getEnvironment(), 
 				m_component.getSlaveWorkspacePath(), 
+                m_component.getSlaveName(),
+                m_strHostName,
 				strProjectName );
 	}
 	catch( std::exception& ex )
@@ -69,8 +63,9 @@ Program::Program( Component& component, const std::string& strHostName, const st
 		m_pProgramTable.reset();
     }
 	
-    const boost::filesystem::path binDirectory = getBinFolderForProject( m_component.getSlaveWorkspacePath(), m_strProjectName );
-    m_strComponentName = getComponentName( m_component.getSlaveName(), m_strHostName, m_strProjectName );
+    const boost::filesystem::path binDirectory = 
+        getBinFolderForProject( m_component.getSlaveWorkspacePath(), m_strProjectName );
+    m_strComponentName = m_pProjectTree->getComponentFileNameExt( true );
 
 	m_componentPath = binDirectory / m_strComponentName;
 	std::cout << "Attempting to load component: " << m_componentPath.string() << std::endl;
@@ -83,7 +78,8 @@ Program::Program( Component& component, const std::string& strHostName, const st
     
     std::cout << "Attempting initialisation" << std::endl;
 	//initialise the programs memory
-	m_pPlugin->Initialise( m_pEncodeDecode, this, this );
+	m_pPlugin->Initialise( m_pEncodeDecode, this, this, 
+        m_pProjectTree->getAnalysisFileName().string().c_str() );
 	
 	VERIFY_RTE_MSG( m_pEncodeDecode, "Did not get encode decode interface from program: " << m_componentPath.string() );
     
@@ -314,6 +310,11 @@ void Program::egCall( std::int32_t iType, std::uint32_t uiInstance, const std::s
 	}
 }*/
   
+void* Program::getRoot() const
+{
+    return m_pPlugin->GetRoot();
+}
+        
 void Program::run()
 {
     m_pPlugin->Cycle();

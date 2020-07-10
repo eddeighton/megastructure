@@ -33,6 +33,13 @@ namespace megastructure
 	
 		Program( Component& component, const std::string& strHostName, const std::string& strProjectName );
 		~Program();
+        
+        const std::string& getHostName() const { return m_strHostName; }
+        const std::string& getProjectName() const { return m_strProjectName; }
+        const std::string& getComponentName() const { return m_strComponentName; }
+        const boost::filesystem::path& getComponentPath() const { return m_componentPath; }
+        
+        void* getRoot() const;
 		
 		void run();
         

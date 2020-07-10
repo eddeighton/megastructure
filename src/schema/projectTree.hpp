@@ -100,6 +100,25 @@ public:
 	const std::string& getHostName() const { return m_hostName.get(); }
 	const std::string& getProjectName() const { return m_projectName; }
     
+    std::string getComponentFileName( bool bDebug ) const
+    {
+        std::ostringstream os;
+        if( bDebug )
+            os << getCoordinatorName() << '_' << getHostName() << '_' << getProjectName() << "d";
+        else
+            os << getCoordinatorName() << '_' << getHostName() << '_' << getProjectName();
+        return os.str();
+    }
+    std::string getComponentFileNameExt( bool bDebug ) const
+    {
+        std::ostringstream os;
+        if( bDebug )
+            os << getCoordinatorName() << '_' << getHostName() << '_' << getProjectName() << "d.dll";
+        else
+            os << getCoordinatorName() << '_' << getHostName() << '_' << getProjectName() << ".dll";
+        return os.str();
+    }
+    
 	const Coordinator::PtrVector& getCoordinators() const { return m_coordinators; }
     const Project& getProject() const;
 	
@@ -345,7 +364,7 @@ public:
 			boost::filesystem::absolute( 
 				getInterfaceFolder() / os.str() ) );
 	}
-	
+        
 private:
 	boost::filesystem::path m_path;
 	boost::optional< std::string > m_coordinatorName;

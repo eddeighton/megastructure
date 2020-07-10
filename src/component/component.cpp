@@ -1,8 +1,8 @@
 
 
 #include "activities.hpp"
-#include "program.hpp"
 
+#include "megastructure/program.hpp"
 #include "megastructure/component.hpp"
 #include "megastructure/clientServer.hpp"
 

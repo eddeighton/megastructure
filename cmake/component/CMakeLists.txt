@@ -22,6 +22,7 @@ include( ${MEGA_ROOT_DIR}/cmake/core/megastructure_include.cmake )
 #get the sources
 set( MEGA_COMPONENT_API
 	${MEGA_API_DIR}/megastructure/component.hpp
+	${MEGA_API_DIR}/megastructure/program.hpp
 	)
 
 set( MEGA_COMPONENT_SOURCES
@@ -30,7 +31,6 @@ set( MEGA_COMPONENT_SOURCES
 	${MEGA_SRC_DIR}/component/activities.cpp
 	${MEGA_SRC_DIR}/component/jobs.hpp
 	${MEGA_SRC_DIR}/component/jobs.cpp
-	${MEGA_SRC_DIR}/component/program.hpp
 	${MEGA_SRC_DIR}/component/program.cpp
     )
 

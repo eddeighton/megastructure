@@ -518,7 +518,7 @@ void generateMegaStructureNetStateHeader( std::ostream& os, const eg::ReadSessio
     os << "#endif\n";
 }
 
-extern void generatePythonBindings( std::ostream&, const eg::ReadSession&, const Environment&, const ProjectTree& );
+extern void generatePythonBindings( std::ostream&, const eg::ReadSession&, const Environment&, const ProjectTree&, eg::PrinterFactory::Ptr );
 
 void build_component( const eg::ReadSession& session, const Environment& environment,
     const ProjectTree& projectTree, const boost::filesystem::path& binPath, const std::string& strCompilationFlags )
@@ -555,7 +555,7 @@ void build_component( const eg::ReadSession& session, const Environment& environ
 		std::ostringstream osImpl;
 		osImpl << "#include \"" << projectTree.getStructuresInclude() << "\"\n";
         osImpl << "#include \"" << projectTree.getNetStateSourceInclude() << "\"\n";
-		eg::generate_dynamic_interface( osImpl, *pPrinterFactory, session );
+		//eg::generate_dynamic_interface( osImpl, *pPrinterFactory, session );
 		eg::generateActionInstanceFunctions( osImpl, *pPrinterFactory, session );
 		boost::filesystem::updateFileIfChanged( projectTree.getRuntimeSource(), osImpl.str() );
 		sourceFiles.push_back( projectTree.getRuntimeSource() );
@@ -564,57 +564,46 @@ void build_component( const eg::ReadSession& session, const Environment& environ
     const Project& project = projectTree.getProject();
     const std::string& strProjectType = project.getHost().Type();
     
+	//generate the eg component interface implementation
     if( strProjectType == "basic" )
     {
         //do nothing
-    }
-    else if( strProjectType == "python" )
-    {
-        //generate python bindings
-		std::ostringstream osPython;
-        generatePythonBindings( osPython, session, environment, projectTree );
-		boost::filesystem::updateFileIfChanged( projectTree.getPythonSource(), osPython.str() );
-		sourceFiles.push_back( projectTree.getPythonSource() );
-    }
-    else
-    {
-        THROW_RTE( "Unknown project type: " << strProjectType );
-    }
-	
-	//generate python bindings
-	/*{
-		std::ostringstream osCmd;
-		osCmd << environment.printPath( environment.expand( "${EG}/bin/python_host.exe" ) ) << " ";
-		
-		osCmd << "--name " << projectTree.getProjectName() << " ";
-		osCmd << "--database " << projectTree.getAnalysisFileName() << " ";
-		osCmd << "--dir " << projectTree.getInterfaceFolder().generic_string() << " ";
-		osCmd << "--target " << projectTree.getPythonFileName().generic_string() << " ";
-		
-		{
-			std::cout << "\n" << osCmd.str() << std::endl;
-			
-			const int iResult = boost::process::system( osCmd.str() );
-			if( iResult )
-			{
-				THROW_RTE( "Error invoking python_host.exe " << iResult );
-			}
-		}
-		sourceFiles.push_back( projectTree.getPythonSource() );
-	}*/
-	
-	//generate the eg component interface implementation
-	{
+        
 		std::ostringstream osEGComponent;
 		megastructure::generate_eg_component( 
             osEGComponent, 
             projectTree, 
             session,
-            networkAnalysis );
+            networkAnalysis,
+            false );
 		const boost::filesystem::path egComponentSourceFilePath = projectTree.getEGComponentSource();
 		boost::filesystem::updateFileIfChanged( egComponentSourceFilePath, osEGComponent.str() );
 		sourceFiles.push_back( egComponentSourceFilePath );
-	}
+        
+    }
+    else if( strProjectType == "python" )
+    {
+        //generate python bindings
+		std::ostringstream osPython;
+        generatePythonBindings( osPython, session, environment, projectTree, pPrinterFactory );
+		boost::filesystem::updateFileIfChanged( projectTree.getPythonSource(), osPython.str() );
+		sourceFiles.push_back( projectTree.getPythonSource() );
+        
+		std::ostringstream osEGComponent;
+		megastructure::generate_eg_component( 
+            osEGComponent, 
+            projectTree, 
+            session,
+            networkAnalysis,
+            true );
+		const boost::filesystem::path egComponentSourceFilePath = projectTree.getEGComponentSource();
+		boost::filesystem::updateFileIfChanged( egComponentSourceFilePath, osEGComponent.str() );
+		sourceFiles.push_back( egComponentSourceFilePath );
+    }
+    else
+    {
+        THROW_RTE( "Unknown project type: " << strProjectType );
+    }
 	
     std::mutex logMutex;
     std::vector< std::function< void() > > commands;

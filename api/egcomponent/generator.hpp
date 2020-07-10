@@ -114,7 +114,8 @@ private:
 void generate_eg_component( std::ostream& os, 
         const ProjectTree& project,
 		const eg::ReadSession& session,
-        const NetworkAnalysis& networkAnalysis );
+        const NetworkAnalysis& networkAnalysis,
+        bool bPythonBindings );
 
 }
 

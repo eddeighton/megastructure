@@ -142,6 +142,13 @@ int main( int argc, const char* argv[] )
 				slave.startActivity( new slave::TestHostsActivity( slave ) );
 			else if( str == "list" )
 				slave.startActivity( new slave::ListHostsActivity( slave ) );
+            else if( str == "help" )
+            {
+                std::cout << "help:   This...\n";
+                std::cout << "test:   Test existing connections and drop inactive ones.\n";
+                std::cout << "list:   List existing connections.\n";
+                std::cout << "quit:   Quit.\n";
+            }
 			else if( str == "quit" )
 				break;
 		}

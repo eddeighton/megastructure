@@ -130,8 +130,8 @@ const NetworkAnalysis::HostStructures& NetworkAnalysis::getHostStructures( const
 void NetworkAnalysis::getHostStructures()
 {
     const eg::Layout& layout = m_session.getLayout();
-	//const eg::TranslationUnitAnalysis& translationUnits =
-	//	m_session.getTranslationUnitAnalysis();
+    //const eg::TranslationUnitAnalysis& translationUnits =
+    //  m_session.getTranslationUnitAnalysis();
         
     const eg::interface::Root* pRootRoot = m_session.getTreeRoot();
     VERIFY_RTE( pRootRoot->getRootType() == eg::eInterfaceRoot );
@@ -482,97 +482,98 @@ struct MegastructurePrinterFactory : public ::eg::PrinterFactory
 
 void recurseEncodeDecode( const ::eg::concrete::Action* pAction, std::ostream& os )
 {
-	const std::vector< eg::concrete::Element* >& children = pAction->getChildren();
-	for( const eg::concrete::Element* pElement : children )
-	{
-		if( const eg::concrete::Action* pNestedAction = 
-			dynamic_cast< const eg::concrete::Action* >( pElement ) )
-		{
-			const std::string strType = getStaticType( pNestedAction->getContext() );
-			os << "    template<> inline void encode( Encoder& encoder, const " << strType << "& value ){ encode( encoder, value.data ); }\n";
-			os << "    template<> inline void decode( Decoder& decoder, " << strType << "& value ) 		{ decode( decoder, value.data ); }\n";
+    const std::vector< eg::concrete::Element* >& children = pAction->getChildren();
+    for( const eg::concrete::Element* pElement : children )
+    {
+        if( const eg::concrete::Action* pNestedAction = 
+            dynamic_cast< const eg::concrete::Action* >( pElement ) )
+        {
+            const std::string strType = getStaticType( pNestedAction->getContext() );
+            os << "    template<> inline void encode( Encoder& encoder, const " << strType << "& value ){ encode( encoder, value.data ); }\n";
+            os << "    template<> inline void decode( Decoder& decoder, " << strType << "& value )      { decode( decoder, value.data ); }\n";
 
-			recurseEncodeDecode( pNestedAction, os );
-		}
-	}
+            recurseEncodeDecode( pNestedAction, os );
+        }
+    }
 }
 
 void recurseEncode( const eg::Layout& layout, const ::eg::concrete::Action* pAction, std::ostream& os )
 {
-	os << "        case " << pAction->getIndex() << ": ";
-	//generateEncode( os, pAction );
-	os << " break; //" << pAction->getName() << "\n";
-	
-	const std::vector< eg::concrete::Element* >& children = pAction->getChildren();
-	for( const eg::concrete::Element* pElement : children )
-	{
-		if( const eg::concrete::Action* pNestedAction = 
-			dynamic_cast< const eg::concrete::Action* >( pElement ) )
-		{
-			recurseEncode( layout, pNestedAction, os );
-		}
-		else if( const eg::concrete::Dimension* pDimension =
-			dynamic_cast< const eg::concrete::Dimension* >( pElement ) )
-		{
-			const eg::DataMember* pDataMember = layout.getDataMember( pDimension );
-			
-			os << "        case " << pElement->getIndex() << ": ";
+    os << "        case " << pAction->getIndex() << ": ";
+    //generateEncode( os, pAction );
+    os << " break; //" << pAction->getName() << "\n";
+    
+    const std::vector< eg::concrete::Element* >& children = pAction->getChildren();
+    for( const eg::concrete::Element* pElement : children )
+    {
+        if( const eg::concrete::Action* pNestedAction = 
+            dynamic_cast< const eg::concrete::Action* >( pElement ) )
+        {
+            recurseEncode( layout, pNestedAction, os );
+        }
+        else if( const eg::concrete::Dimension* pDimension =
+            dynamic_cast< const eg::concrete::Dimension* >( pElement ) )
+        {
+            const eg::DataMember* pDataMember = layout.getDataMember( pDimension );
+            
+            os << "        case " << pElement->getIndex() << ": ";
             generateEncode( os, pDataMember, "uiInstance" );
-			os << " break; //" << pDataMember->getName() << "\n";
-		}
-	}
+            os << " break; //" << pDataMember->getName() << "\n";
+        }
+    }
 }
 
 void recurseDecode( const eg::Layout& layout, const ::eg::concrete::Action* pAction, std::ostream& os )
 {
-	os << "        case " << pAction->getIndex() << ": ";
-	//generateDecode( os, pAction );
-	os << "break; //" << pAction->getName() << "\n";
-			
-	const std::vector< eg::concrete::Element* >& children = pAction->getChildren();
-	for( const eg::concrete::Element* pElement : children )
-	{
-		if( const eg::concrete::Action* pNestedAction = 
-			dynamic_cast< const eg::concrete::Action* >( pElement ) )
-		{
-			recurseDecode( layout, pNestedAction, os );
-		}
-		else if( const eg::concrete::Dimension* pDimension =
-			dynamic_cast< const eg::concrete::Dimension* >( pElement ) )
-		{
-			const eg::DataMember* pDataMember = layout.getDataMember( pDimension );
-			os << "        case " << pElement->getIndex() << ": ";
+    os << "        case " << pAction->getIndex() << ": ";
+    //generateDecode( os, pAction );
+    os << "break; //" << pAction->getName() << "\n";
+            
+    const std::vector< eg::concrete::Element* >& children = pAction->getChildren();
+    for( const eg::concrete::Element* pElement : children )
+    {
+        if( const eg::concrete::Action* pNestedAction = 
+            dynamic_cast< const eg::concrete::Action* >( pElement ) )
+        {
+            recurseDecode( layout, pNestedAction, os );
+        }
+        else if( const eg::concrete::Dimension* pDimension =
+            dynamic_cast< const eg::concrete::Dimension* >( pElement ) )
+        {
+            const eg::DataMember* pDataMember = layout.getDataMember( pDimension );
+            os << "        case " << pElement->getIndex() << ": ";
             generateDecode( os, pDataMember, "uiInstance" );
-			os << " break; //" << pDataMember->getName() << "\n";
-		}
-	}
+            os << " break; //" << pDataMember->getName() << "\n";
+        }
+    }
 }
 
 void generate_eg_component( std::ostream& os, 
-		const ProjectTree& project,
-		const eg::ReadSession& session,
-        const NetworkAnalysis& networkAnalysis )
+        const ProjectTree& project,
+        const eg::ReadSession& session,
+        const NetworkAnalysis& networkAnalysis,
+        bool bPythonBindings )
 {
-	
-	os << "//ed was here\n";
-	os << "#include <chrono>\n";
-	os << "#include <thread>\n";
-	os << "#include <vector>\n";
-	os << "#include <set>\n";
+    
+    os << "//ed was here\n";
+    os << "#include <chrono>\n";
+    os << "#include <thread>\n";
+    os << "#include <vector>\n";
+    os << "#include <set>\n";
 
-	os << "\n";
-	
-	os << "#include \"egcomponent/egcomponent.hpp\"\n";
+    os << "\n";
+    
+    os << "#include \"egcomponent/egcomponent.hpp\"\n";
     os << "#include \"egcomponent/traits.hpp\"\n";
     os << "#include \"" << project.getStructuresInclude() << "\"\n";
     os << "#include \"" << project.getNetStateSourceInclude() << "\"\n";
-	
+    
     const eg::Layout& layout = session.getLayout();
     const eg::IndexedObject::Array& objects = session.getObjects( eg::IndexedObject::MASTER_FILE );
-	const eg::concrete::Action* pRoot = session.getInstanceRoot();
-	
+    const eg::concrete::Action* pRoot = session.getInstanceRoot();
+    
     const eg::TranslationUnitAnalysis& translationUnitAnalysis =
-		session.getTranslationUnitAnalysis();
+        session.getTranslationUnitAnalysis();
         
         
     os << "\n//network state\n";
@@ -587,7 +588,7 @@ void generate_eg_component( std::ostream& os,
         os << "std::set< eg::TypeInstance > " << i.second.strWriteSetName << ";\n";
         os << "std::set< eg::TypeInstance > " << i.second.strActivationSetName << ";\n";
     }
-	
+    
     os << "\n//buffers\n";
     for( const eg::Buffer* pBuffer : layout.getBuffers() )
     {
@@ -601,8 +602,8 @@ void generate_eg_component( std::ostream& os,
         }
         os << pBuffer->getTypeName() << "* " << pBuffer->getVariableName() << " = nullptr;\n";
     }
-	os << "\n";
-	
+    os << "\n";
+    
     os << "void allocate_buffers( megastructure::MemorySystem* pMemorySystem )\n";
     os << "{\n";
     for( const eg::Buffer* pBuffer : layout.getBuffers() )
@@ -617,7 +618,7 @@ void generate_eg_component( std::ostream& os,
             os << "    " << pBuffer->getVariableName() << "_mega = pMemorySystem->getLocalBuffer( \"" << 
                 pBuffer->getVariableName() << "\" , " <<  pBuffer->getSize() << " * sizeof( " << pBuffer->getTypeName() << " ) );\n";
         }
-		os << "    " << pBuffer->getVariableName() << " = reinterpret_cast< " << pBuffer->getTypeName() << "* >( " << pBuffer->getVariableName() << "_mega->getData() );\n";
+        os << "    " << pBuffer->getVariableName() << " = reinterpret_cast< " << pBuffer->getTypeName() << "* >( " << pBuffer->getVariableName() << "_mega->getData() );\n";
 
     os << "    for( " << eg::EG_INSTANCE << " i = 0U; i != " << pBuffer->getSize() << "; ++i )\n";
     os << "    {\n";
@@ -650,87 +651,124 @@ void generate_eg_component( std::ostream& os,
     }
     os << "}\n";
     os << "\n";
-	os << "namespace eg\n";
-	os << "{\n";
-	recurseEncodeDecode( pRoot, os );
-	os << "}\n";
+    os << "namespace eg\n";
+    os << "{\n";
+    recurseEncodeDecode( pRoot, os );
+    os << "}\n";
     os << "\n";
-	
+    
     os << "\n//encode decode\n";
-	os << "void encode( std::int32_t iType, std::uint32_t uiInstance, eg::Encoder& buffer )\n";
-	os << "{\n";
-	os << "    switch( iType )\n";
-	os << "    {\n";
-	recurseEncode( layout, pRoot, os );
-	os << "        default: \n";
-	os << "        {\n";
-	os << "            std::ostringstream _os;\n";
-	os << "            _os << \"Unknown type: \" << iType << \" instance: \" << uiInstance;\n";
-	os << "            throw std::runtime_error( _os.str() );\n";
-	os << "        }\n";
-	os << "    }\n";
-	os << "}\n";
-	os << "void decode( std::int32_t iType, std::uint32_t uiInstance, eg::Decoder& buffer )\n";
-	os << "{\n";
-	os << "    switch( iType )\n";
-	os << "    {\n";
-	recurseDecode( layout, pRoot, os );
-	os << "        default: \n";
-	os << "        {\n";
-	os << "            std::ostringstream _os;\n";
-	os << "            _os << \"Unknown type: \" << iType << \" instance: \" << uiInstance;\n";
-	os << "            throw std::runtime_error( _os.str() );\n";
-	os << "        }\n";
-	os << "    }\n";
-	os << "}\n";
+    os << "void encode( std::int32_t iType, std::uint32_t uiInstance, eg::Encoder& buffer )\n";
+    os << "{\n";
+    os << "    switch( iType )\n";
+    os << "    {\n";
+    recurseEncode( layout, pRoot, os );
+    os << "        default: \n";
+    os << "        {\n";
+    os << "            std::ostringstream _os;\n";
+    os << "            _os << \"Unknown type: \" << iType << \" instance: \" << uiInstance;\n";
+    os << "            throw std::runtime_error( _os.str() );\n";
+    os << "        }\n";
+    os << "    }\n";
+    os << "}\n";
+    os << "void decode( std::int32_t iType, std::uint32_t uiInstance, eg::Decoder& buffer )\n";
+    os << "{\n";
+    os << "    switch( iType )\n";
+    os << "    {\n";
+    recurseDecode( layout, pRoot, os );
+    os << "        default: \n";
+    os << "        {\n";
+    os << "            std::ostringstream _os;\n";
+    os << "            _os << \"Unknown type: \" << iType << \" instance: \" << uiInstance;\n";
+    os << "            throw std::runtime_error( _os.str() );\n";
+    os << "        }\n";
+    os << "    }\n";
+    os << "}\n";
     os << "\n";
-	
+    
+    if( bPythonBindings )
+    {
+    os << "extern eg::ComponentInterop& getPythonInterop();\n";
+    os << "extern void setEGRuntime( eg::EGRuntime& egRuntime );\n";
+    os << "extern void* getPythonRoot();\n";
+    }
 
-	const char szStuff[] = R"(
+    const char szComponentPart1[] = R"(
     
-    
-	
 namespace megastructure
 {
-	
+    
 class EGComponentImpl : public EGComponent, public EncodeDecode
 {
-	MemorySystem* m_pMemorySystem = nullptr;
-	MegaProtocol* m_pMegaProtocol = nullptr;
+    MemorySystem* m_pMemorySystem = nullptr;
+    MegaProtocol* m_pMegaProtocol = nullptr;
+    eg::EGRuntimePtr m_pEGRuntime;
 public:
-	virtual ~EGComponentImpl()
-	{
-	}
-	
-	virtual void Initialise( EncodeDecode*& pEncodeDecode, MemorySystem* pMemorySystem, MegaProtocol* pMegaProtocol )
-	{
-		pEncodeDecode = this;
-		
-		m_pMemorySystem = pMemorySystem;
-		m_pMegaProtocol = pMegaProtocol;
-		
-		allocate_buffers( m_pMemorySystem );
-	}
-	virtual void Uninitialise()
-	{
-		deallocate_buffers( m_pMemorySystem );
-	}
-	
-	virtual void Cycle()
-	{
+    virtual ~EGComponentImpl()
+    {
+    }
+    
+)";
+    os << szComponentPart1 << "\n";
+    
+    os << "    virtual void Initialise( EncodeDecode*& pEncodeDecode, MemorySystem* pMemorySystem, MegaProtocol* pMegaProtocol, const char* pszDataBasePath )\n";
+    os << "    {\n";
+    os << "        pEncodeDecode = this;\n";
+    os << "        \n";
+    os << "        m_pMemorySystem = pMemorySystem;\n";
+    os << "        m_pMegaProtocol = pMegaProtocol;\n";
+    
+    if( bPythonBindings )
+    {
+    os << "        eg::ComponentInterop& interop = getPythonInterop();\n";
+    os << "        m_pEGRuntime = eg::constructRuntime( interop, pszDataBasePath );\n";
+    os << "        setEGRuntime( *m_pEGRuntime );\n";
+    }
+    
+    os << "\n";
+    os << "        allocate_buffers( m_pMemorySystem );\n";
+    os << "    }\n";
+    
+    
+    if( bPythonBindings )
+    {
+    os << "    virtual void* GetRoot()\n";
+    os << "    {\n";
+    os << "        return getPythonRoot();\n";
+    os << "    }\n";
+    }
+    else
+    {
+    os << "    virtual void* GetRoot()\n";
+    os << "    {\n";
+    os << "        return nullptr;\n";
+    os << "    }\n";
+    }
+    
+    
+    
+const char szComponentPart2[] = R"(
+    
+    virtual void Uninitialise()
+    {
+        deallocate_buffers( m_pMemorySystem );
+    }
+    
+    virtual void Cycle()
+    {
         eg::Scheduler::cycle();
-		clock::next();
-	}
-	
-	virtual void encode( std::int32_t iType, std::uint32_t uiInstance, eg::Encoder& buffer )
-	{
-		::encode( iType, uiInstance, buffer );
-	}
-	
-	virtual void decode( std::int32_t iType, std::uint32_t uiInstance, eg::Decoder& buffer )
-	{
-		::decode( iType, uiInstance, buffer );
-	}
+        clock::next();
+    }
+    
+    virtual void encode( std::int32_t iType, std::uint32_t uiInstance, eg::Encoder& buffer )
+    {
+        ::encode( iType, uiInstance, buffer );
+    }
+    
+    virtual void decode( std::int32_t iType, std::uint32_t uiInstance, eg::Decoder& buffer )
+    {
+        ::decode( iType, uiInstance, buffer );
+    }
     
     
     //networking
@@ -755,14 +793,14 @@ extern "C" BOOST_SYMBOL_EXPORT EGComponentImpl g_pluginSymbol;
 EGComponentImpl g_pluginSymbol;
 
 }
-	
-	)";
-	
-	os << szStuff << "\n";
-	
-	const char szEventRoutines[] = R"(
-	
-	
+    
+    )";
+    
+    os << szComponentPart2 << "\n";
+    
+    const char szEventRoutines[] = R"(
+    
+    
 eg::event_iterator events::getIterator()
 {
     return eg::event_iterator{};
@@ -770,7 +808,7 @@ eg::event_iterator events::getIterator()
 
 bool events::get( eg::event_iterator& iterator, Event& event )
 {
-	return false;
+    return false;
 }
 
 void events::put( const char* type, eg::TimeStamp timestamp, const void* value, std::size_t size )
@@ -800,8 +838,8 @@ namespace eg
     }
 }
 
-	)";
-	os << szEventRoutines << "\n";
+    )";
+    os << szEventRoutines << "\n";
 }
 
 } //namespace megastructure
