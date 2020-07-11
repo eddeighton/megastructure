@@ -23,6 +23,9 @@ bool RouteEGProtocolActivity::serverMessage( const megastructure::Message& messa
 		
 		if( egMsg.has_request() )
 		{
+            //std::cout << "Slave got eg request type: " << egMsg.type() << " instance: " << 
+            //    egMsg.instance() << " timestamp: " << egMsg.cycle() << std::endl;
+                
 			//route the request to the client
 			if( megastructure::NetworkAddressTable::Ptr pNAT = m_slave.getNATRequests() )
 			{
@@ -57,7 +60,7 @@ bool RouteEGProtocolActivity::serverMessage( const megastructure::Message& messa
 				}
 				else
 				{
-					std::cout << "Sending request to: " << uiTargetClientID << std::endl;
+					//std::cout << "Sending request to: " << uiTargetClientID << std::endl;
 					m_slave.sendHost( message, uiTargetClientID );
 				}
 			}
@@ -71,14 +74,14 @@ bool RouteEGProtocolActivity::serverMessage( const megastructure::Message& messa
 			//route the response back to the source host
 			const megastructure::Message::EG_Msg::Response& response = egMsg.response();
 			VERIFY_RTE_MSG( response.host() != 0U, "Invalid host resolved for response from master to slave" );
-			std::cout << "Sending response to: " << response.host() << std::endl;
+			//std::cout << "Sending response to: " << response.host() << std::endl;
 			m_slave.sendHostEG( message, response.host() );
 		}
 		else if( egMsg.has_error() )
 		{
 			const megastructure::Message::EG_Msg::Error& error = egMsg.error();
 			VERIFY_RTE_MSG( error.host() != 0U, "Invalid host resolved for error from master to slave" );
-			std::cout << "Sending error to: " << error.host() << std::endl;
+			//std::cout << "Sending error to: " << error.host() << std::endl;
 			m_slave.sendHostEG( message, error.host() );
 		}
 		else if( egMsg.has_event() )
@@ -117,7 +120,7 @@ bool RouteEGProtocolActivity::clientMessage( std::uint32_t uiClient, const megas
 				
 				if( uiTargetClientID == megastructure::NetworkAddressTable::MasterID )
 				{
-					std::cout << "Forwarding request to master" << std::endl;
+					//std::cout << "Forwarding request to master" << std::endl;
 					m_slave.sendMaster( msgCopy );
 				}
 				else if( uiTargetClientID == megastructure::NetworkAddressTable::SelfID )
@@ -141,12 +144,12 @@ bool RouteEGProtocolActivity::clientMessage( std::uint32_t uiClient, const megas
 						pErrorEGMsgError->set_host( egRequest.host() );
 					}
 					
-					std::cout << "Forwarding error to host: " << uiClient << std::endl;
+					//std::cout << "Forwarding error to host: " << uiClient << std::endl;
 					m_slave.sendHostEG( errorMessage, uiClient );
 				}
 				else
 				{
-					std::cout << "Forwarding request to host: " << uiTargetClientID << std::endl;
+					//std::cout << "Forwarding request to host: " << uiTargetClientID << std::endl;
 					m_slave.sendHost( msgCopy, uiTargetClientID );
 				}
 			}
@@ -163,13 +166,13 @@ bool RouteEGProtocolActivity::clientMessage( std::uint32_t uiClient, const megas
 			//if the response has coordinator then route to master
 			if( response.coordinator() != 0U )
 			{
-				std::cout << "Forwarding response to master" << std::endl;
+				//std::cout << "Forwarding response to master" << std::endl;
 				m_slave.sendMaster( message );
 			}
 			else
 			{
 				VERIFY_RTE_MSG( response.host() != 0U, "Response has no source host" );
-				std::cout << "Forwarding response to host: " << response.host() << std::endl;
+				//std::cout << "Forwarding response to host: " << response.host() << std::endl;
 				m_slave.sendHostEG( message, response.host() );
 			}
 		}
@@ -181,13 +184,13 @@ bool RouteEGProtocolActivity::clientMessage( std::uint32_t uiClient, const megas
 			//if the response has coordinator then route to master
 			if( error.coordinator() != 0U )
 			{
-				std::cout << "Forwarding error to master" << std::endl;
+				//std::cout << "Forwarding error to master" << std::endl;
 				m_slave.sendMaster( message );
 			}
 			else
 			{
 				VERIFY_RTE_MSG( error.host() != 0U, "Error has no source host" );
-				std::cout << "Forwarding error to host: " << error.host() << std::endl;
+				//std::cout << "Forwarding error to host: " << error.host() << std::endl;
 				m_slave.sendHostEG( message, error.host() );
 			}
 		}

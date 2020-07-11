@@ -327,7 +327,7 @@ bool RouteEGProtocolActivity::clientMessage( std::uint32_t uiClient, const megas
 				}
 				else
 				{
-					VERIFY_RTE_MSG( uiTargetClientID != uiClient, "Incorrect routine for eg request" );
+					VERIFY_RTE_MSG( uiTargetClientID != uiClient, "Incorrect routing for eg request" );
 					std::cout << "Sending request to: " << uiTargetClientID << std::endl;
 					m_master.send( copyRequestSetSourceCoordinator( message, uiClient ), uiTargetClientID );
 				}

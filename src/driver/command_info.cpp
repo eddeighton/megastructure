@@ -24,6 +24,7 @@
 #include "eg_compiler/sessions/implementation_session.hpp"
 
 #include "schema/project.hpp"
+#include "schema/projectTree.hpp"
 
 #include "megaxml/mega_schema.hxx"
 #include "megaxml/mega_schema-pimpl.hxx"
@@ -40,20 +41,23 @@
 void command_info( bool bHelp, const std::vector< std::string >& args )
 {
     std::string strDirectory;
+    std::string strProject;
     
     bool bCode = false;
     bool bAbstract = false;
     bool bConcrete = false;
+    bool bAll = false;
     
     namespace po = boost::program_options;
     po::options_description commandOptions(" Read Project Log");
     {
         commandOptions.add_options()
             ("dir",         po::value< std::string >( &strDirectory ),              "Project directory")
-            
+			("project", 	po::value< std::string >( &strProject ), "Project Name" )
             ("code",       po::bool_switch( &bCode ), "Print entire program as single eg file" )
             ("abstract",   po::bool_switch( &bAbstract ), "Print the abstract tree" )
-            ("concrete",   po::bool_switch( &bConcrete )->default_value( true ), "Print the concrete tree (default)" )
+            ("concrete",   po::bool_switch( &bConcrete ), "Print the concrete tree (default)" )
+            ("all",        po::bool_switch( &bAll ), "Print all forms" )
         ;
     }
     
@@ -70,7 +74,23 @@ void command_info( bool bHelp, const std::vector< std::string >& args )
     }
     else
     {
-        /*const boost::filesystem::path projectDirectory = 
+        if( !bCode && !bAbstract && !bConcrete )
+            bAll = true;
+        
+        if( bAll )
+        {
+            bCode       = true;
+            bAbstract   = true;
+            bConcrete   = true;
+        }
+		
+		if( strProject.empty() )
+		{
+            std::cout << "Missing project name" << std::endl;
+            return;
+		}
+        
+        const boost::filesystem::path projectDirectory = 
             boost::filesystem::edsCannonicalise(
                 boost::filesystem::absolute( strDirectory ) );
 
@@ -83,39 +103,37 @@ void command_info( bool bHelp, const std::vector< std::string >& args )
             THROW_RTE( "Specified path is not a directory: " << projectDirectory.generic_string() );
         }
         
-        const boost::filesystem::path projectFile = projectDirectory / Environment::EG_FILE_EXTENSION;
+        Environment environment;
         
-        if( !boost::filesystem::exists( projectFile ) )
-        {
-            THROW_RTE( "Could not locate " << Environment::EG_FILE_EXTENSION << " file in directory: " << projectDirectory.generic_string() );
-        }
+        ProjectTree projectTree( environment, projectDirectory, strProject );
         
-        XMLManager::XMLDocPtr pDocument = XMLManager::load( projectFile );
-        
-        Environment environment( projectDirectory );
-        
-        Project project( projectDirectory, environment, pDocument->Project() );
-        
-        eg::ReadSession session( project.getAnalysisFileName() );
-        
+        eg::ReadSession session( projectTree.getAnalysisFileName() );
+
         if( bCode )
         {
+            std::cout << "//Code\n";
             const eg::interface::Root* pInterfaceRoot = session.getTreeRoot();
             std::string strIndent;
             pInterfaceRoot->print( std::cout, strIndent, true );
+            std::cout << "\n\n\n";
         }
-        else if( bAbstract )
+        
+        if( bAbstract )
         {
+            std::cout << "//Abstract Interface\n";
             const eg::interface::Root* pInterfaceRoot = session.getTreeRoot();
             std::string strIndent;
             pInterfaceRoot->print( std::cout, strIndent, false );
+            std::cout << "\n\n\n";
         }
-        else if( bConcrete )
+        
+        if( bConcrete )
         {
+            std::cout << "//Concrete Memory Model\n";
             const eg::concrete::Action* pConcreteRoot = session.getInstanceRoot();
             std::string strIndent;
             pConcreteRoot->print( std::cout, strIndent );
+            std::cout << "\n\n\n";
         }
-        */
     }
 }

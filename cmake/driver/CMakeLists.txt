@@ -35,7 +35,7 @@ set( DRIVER_SOURCES
 	${DRIVER_SOURCE_DIR}/main.cpp
 	)
 	
-set( GENERATOR_SOURCE_DIR ${MEGA_ROOT_DIR}/src/egcomponent )
+set( GENERATOR_SOURCE_DIR ${MEGA_ROOT_DIR}/src/generators )
 
 set( GENERATOR_SOURCES 
 	${GENERATOR_SOURCE_DIR}/generator.cpp 

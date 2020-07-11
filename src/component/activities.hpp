@@ -109,18 +109,22 @@ namespace megastructure
 	////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////
 	
+    using CoordinatorHostCycle = 
+        std::tuple< std::uint32_t, std::uint32_t, std::uint32_t >;
+        
 	class EGRequestHandlerActivity : public Activity
 	{
 	public:
 		using Ptr = std::shared_ptr< EGRequestHandlerActivity >;
 		
-		EGRequestHandlerActivity( Component& component );
+		EGRequestHandlerActivity( Component& component, CoordinatorHostCycle chc );
 		void request( const Message& message );
 		void simulationLockGranted();
 	private:
 		void processMessages();
 	
 		Component& m_component;
+        CoordinatorHostCycle m_chc;
 		std::vector< Message > m_messages;
 		bool m_bHasSimulationLock;
 		
@@ -128,8 +132,6 @@ namespace megastructure
 	
 	class EGRequestManagerActivity : public Activity
 	{
-		using CoordinatorHostCycle = 
-			std::tuple< std::uint32_t, std::uint32_t, std::uint32_t >;
 		
 		using ActivityMap =
 			std::map< CoordinatorHostCycle, EGRequestHandlerActivity::Ptr >;

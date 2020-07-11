@@ -102,12 +102,14 @@ message Message
 	
 	message EG_Msg
 	{
+        //message context
 		int32 type = 1;
 		uint32 instance = 2;
 		uint32 cycle = 3;
 		
 		message Request
 		{
+            //routine identities i.e. source host and coordinator for return path route
 			uint32 coordinator = 1;
 			uint32 host = 2;
 			

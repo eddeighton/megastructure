@@ -68,7 +68,7 @@ Program::Program( Component& component, const std::string& strHostName, const st
     m_strComponentName = m_pProjectTree->getComponentFileNameExt( true );
 
 	m_componentPath = binDirectory / m_strComponentName;
-	std::cout << "Attempting to load component: " << m_componentPath.string() << std::endl;
+	std::cout << "Loading component: " << m_componentPath.string() << std::endl;
 
     m_pPlugin = boost::dll::import< megastructure::EGComponent >(   // type of imported symbol is located between `<` and `>`
             m_componentPath,                       					// path to the library and library name
@@ -76,14 +76,13 @@ Program::Program( Component& component, const std::string& strHostName, const st
             boost::dll::load_mode::append_decorations               // makes `libmy_plugin_sum.so` or `my_plugin_sum.dll` from `my_plugin_sum`
         );
     
-    std::cout << "Attempting initialisation" << std::endl;
 	//initialise the programs memory
 	m_pPlugin->Initialise( m_pEncodeDecode, this, this, 
         m_pProjectTree->getAnalysisFileName().string().c_str() );
 	
 	VERIFY_RTE_MSG( m_pEncodeDecode, "Did not get encode decode interface from program: " << m_componentPath.string() );
     
-    std::cout << "Initialisation complete" << std::endl;
+    //std::cout << "Initialisation complete" << std::endl;
 }
 
 Program::~Program()
@@ -157,159 +156,98 @@ void Program::writeBuffer( std::int32_t iType, std::uint32_t uiInstance, const s
 	m_pEncodeDecode->decode( iType, uiInstance, decoder );
 }
 		
+void Program::releaseLocks()
+{
+    for( const ComponentLockInfo& lockInfo : m_readerLocks )
+    {
+        Message message;
+        {
+            Message::EG_Msg* pEGMsg = message.mutable_eg_msg();
+            pEGMsg->set_type( lockInfo.first );
+            pEGMsg->set_instance( 0 );
+            pEGMsg->set_cycle( lockInfo.second );
+            Message::EG_Msg::Request* pRequest = pEGMsg->mutable_request();
+            Message::EG_Msg::Request::Unlock* pUnlock = pRequest->mutable_unlock();
+        }
+        //std::cout << "Requesting read un lock on: " << lockInfo.first << " timestamp: " << lockInfo.second << std::endl;
+        m_component.sendeg( message );
+    }
+    m_readerLocks.clear();
+    for( const ComponentLockInfo& lockInfo : m_writerLocks )
+    {
+        Message message;
+        {
+            Message::EG_Msg* pEGMsg = message.mutable_eg_msg();
+            pEGMsg->set_type( lockInfo.first );
+            pEGMsg->set_instance( 0 );
+            pEGMsg->set_cycle( lockInfo.second );
+            Message::EG_Msg::Request* pRequest = pEGMsg->mutable_request();
+            Message::EG_Msg::Request::Unlock* pUnlock = pRequest->mutable_unlock();
+        }
+        //std::cout << "Requesting write un lock on: " << lockInfo.first << " timestamp: " << lockInfo.second << std::endl;
+        m_component.sendeg( message );
+    }
+    m_writerLocks.clear();
+}
+
 //MegaProtocol
-/*
-bool Program::receive( std::int32_t& iType, std::size_t& uiInstance, std::uint32_t& uiTimestamp )
+void Program::readlock( eg::TypeID iComponentType, std::uint32_t uiTimestamp )
 {
-	megastructure::Message message;
-	
-	while( m_component.readeg( message ) )
-	{
-		if( message.has_eg_msg() )
-		{
-			const megastructure::Message::EG_Msg& egMsg = message.eg_msg();
-			
-			if( egMsg.has_request() )
-			{
-				THROW_RTE( "Program received eg request on eg socket" );
-			}
-			else if( egMsg.has_response() )
-			{
-				const megastructure::Message::EG_Msg::Response& egResponse = egMsg.response();
-				
-				iType 		= egMsg.type();
-				uiInstance 	= egMsg.instance();
-				uiTimestamp = egMsg.cycle();
-				
-				//first update the cache with the actual value
-				writeBuffer( iType, uiInstance, egResponse.value() );
-				
-				std::cout << "Program received response type: " << iType << 
-					" instance: " << uiInstance << " timestamp: " << uiTimestamp << std::endl;
-				
-				return true;
-			}
-			else if( egMsg.has_error() )
-			{
-				const megastructure::Message::EG_Msg::Error& egError = egMsg.error();
-				
-				iType 		= egMsg.type();
-				uiInstance 	= egMsg.instance();
-				uiTimestamp = egMsg.cycle();
-				
-				//first update the cache with the actual value
-				//writeBuffer( iType, uiInstance, egResponse.value() );
-				
-				std::cout << "Program received error type: " << iType << 
-					" instance: " << uiInstance << " timestamp: " << uiTimestamp << std::endl;
-				
-				return true;
-			}
-			else if( egMsg.has_event() )
-			{
-				const megastructure::Message::EG_Msg::Event& egEvent = egMsg.event();
-				
-				iType 		= egMsg.type();
-				uiInstance 	= egMsg.instance();
-				uiTimestamp = egMsg.cycle();
-				
-				std::cout << "Program received event type: " << iType << 
-					" instance: " << uiInstance << " timestamp: " << uiTimestamp << std::endl;
-				
-				return true;
-			}
-			else
-			{
-				THROW_RTE( "Unknown eg message type" );
-			}
-		}
-		else
-		{
-			THROW_RTE( "Did not receive eg msg on eg socket" );
-		}
-	}
-	
-	return false;
+    {
+        Message message;
+        {
+            Message::EG_Msg* pEGMsg = message.mutable_eg_msg();
+            pEGMsg->set_type( iComponentType );
+            pEGMsg->set_instance( 0 );
+            pEGMsg->set_cycle( uiTimestamp );
+            
+            Message::EG_Msg::Request* pRequest = pEGMsg->mutable_request();
+            Message::EG_Msg::Request::Lock* pLock = pRequest->mutable_lock();
+        }
+
+        //std::cout << "Requesting read lock on: " << iComponentType << " timestamp:" << uiTimestamp << std::endl;
+        
+        m_component.sendeg( message );
+    }
+    
+    {
+        megastructure::Message message;
+        while( m_component.readegSync( message ) )
+        {
+            if( message.has_eg_msg() )
+            {
+                const megastructure::Message::EG_Msg& egMsg = message.eg_msg();
+                
+                if( egMsg.has_response() )
+                {
+                    const megastructure::Message::EG_Msg::Response& egResponse = egMsg.response();
+                    
+                    //const std::int32_t    iType 		= egMsg.type();
+                    //const std::size_t     uiInstance 	= egMsg.instance();
+                    //const std::uint32_t   uiTimestamp   = egMsg.cycle();
+                    
+                    //std::cout << "Program received read lock response type: " << egMsg.type() << 
+                    //    " timestamp: " << egMsg.cycle() << std::endl;
+                    
+                    m_readerLocks.insert( ComponentLockInfo{ iComponentType, uiTimestamp } );
+                    
+                    break;
+                }
+                else
+                {
+                    //queue up other messages? - events?
+                    
+                    THROW_RTE( "Unexpected message" );
+                }
+            }
+            else
+            {
+                THROW_RTE( "Did not receive eg msg on eg socket" );
+            }
+        }
+    }
 }
 
-void Program::send( const char* type, std::size_t timestamp, const void* value, std::size_t size )
-{
-}
-*/
-		
-//eg
-/*
-std::string Program::egRead( std::int32_t iType, std::uint32_t uiInstance )
-{
-	if( m_pNetworkAddressTable->getClientForType( iType ) == NetworkAddressTable::SelfID )
-	{
-		//write the buffer directly
-		std::string strBuffer;
-		readBuffer( iType, uiInstance, strBuffer );
-		return strBuffer;
-	}
-	else
-	{
-		Message message;
-		{
-			Message::EG_Msg* pEGMsg = message.mutable_eg_msg();
-			pEGMsg->set_type( iType );
-			pEGMsg->set_instance( uiInstance );
-			pEGMsg->set_cycle( 0 );
-			
-			Message::EG_Msg::Request* pRequest = pEGMsg->mutable_request();
-			Message::EG_Msg::Request::Read* pRead = pRequest->mutable_read();
-		}
-		m_component.sendeg( message );
-		std::cout << "Sent eg read request type: " << iType << " instance: " << uiInstance << std::endl;
-		
-		//m_pPlugin->WaitForReadResponse( iType, uiInstance );
-		
-		std::string strBuffer;
-		readBuffer( iType, uiInstance, strBuffer );
-		return strBuffer;
-	}
-}
-
-void Program::egWrite( std::int32_t iType, std::uint32_t uiInstance, const std::string& strBuffer )
-{
-	if( m_pNetworkAddressTable->getClientForType( iType ) == NetworkAddressTable::SelfID )
-	{
-		//write the buffer directly
-		writeBuffer( iType, uiInstance, strBuffer );
-	}
-	else
-	{
-		//send the write request
-		Message message;
-		{
-			Message::EG_Msg* pEGMsg = message.mutable_eg_msg();
-			pEGMsg->set_type( iType );
-			pEGMsg->set_instance( uiInstance );
-			pEGMsg->set_cycle( 0 );
-			
-			Message::EG_Msg::Request* pRequest = pEGMsg->mutable_request();
-			Message::EG_Msg::Request::Write* pWrite = pRequest->mutable_write();
-			pWrite->set_value( strBuffer );
-		}
-		m_component.sendeg( message );
-	}
-}
-
-void Program::egCall( std::int32_t iType, std::uint32_t uiInstance, const std::string& strBuffer )
-{
-	if( m_pNetworkAddressTable->getClientForType( iType ) == NetworkAddressTable::SelfID )
-	{
-		
-	}
-	else
-	{
-		//send the write request
-		
-		
-	}
-}*/
-  
 void* Program::getRoot() const
 {
     return m_pPlugin->GetRoot();
@@ -318,6 +256,8 @@ void* Program::getRoot() const
 void Program::run()
 {
     m_pPlugin->Cycle();
+    
+    releaseLocks();
 }
 
 }

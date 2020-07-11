@@ -284,8 +284,19 @@ eg::ComponentInterop& getPythonInterop()
     std::vector< const eg::concrete::Action* > actions = 
         eg::many_cst< eg::concrete::Action >( objects );
         
-    std::vector< const eg::DataMember* > dataMembers = 
-        eg::many_cst< eg::DataMember >( objects );
+    std::vector< const eg::DataMember* > dataMembers;
+    {
+        for( const eg::Buffer* pBuffer : layout.getBuffers() )
+        {
+            for( const eg::DataMember* pDataMember : pBuffer->getDataMembers() )
+            {
+                dataMembers.push_back( pDataMember );
+            }
+        }
+    }
+        
+    //std::vector< const eg::DataMember* > dataMembers = 
+    //    eg::many_cst< eg::DataMember >( objects );
     
     std::vector< const eg::DataMember* > referenceDimensions;
     for( const eg::DataMember* pDataMember : dataMembers )

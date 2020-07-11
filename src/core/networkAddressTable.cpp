@@ -12,16 +12,20 @@ using ClientIDMap = std::map< eg::IndexedObject::Index, std::uint32_t >;
 
 void recurseClient( const eg::concrete::Action* pAction, std::uint32_t uiClientID, ClientIDMap& clientIDMap )
 {
+    clientIDMap.insert( std::make_pair( pAction->getIndex(), uiClientID ) );
+                
 	const std::vector< eg::concrete::Element* >& children = pAction->getChildren();
 	for( const eg::concrete::Element* pElement : children )
 	{
-		clientIDMap.insert( std::make_pair( pElement->getIndex(), uiClientID ) );
-			
 		if( const eg::concrete::Action* pNestedAction = 
 			dynamic_cast< const eg::concrete::Action* >( pElement ) )
 		{
 			recurseClient( pNestedAction, uiClientID, clientIDMap );
 		}
+        else
+        {
+            clientIDMap.insert( std::make_pair( pElement->getIndex(), uiClientID ) );
+        }
 	}
 }
 
@@ -51,12 +55,12 @@ void recurseMappedClients( const eg::concrete::Action* pRoot, const NetworkAddre
 	}
 }
 
-void recurseSlave( const eg::concrete::Action* pRoot, 
+void recurseSlave( const eg::concrete::Action* pMegaRoot, 
 	const NetworkAddressTable::ClientMap& clientMap,
 	const std::string& strCoordinatorName, 
 	ClientIDMap& clientIDMap )
 {
-	const std::vector< eg::concrete::Element* >& children = pRoot->getChildren();
+	const std::vector< eg::concrete::Element* >& children = pMegaRoot->getChildren();
 	for( const eg::concrete::Element* pElement : children )
 	{
 		if( const eg::concrete::Action* pCoordinatorAction = 
@@ -66,6 +70,7 @@ void recurseSlave( const eg::concrete::Action* pRoot,
 				pCoordinatorAction->getContext()->getIdentifier();
 			if( strCoordinatorName == strActionIdentifier )
 			{
+                clientIDMap.insert( std::make_pair( pElement->getIndex(), NetworkAddressTable::SelfID ) );
 				recurseMappedClients( pCoordinatorAction, clientMap, clientIDMap );
 			}
 			else
@@ -100,12 +105,12 @@ void recurseHost( const eg::concrete::Action* pRoot,
 	}
 }
 
-void recurseHost( const eg::concrete::Action* pRoot, 
+void recurseHost( const eg::concrete::Action* pMegaRoot, 
 		const std::string& strCoordinatorName, 
 		const std::string& strHostName, 
 		ClientIDMap& clientIDMap )
 {
-	const std::vector< eg::concrete::Element* >& children = pRoot->getChildren();
+	const std::vector< eg::concrete::Element* >& children = pMegaRoot->getChildren();
 	for( const eg::concrete::Element* pElement : children )
 	{
 		if( const eg::concrete::Action* pCoordinatorAction = 
@@ -115,6 +120,7 @@ void recurseHost( const eg::concrete::Action* pRoot,
 				pCoordinatorAction->getContext()->getIdentifier();
 			if( strCoordinatorName == strActionIdentifier )
 			{
+                clientIDMap.insert( std::make_pair( pCoordinatorAction->getIndex(), NetworkAddressTable::MasterID ) );
 				recurseHost( pCoordinatorAction, strHostName, clientIDMap );
 			}
 			else

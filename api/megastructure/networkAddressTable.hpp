@@ -21,9 +21,9 @@ public:
 	using Table = std::vector< std::uint32_t >;
 	using Ptr = std::shared_ptr< NetworkAddressTable >;
 	
-	static const std::uint32_t MasterID = 0U;
-	static const std::uint32_t SelfID = std::numeric_limits< std::uint32_t >::max();
-	static const std::uint32_t UnMapped = std::numeric_limits< std::uint32_t >::max() - 1;
+	static const std::uint32_t UnMapped     = 0; //default value
+	static const std::uint32_t MasterID     = std::numeric_limits< std::uint32_t >::max();
+	static const std::uint32_t SelfID       = std::numeric_limits< std::uint32_t >::max() - 1;
 	
 	NetworkAddressTable( const ClientMap& clients, 
 		std::shared_ptr< ProjectTree > pProgramTree );

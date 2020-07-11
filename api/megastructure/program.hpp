@@ -17,6 +17,7 @@
 #include <memory>
 #include <string>
 #include <map>
+#include <utility>
 
 class ProjectTree;
 
@@ -26,6 +27,9 @@ namespace megastructure
 	{
         using CacheBufferMap = std::map< std::string, LocalBufferImpl::Ptr >;
         using SharedBufferMap = std::map< std::string, SharedBufferImpl::Ptr >;
+        using ComponentLockInfo = std::pair< std::int32_t, std::uint32_t >;
+        using ReaderLockSet = std::set< ComponentLockInfo >;
+        using WriterLockSet = std::set< ComponentLockInfo >;
 
 		friend class EGReadFunctor;
 	public:
@@ -48,6 +52,7 @@ namespace megastructure
 		virtual LocalBuffer* getLocalBuffer( const char* pszName, std::size_t szSize );
         
         //MegaProtocol
+        virtual void readlock( eg::TypeID component, std::uint32_t uiTimestamp );
 		//virtual bool receive( std::int32_t& iType, std::uint32_t& uiInstance, std::uint32_t& uiTimestamp );
 		//virtual void send( const char* type, std::size_t timestamp, const void* value, std::size_t size );
 		
@@ -61,6 +66,9 @@ namespace megastructure
 		//memory access
 		void readBuffer( std::int32_t iType, std::uint32_t uiInstance, std::string& strBuffer );
 		void writeBuffer( std::int32_t iType, std::uint32_t uiInstance, const std::string& strBuffer );
+        
+    private:
+        void releaseLocks();
 		
 	private:
 		Component& m_component;
@@ -79,6 +87,9 @@ namespace megastructure
         
         CacheBufferMap m_cacheBuffers;
         SharedBufferMap m_sharedBuffers;
+        
+        ReaderLockSet m_readerLocks;
+        WriterLockSet m_writerLocks;
 	};
 }
 

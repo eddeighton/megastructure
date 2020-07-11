@@ -589,6 +589,17 @@ void generate_eg_component( std::ostream& os,
         os << "std::set< eg::TypeInstance > " << i.second.strActivationSetName << ";\n";
     }
     
+    os << "void resetNetworkState()\n";
+    os << "{\n";
+    os << "    g_reads.reset();\n";
+    os << "    g_hostLocks.reset();\n";
+    for( const auto& i : hostStructures )
+    {
+        os << "    " << i.second.strWriteSetName << ".clear();\n";
+        os << "    " << i.second.strActivationSetName << ".clear();\n";
+    }
+    os << "}\n";
+    
     os << "\n//buffers\n";
     for( const eg::Buffer* pBuffer : layout.getBuffers() )
     {
@@ -758,6 +769,7 @@ const char szComponentPart2[] = R"(
     {
         eg::Scheduler::cycle();
         clock::next();
+        resetNetworkState();
     }
     
     virtual void encode( std::int32_t iType, std::uint32_t uiInstance, eg::Encoder& buffer )
@@ -774,7 +786,7 @@ const char szComponentPart2[] = R"(
     //networking
     void readlock( eg::TypeID component )
     {
-        
+        m_pMegaProtocol->readlock( component, clock::cycle() );
     }
 
     void writelock( eg::TypeID component )

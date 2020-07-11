@@ -57,13 +57,6 @@ namespace megastructure
 		std::shared_ptr< Program > getProgram() { return m_pProgram; }
 		
 		void runCycle();
-		
-		//test eg protocol routines
-        /*
-		std::string egRead( std::uint32_t uiType, std::uint32_t uiInstance );
-		void egWrite( std::uint32_t uiType, std::uint32_t uiInstance, const std::string& strBuffer );
-		void egCall( std::uint32_t uiType, std::uint32_t uiInstance, const std::string& strBuffer );
-		*/
         
 	private:
 		void setSlaveName( const std::string& strSlaveName ) { m_strSlaveName = strSlaveName; }

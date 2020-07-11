@@ -71,8 +71,6 @@ namespace megastructure
 		std::unique_lock< std::mutex > simLock( m_simulationMutex );
 		
 		m_simulationLockActivities.push_back( pActivity );
-		
-		grantNextSimulationLock();
 	}
 	
 	void Component::releaseSimulationLock( Activity::Ptr pActivity )
@@ -163,43 +161,7 @@ namespace megastructure
 			grantNextSimulationLock();
 		}
 	}
-	/*
-	std::string Component::egRead( std::uint32_t uiType, std::uint32_t uiInstance )
-	{
-		if( m_pProgram )
-		{
-			return m_pProgram->egRead( uiType, uiInstance );
-		}
-		else
-		{
-			THROW_RTE( "EG Read called when no active program" );
-		}
-	}
-	
-	void Component::egWrite( std::uint32_t uiType, std::uint32_t uiInstance, const std::string& strBuffer )
-	{
-		if( m_pProgram )
-		{
-			return m_pProgram->egWrite( uiType, uiInstance, strBuffer );
-		}
-		else
-		{
-			THROW_RTE( "EG Write called when no active program" );
-		}
-	}
-	
-	void Component::egCall( std::uint32_t uiType, std::uint32_t uiInstance, const std::string& strBuffer )
-	{
-		if( m_pProgram )
-		{
-			return m_pProgram->egCall( uiType, uiInstance, strBuffer );
-		}
-		else
-		{
-			THROW_RTE( "EG Call called when no active program" );
-		}
-	}*/
-		
+    
 	void Component::startJob( Job::Ptr pJob )
 	{
 		std::unique_lock< std::mutex > simLock( m_simulationMutex );

@@ -172,9 +172,10 @@ bool BufferActivity::serverMessage( const Message& message )
 ////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////
 
-EGRequestHandlerActivity::EGRequestHandlerActivity( Component& component ) 
+EGRequestHandlerActivity::EGRequestHandlerActivity( Component& component, CoordinatorHostCycle chc ) 
 	:	m_component( component ),
-		m_bHasSimulationLock( false )
+		m_chc( chc ),
+        m_bHasSimulationLock( false )
 {
 	
 }
@@ -184,24 +185,16 @@ void EGRequestHandlerActivity::request( const Message& message )
 {
 	m_messages.push_back( message );
 	
-	/*if( m_bHasSimulationLock )
+	if( m_bHasSimulationLock )
 	{
-		
+        processMessages();
 	}
-	else
-	{
-		
-	}*/
 }
 
 void EGRequestHandlerActivity::simulationLockGranted()
 {
 	m_bHasSimulationLock = true;
-	
 	processMessages();
-	
-	m_component.releaseSimulationLock( shared_from_this() );
-	m_component.activityComplete( shared_from_this() );
 }
 
 void EGRequestHandlerActivity::processMessages()
@@ -226,16 +219,16 @@ void EGRequestHandlerActivity::processMessages()
 					Message::EG_Msg* pEGMsg = responseMessage.mutable_eg_msg();
 					pEGMsg->set_type( iType );
 					pEGMsg->set_instance( uiInstance );
-					pEGMsg->set_cycle( 0 );
+					pEGMsg->set_cycle( 0 ); //TODO - get actual clock cycle
 					
 					Message::EG_Msg::Response* pResponse = pEGMsg->mutable_response();
 					pResponse->set_coordinator( egRequest.coordinator() );
 					pResponse->set_host( egRequest.host() );
 					pResponse->set_value( strBuffer );
 				}
-				std::cout << "Sending eg response type: " << egMsg.type() << " instance: " << egMsg.instance() <<
-					" cycle: " << egMsg.cycle() << " coordinator: " << egRequest.coordinator() << 
-					" host: " << egRequest.host() << std::endl;
+				//std::cout << "Sending eg response type: " << egMsg.type() << " instance: " << egMsg.instance() <<
+				//	" cycle: " << egMsg.cycle() << " coordinator: " << egRequest.coordinator() << 
+				//	" host: " << egRequest.host() << std::endl;
 				m_component.sendeg( responseMessage );
 			}
 			else
@@ -252,9 +245,9 @@ void EGRequestHandlerActivity::processMessages()
 					pErrorEGMsgError->set_coordinator( egRequest.coordinator() );
 					pErrorEGMsgError->set_host( egRequest.host() );
 				}
-				std::cout << "Sending eg error type: " << egMsg.type() << " instance: " << egMsg.instance() <<
-					" cycle: " << egMsg.cycle() << " coordinator: " << egRequest.coordinator() << 
-					" host: " << egRequest.host() << std::endl;
+				//std::cout << "Sending eg error type: " << egMsg.type() << " instance: " << egMsg.instance() <<
+				//	" cycle: " << egMsg.cycle() << " coordinator: " << egRequest.coordinator() << 
+				//	" host: " << egRequest.host() << std::endl;
 				m_component.sendeg( errorMessage );
 			}
 		}
@@ -266,11 +259,29 @@ void EGRequestHandlerActivity::processMessages()
 		}
 		else if( egRequest.has_lock() )
 		{
+            Message responseMessage;
+            {
+                Message::EG_Msg* pEGMsg = responseMessage.mutable_eg_msg();
+                pEGMsg->set_type( std::get< 0 >( m_chc ) );
+                pEGMsg->set_instance( std::get< 1 >( m_chc ) );
+                pEGMsg->set_cycle( std::get< 2 >( m_chc ) );
+                
+                Message::EG_Msg::Response* pResponse = pEGMsg->mutable_response();
+                pResponse->set_coordinator( egRequest.coordinator() );
+                pResponse->set_host( egRequest.host() );
+            }
+            //std::cout << "Sending eg lock response type: " << egMsg.type() << " instance: " << egMsg.instance() <<
+            //    " cycle: " << egMsg.cycle() << " coordinator: " << egRequest.coordinator() << 
+            //    " host: " << egRequest.host() << std::endl;
+            m_component.sendeg( responseMessage );
 		}
 		else if( egRequest.has_unlock() )
 		{
-			
-			
+            //std::cout << "Got unlock request from: " << egMsg.type() << " instance: " << egMsg.instance() <<
+            //    " cycle: " << egMsg.cycle() << " coordinator: " << egRequest.coordinator() << 
+            //    " host: " << egRequest.host() << std::endl;
+            m_component.releaseSimulationLock( shared_from_this() );
+            m_component.activityComplete( shared_from_this() );
 		}
 		else
 		{
@@ -295,6 +306,8 @@ bool EGRequestManagerActivity::serverMessage( const Message& message )
 			const std::uint32_t uiCoordinator 	= egRequest.coordinator();
 			const std::uint32_t uiHost 			= egRequest.host();
 			const std::uint32_t uiCycle 		= egMsg.cycle();
+            
+            //std::cout << "EGRequestManagerActivity got request from: " << uiCoordinator << "," << uiHost << "," << uiCycle << std::endl;
 			
 			const CoordinatorHostCycle chc( uiCoordinator, uiHost, uiCycle );
 			
@@ -308,7 +321,7 @@ bool EGRequestManagerActivity::serverMessage( const Message& message )
 				else
 				{
 					//create new handler
-					pHandler.reset( new EGRequestHandlerActivity( m_component ) );
+					pHandler.reset( new EGRequestHandlerActivity( m_component, chc ) );
 					m_component.startActivity( pHandler );
 					m_component.requestSimulationLock( pHandler );
 					m_activities.insert( std::make_pair( chc, pHandler ) );
@@ -325,9 +338,9 @@ bool EGRequestManagerActivity::serverMessage( const Message& message )
 		{
 			const Message::EG_Msg::Error& egError = egMsg.error();
 			
-			std::cout << "Got eg error type: " << egMsg.type() << " instance: " << egMsg.instance() <<
-				" cycle: " << egMsg.cycle() << " coordinator: " << egError.coordinator() << 
-				" host: " << egError.host() << std::endl;
+			//std::cout << "Got eg error type: " << egMsg.type() << " instance: " << egMsg.instance() <<
+			//	" cycle: " << egMsg.cycle() << " coordinator: " << egError.coordinator() << 
+			//	" host: " << egError.host() << std::endl;
 		}
 		else if( egMsg.has_event() )
 		{

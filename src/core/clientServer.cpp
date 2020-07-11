@@ -249,7 +249,7 @@ namespace megastructure
 		/* Create an empty ØMQ message */
 		ZMQMsg msg;
 		
-		/* Block until a message is available to be received from socket */
+		/* Attempt to read a message but return immediately */
 		const int rc = zmq_msg_recv( msg.get(), m_pSocket, ZMQ_DONTWAIT );
 		
 		//test if connection was broken
