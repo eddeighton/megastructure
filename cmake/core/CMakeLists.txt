@@ -13,6 +13,9 @@ include( ${MEGA_ROOT_DIR}/cmake/xsde_include.cmake )
 #get clang
 include( ${MEGA_ROOT_DIR}/cmake/clang_include.cmake )
 
+#get spdlog
+include( ${MEGA_ROOT_DIR}/cmake/spdlog_include.cmake )
+
 #get message pack
 include( ${MEGA_ROOT_DIR}/cmake/messagepack_include.cmake )
 
@@ -32,6 +35,7 @@ set( MEGA_LIBRARY
 	${MEGA_API_DIR}/megastructure/activity.hpp
 	${MEGA_API_DIR}/megastructure/buffer.hpp
 	${MEGA_API_DIR}/megastructure/networkAddressTable.hpp
+	${MEGA_API_DIR}/megastructure/log.hpp
 	)
 
 set( MEGA_SOURCES
@@ -57,6 +61,7 @@ link_boost( megastructurelib serialization )
 link_zmq( megastructurelib )
 link_xsde( megastructurelib )
 link_clang( megastructurelib )
+link_spdlog( megastructurelib )
 link_messagePack( megastructurelib )
 link_common( megastructurelib )
 link_schemalib( megastructurelib )

@@ -6,6 +6,8 @@
 
 #include "schema/projectTree.hpp"
 
+#include "spdlog/spdlog.h"
+
 namespace master
 {
 	
@@ -24,6 +26,8 @@ namespace master
 		
 		m_queue.startActivity( new EnrollActivity( *this ) );
 		m_queue.startActivity( new RouteEGProtocolActivity( *this ) );
+        
+        spdlog::info( "Master created workspace:{} port:{}", workspacePath.string(), strPort );
 	}
 	
 	
@@ -32,18 +36,22 @@ namespace master
 		m_queue.stop();
 		m_server.stop();
 		m_zeromqServer.join();
+        
+        spdlog::info( "Master shutdown" );
 	}
 	
 	void Master::calculateNetworkAddressTable( std::shared_ptr< ProjectTree > pProjectTree )
 	{
         if( boost::filesystem::exists( pProjectTree->getAnalysisFileName() ) )
         {
+            spdlog::info( "Master calculating new address table" );
 		    m_pNetworkAddressTable.reset( 
 			    new megastructure::NetworkAddressTable( 
 					    getClients(), pProjectTree ) );
         }
         else
         {
+            spdlog::info( "Master reset address table" );
             m_pNetworkAddressTable.reset();
         }
 	}

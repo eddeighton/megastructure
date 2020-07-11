@@ -10,6 +10,9 @@ include( ${MEGA_ROOT_DIR}/cmake/xsde_include.cmake )
 #get clang
 include( ${MEGA_ROOT_DIR}/cmake/clang_include.cmake )
 
+#get spdlog
+include( ${MEGA_ROOT_DIR}/cmake/spdlog_include.cmake )
+
 #get mega schema
 include( ${MEGA_ROOT_DIR}/cmake/schema/schema_include.cmake )
 
@@ -50,6 +53,7 @@ link_boost( slave system )
 link_boost( slave date_time )
 link_xsde( slave )
 link_clang( slave )
+link_spdlog( slave )
 link_schemalib( slave )
 link_common( slave )
 link_eg( slave )

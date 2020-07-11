@@ -3,8 +3,11 @@
 #include "activities.hpp"
 #include "master.hpp"
 
+#include "megastructure/log.hpp"
+
 #include "common/processID.hpp"
 #include "common/assert_verify.hpp"
+
 
 #include <boost/program_options.hpp>
 
@@ -74,44 +77,57 @@ int main( int argc, const char* argv[] )
 		std::cin >> c;
 	}
 	
-	{
-        Environment environment;
-		
-		master::Master master( environment, args.master_path, args.port );
-		
-		while( true )
-		{
-			std::string inputString;
-			std::cin >> inputString;
+    try 
+    {
+        //configure log
+        megastructure::configureLog( "master" );
+    
+        {
+            spdlog::info( "Master started with pid:{}", Common::getProcessID() );
+            Environment environment;
             
-            if( inputString == "help" )
+            master::Master master( environment, args.master_path, args.port );
+            
+            while( true )
             {
-                std::cout << "help:   This...\n";
-                std::cout << "test:   Test existing connections and drop inactive ones.\n";
-                std::cout << "list:   List existing connections.\n";
-                std::cout << "load:   Load a program.\n";
-                std::cout << "quit:   Quit.\n";
+                std::string inputString;
+                std::cin >> inputString;
+                
+                if( inputString == "help" )
+                {
+                    std::cout << "help:   This...\n";
+                    std::cout << "test:   Test existing connections and drop inactive ones.\n";
+                    std::cout << "list:   List existing connections.\n";
+                    std::cout << "load:   Load a program.\n";
+                    std::cout << "quit:   Quit.\n";
+                }
+                else if( inputString == "test" )
+                {
+                    master.startActivity( new master::TestClientsActivity( master ) );
+                }
+                else if( inputString == "list" )
+                {
+                    master.startActivity( new master::ListClientsActivity( master ) );
+                }
+                else if( inputString == "load" )
+                {
+                    std::string programName;
+                    std::cin >> programName;
+                    master.startActivity( new master::LoadProgram( master, programName ) );
+                }
+                else if( inputString == "quit" )
+                {
+                    break;
+                }
             }
-			else if( inputString == "test" )
-			{
-				master.startActivity( new master::TestClientsActivity( master ) );
-			}
-			else if( inputString == "list" )
-			{
-				master.startActivity( new master::ListClientsActivity( master ) );
-			}
-			else if( inputString == "load" )
-			{
-				std::string programName;
-				std::cin >> programName;
-				master.startActivity( new master::LoadProgram( master, programName ) );
-			}
-			else if( inputString == "quit" )
-			{
-				break;
-			}
-		}
-	}
+        }
+        
+        spdlog::drop_all(); 
+    }
+    catch (const spdlog::spdlog_ex &ex)
+    {
+        std::cout << "Log configuration failed" << std::endl;
+    }
 	
 	return 0;
 }

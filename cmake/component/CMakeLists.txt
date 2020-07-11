@@ -10,6 +10,9 @@ include( ${MEGA_ROOT_DIR}/cmake/clang_include.cmake )
 #get xsde
 include( ${MEGA_ROOT_DIR}/cmake/xsde_include.cmake )
 
+#get spdlog
+include( ${MEGA_ROOT_DIR}/cmake/spdlog_include.cmake )
+
 #get common
 include( ${MEGA_ROOT_DIR}/cmake/common_include.cmake )
 
@@ -49,6 +52,7 @@ link_boost( componentlib system )
 link_boost( componentlib date_time )
 link_xsde( componentlib )
 link_clang( componentlib )
+link_spdlog( componentlib )
 link_common( componentlib )
 link_eg( componentlib )
 #link_common( componentlib )

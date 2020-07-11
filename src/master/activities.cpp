@@ -6,6 +6,8 @@
 
 #include "common/assert_verify.hpp"
 
+#include "spdlog/spdlog.h"
+
 namespace master
 {
 
@@ -36,12 +38,12 @@ bool TestClientActivity::clientMessage( std::uint32_t uiClient, const megastruct
 				message.sms_alive();
 			if( !alive.success() )
 			{
-				std::cout << "Client: " << uiClient << " with name: " << m_strSlaveName << " is not alive" << std::endl;
+                spdlog::trace( "TestClientActivity::clientMessage client:{} name:{} IS NOT alive", uiClient, m_strSlaveName );
 				m_master.removeClient( m_clientID );
 			}
 			else
 			{
-				std::cout << "Client: " << uiClient << " with name: " << m_strSlaveName << " is alive" << std::endl;
+                spdlog::trace( "TestClientActivity::clientMessage client:{} name:{} IS alive", uiClient, m_strSlaveName );
 				m_bSuccess = true;
 			}
 			m_master.activityComplete( shared_from_this() );
@@ -55,6 +57,7 @@ bool TestClientActivity::clientMessage( std::uint32_t uiClient, const megastruct
 //////////////////////////////////////////////////////////////////////////////////////////
 void TestClientsActivity::start()
 {
+    spdlog::trace( "TestClientsActivity::start" );
 	const megastructure::ClientMap::ClientIDMap& clients = m_master.getClients();
 	for( megastructure::ClientMap::ClientIDMap::const_iterator 
 		i = clients.begin(), iEnd = clients.end();
@@ -73,6 +76,7 @@ void TestClientsActivity::start()
 
 bool TestClientsActivity::activityComplete( Activity::Ptr pActivity )
 {
+    spdlog::trace( "TestClientsActivity::activityComplete" );
 	megastructure::Activity::PtrList::iterator iFind = 
 		std::find( m_activities.begin(), m_activities.end(), pActivity );
 	if( iFind == m_activities.end() )
@@ -98,6 +102,7 @@ bool EnrollActivity::clientMessage( std::uint32_t uiClient, const megastructure:
 	
 	if( message.has_smq_enroll() )
 	{
+        spdlog::trace( "EnrollActivity::clientMessage" );
 		const Message::SMQ_Enroll& enroll =
 			message.smq_enroll();
 		
@@ -106,6 +111,7 @@ bool EnrollActivity::clientMessage( std::uint32_t uiClient, const megastructure:
 			
 		if( m_master.enroll( enroll.slavename(), uiClient ) )
 		{
+            spdlog::info( "Enroll success for: {} as {}", enroll.slavename(), uiClient );
 			if( !m_master.send( mss_enroll( true, m_master.getActiveProgramName() ), uiClient ) )
 			{
 				m_master.removeClient( uiClient );
@@ -116,7 +122,7 @@ bool EnrollActivity::clientMessage( std::uint32_t uiClient, const megastructure:
 			std::uint32_t uiExisting;
 			if( m_master.getClientID( enroll.slavename(), uiExisting ) )
 			{
-				std::cout << "Enroll attempting for: " << enroll.slavename() << " which has existing client of: " << uiExisting << std::endl;
+                spdlog::info( "Enroll attempting for: {} which has existing client of {}", enroll.slavename(), uiExisting );
 				std::shared_ptr< TestClientActivity > pTest = 
 					std::make_shared< TestClientActivity >( m_master, uiExisting, enroll.slavename() );
 				m_testsMap.insert( std::make_pair( pTest, uiClient ) );
@@ -125,7 +131,7 @@ bool EnrollActivity::clientMessage( std::uint32_t uiClient, const megastructure:
 			}
 			else
 			{
-				std::cout << "Enroll denied for: " << enroll.slavename() << " for client: " << uiClient << std::endl;
+                spdlog::info( "Enroll denied for: {} for client: {}", enroll.slavename(), uiClient );
 				if( !m_master.send( mss_enroll( false ), uiClient ) )
 				{
 					m_master.removeClient( uiClient );
@@ -153,8 +159,8 @@ bool EnrollActivity::activityComplete( Activity::Ptr pActivity )
 			m_testsMap.erase( iFind );
 			if( pTest->isAlive() )
 			{
-				std::cout << "Existing client: " << clientID << " is alive as: " << pTest->getName() << 
-					" so denying enroll request from new client: " << clientID << std::endl;
+                spdlog::info( "Existing client: {} is alive as: {} so denying enroll request from new client: {}", 
+                    clientID, pTest->getName(), clientID );
 				//existing client is alive so nothing we can do...
 				if( !m_master.send( mss_enroll( false ), clientID ) )
 				{
@@ -163,8 +169,8 @@ bool EnrollActivity::activityComplete( Activity::Ptr pActivity )
 			}
 			else
 			{
-				std::cout << "Existing client: " << testedID << " is not alive so allowing enrollment of new client: " << 
-					clientID << " as: " << pTest->getName() << std::endl;
+                spdlog::info( "Existing client: {} is not alive so allowing enrollment of new client: {} as: {}", 
+                    testedID, clientID, pTest->getName() );
 				//testing the existing client indicated it was actually dead so can enroll the new one
 				if( m_master.enroll( pTest->getName(), clientID ) )
 				{
@@ -175,7 +181,7 @@ bool EnrollActivity::activityComplete( Activity::Ptr pActivity )
 				}
 				else
 				{
-					std::cout << "Enroll denied after retry for: " << pTest->getName() << " for client: " << clientID << std::endl;
+                    spdlog::info( "Enroll denied after retry for: {} for client: [}",  pTest->getName(), clientID );
 					if( !m_master.send( mss_enroll( false ), clientID ) )
 					{
 						m_master.removeClient( clientID );
@@ -197,7 +203,8 @@ void LoadProgram::start()
 	const megastructure::ClientMap::ClientIDMap& clients = m_master.getClients();
 	if( clients.empty() )
 	{
-		std::cout << "Master currently has no slaves so cannot load program" << std::endl;
+        
+        spdlog::info( "Master currently has no slaves so cannot load program" );
 		m_master.activityComplete( shared_from_this() );
 	}
 	else
@@ -233,7 +240,7 @@ bool LoadProgram::clientMessage( std::uint32_t uiClient, const megastructure::Me
 		const Message::SMS_Load& loadProgramResponse = message.sms_load();
 		if( !loadProgramResponse.success() )
 		{
-			std::cout << "Client: " << uiClient << " failed to load program: " << m_strProgramName << std::endl;
+            spdlog::info( "Client: {} failed to load program: {}", uiClient, m_strProgramName );
 			m_clientFailed = true;
 		}
 		
@@ -243,7 +250,7 @@ bool LoadProgram::clientMessage( std::uint32_t uiClient, const megastructure::Me
 		{
 			if( !m_clientFailed )
 			{
-				std::cout << "No clients failed while loading program: " << m_strProgramName << std::endl;
+                spdlog::info( "No clients failed while loading program:  {}", m_strProgramName );
 			}
 			
 			try
@@ -260,8 +267,7 @@ bool LoadProgram::clientMessage( std::uint32_t uiClient, const megastructure::Me
 			}
 			catch( std::exception& ex )
 			{
-				std::cout << "Error attempting to load project tree for: " << 
-					m_strProgramName << " : " << ex.what() << std::endl;
+                spdlog::error( "Error attempting to load project tree for:  {} : {}", m_strProgramName, ex.what() );
 			}
 			
 			m_master.activityComplete( shared_from_this() );
@@ -322,7 +328,9 @@ bool RouteEGProtocolActivity::clientMessage( std::uint32_t uiClient, const megas
 						megastructure::Message::EG_Msg::Error* pErrorEGMsgError = pErrorEGMsg->mutable_error();
 						pErrorEGMsgError->set_host( egRequest.host() );
 					}
-					std::cout << "Sending error to: " << uiClient << std::endl;
+                    
+                    spdlog::error( "Request mapped to unknown target so returning error to: []", uiClient );
+                
 					m_master.send( errorMessage, uiClient );
 				}
 				else
@@ -334,7 +342,7 @@ bool RouteEGProtocolActivity::clientMessage( std::uint32_t uiClient, const megas
 			}
 			else
 			{
-				std::cout << "EG request from master received when no network address table configured" << std::endl;
+                spdlog::error( "EG request from master received when no network address table configured" );
 			}
 		}
 		else if( egMsg.has_response() )
@@ -342,14 +350,14 @@ bool RouteEGProtocolActivity::clientMessage( std::uint32_t uiClient, const megas
 			//route the response back to the source host
 			const megastructure::Message::EG_Msg::Response& response = egMsg.response();
 			VERIFY_RTE_MSG( response.coordinator() != 0U, "Invalid coordinator resolved for response from slave to master" );
-			std::cout << "Sending response to: " << response.coordinator() << std::endl;
+            spdlog::trace( "Sending response to: {}", response.coordinator() );
 			m_master.send( message, response.coordinator() );
 		}
 		else if( egMsg.has_error() )
 		{
 			const megastructure::Message::EG_Msg::Error& error = egMsg.error();
 			VERIFY_RTE_MSG( error.coordinator() != 0U, "Invalid coordinator resolved for error from slave to master" );
-			std::cout << "Sending error to: " << error.coordinator() << std::endl;
+            spdlog::error( "Sending error to: {}", error.coordinator() );
 			m_master.send( message, error.coordinator() );
 		}
 		else if( egMsg.has_event() )

@@ -2,6 +2,7 @@
 #include "slave.hpp"
 
 #include "megastructure/mega.hpp"
+#include "megastructure/log.hpp"
 
 #include "activitiesMaster.hpp"
 #include "activitiesHost.hpp"
@@ -49,6 +50,8 @@ namespace slave
 			m_workspacePath( workspacePath ),
 			m_strSlaveName( strSlaveName )
 	{
+        SPDLOG_INFO( "Created megastructure slave with master ip:{} master port:{} slave mega port:{} slave eg port:{} workspace path:{} slave name:{}",
+            strMasterIP, strMasterPort, strSlaveMegaPort, strSlaveEGPort, workspacePath.string(), strSlaveName );
 		
 		megastructure::Queue& queue = m_queue;
 		megastructure::Server& server = m_server;

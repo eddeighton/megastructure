@@ -5,6 +5,7 @@
 #include "megastructure/program.hpp"
 #include "megastructure/component.hpp"
 #include "megastructure/clientServer.hpp"
+#include "megastructure/log.hpp"
 
 #include "common/assert_verify.hpp"
 
@@ -30,6 +31,10 @@ namespace megastructure
 			m_client( TCPRemoteSocketName( "localhost", strMegaPort ) ),
 			m_egClient( TCPRemoteSocketName( "localhost", strEGPort ) )
 	{
+        megastructure::configureLog( strProgramName );
+        
+        SPDLOG_INFO( "Created megastructure component with mega port:{} eg port:{} program name:{}", strMegaPort, strEGPort, strProgramName );
+        
 		m_zeromq1 = std::thread( 
 			std::bind( &megastructure::readClient< megastructure::Client >, 
 				std::ref( m_client ), std::ref( m_queue ) ) );

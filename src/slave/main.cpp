@@ -4,6 +4,7 @@
 #include "activitiesMaster.hpp"
 
 #include "megastructure/mega.hpp"
+#include "megastructure/log.hpp"
 
 #include "schema/project.hpp"
 
@@ -100,6 +101,7 @@ int main( int argc, const char* argv[] )
 		char c;
 		std::cin >> c;
 	}
+    
 	
 	try
 	{
@@ -109,6 +111,8 @@ int main( int argc, const char* argv[] )
 		std::string strSlaveName;
 		slave::getWorkspaceAndSlaveNameFromPath( 
 			args.slave_path, workspacePath, strSlaveName );
+            
+        megastructure::configureLog( strSlaveName );
 		
 		slave::Slave slave( 
 			environment,
