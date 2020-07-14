@@ -1,6 +1,8 @@
 
 #include "activitiesEG.hpp"
 
+#include "megastructure/log.hpp"
+
 namespace slave
 {
 	
@@ -23,9 +25,6 @@ bool RouteEGProtocolActivity::serverMessage( const megastructure::Message& messa
 		
 		if( egMsg.has_request() )
 		{
-            //std::cout << "Slave got eg request type: " << egMsg.type() << " instance: " << 
-            //    egMsg.instance() << " timestamp: " << egMsg.cycle() << std::endl;
-                
 			//route the request to the client
 			if( megastructure::NetworkAddressTable::Ptr pNAT = m_slave.getNATRequests() )
 			{
@@ -33,10 +32,12 @@ bool RouteEGProtocolActivity::serverMessage( const megastructure::Message& messa
 				
 				if( uiTargetClientID == megastructure::NetworkAddressTable::MasterID )
 				{
+                    SPDLOG_ERROR( "Request from master mapped to master id in slave" );
 					THROW_RTE( "Request from master mapped to master id in slave" );
 				}
 				else if( uiTargetClientID == megastructure::NetworkAddressTable::SelfID )
 				{
+                    SPDLOG_ERROR( "Request from master mapped to self id in slave" );
 					THROW_RTE( "Request from master mapped to self id in slave" );
 				}
 				else if( uiTargetClientID == megastructure::NetworkAddressTable::UnMapped )
@@ -56,17 +57,18 @@ bool RouteEGProtocolActivity::serverMessage( const megastructure::Message& messa
 						pErrorEGMsgError->set_host( egRequest.host() );
 					}
 					
+                    SPDLOG_WARN( "Returning error to master due to unmapped target client" );
 					m_slave.sendMaster( errorMessage );
 				}
 				else
 				{
-					//std::cout << "Sending request to: " << uiTargetClientID << std::endl;
+                    SPDLOG_TRACE( "Sending request to: {}", uiTargetClientID );
 					m_slave.sendHost( message, uiTargetClientID );
 				}
 			}
 			else
 			{
-				std::cout << "EG request from master received when no network address table configured" << std::endl;
+                SPDLOG_WARN( "EG request from master received when no network address table configured" );
 			}
 		}
 		else if( egMsg.has_response() )
@@ -74,14 +76,14 @@ bool RouteEGProtocolActivity::serverMessage( const megastructure::Message& messa
 			//route the response back to the source host
 			const megastructure::Message::EG_Msg::Response& response = egMsg.response();
 			VERIFY_RTE_MSG( response.host() != 0U, "Invalid host resolved for response from master to slave" );
-			//std::cout << "Sending response to: " << response.host() << std::endl;
+            SPDLOG_TRACE( "Sending response to: {}", response.host() );
 			m_slave.sendHostEG( message, response.host() );
 		}
 		else if( egMsg.has_error() )
 		{
 			const megastructure::Message::EG_Msg::Error& error = egMsg.error();
 			VERIFY_RTE_MSG( error.host() != 0U, "Invalid host resolved for error from master to slave" );
-			//std::cout << "Sending error to: " << error.host() << std::endl;
+            SPDLOG_TRACE( "Sending error to: {}", error.host() );
 			m_slave.sendHostEG( message, error.host() );
 		}
 		else if( egMsg.has_event() )
@@ -120,11 +122,12 @@ bool RouteEGProtocolActivity::clientMessage( std::uint32_t uiClient, const megas
 				
 				if( uiTargetClientID == megastructure::NetworkAddressTable::MasterID )
 				{
-					//std::cout << "Forwarding request to master" << std::endl;
+                    SPDLOG_TRACE( "Forwarding request to master" );
 					m_slave.sendMaster( msgCopy );
 				}
 				else if( uiTargetClientID == megastructure::NetworkAddressTable::SelfID )
 				{
+                    SPDLOG_ERROR( "Request from host mapped to self id in slave" );
 					THROW_RTE( "Request from host mapped to self id in slave" );
 				}
 				else if( uiTargetClientID == megastructure::NetworkAddressTable::UnMapped )
@@ -144,18 +147,18 @@ bool RouteEGProtocolActivity::clientMessage( std::uint32_t uiClient, const megas
 						pErrorEGMsgError->set_host( egRequest.host() );
 					}
 					
-					//std::cout << "Forwarding error to host: " << uiClient << std::endl;
+                    SPDLOG_TRACE( "Forwarding error to host: {}", uiClient );
 					m_slave.sendHostEG( errorMessage, uiClient );
 				}
 				else
 				{
-					//std::cout << "Forwarding request to host: " << uiTargetClientID << std::endl;
+                    SPDLOG_TRACE( "Forwarding request to host: {}", uiTargetClientID );
 					m_slave.sendHost( msgCopy, uiTargetClientID );
 				}
 			}
 			else
 			{
-				std::cout << "EG request from client received when no network address table configured" << std::endl;
+                SPDLOG_WARN( "EG request from client received when no network address table configured" );
 			}
 		}
 		else if( egMsg.has_response() )
@@ -166,13 +169,13 @@ bool RouteEGProtocolActivity::clientMessage( std::uint32_t uiClient, const megas
 			//if the response has coordinator then route to master
 			if( response.coordinator() != 0U )
 			{
-				//std::cout << "Forwarding response to master" << std::endl;
+                SPDLOG_TRACE( "Forwarding response to master" );
 				m_slave.sendMaster( message );
 			}
 			else
 			{
 				VERIFY_RTE_MSG( response.host() != 0U, "Response has no source host" );
-				//std::cout << "Forwarding response to host: " << response.host() << std::endl;
+                SPDLOG_TRACE( "Forwarding response to host: {}", response.host() );
 				m_slave.sendHostEG( message, response.host() );
 			}
 		}
@@ -184,13 +187,13 @@ bool RouteEGProtocolActivity::clientMessage( std::uint32_t uiClient, const megas
 			//if the response has coordinator then route to master
 			if( error.coordinator() != 0U )
 			{
-				//std::cout << "Forwarding error to master" << std::endl;
+                SPDLOG_TRACE( "Forwarding error to master" );
 				m_slave.sendMaster( message );
 			}
 			else
 			{
 				VERIFY_RTE_MSG( error.host() != 0U, "Error has no source host" );
-				//std::cout << "Forwarding error to host: " << error.host() << std::endl;
+                SPDLOG_TRACE( "Forwarding error to host: {}", error.host() );
 				m_slave.sendHostEG( message, error.host() );
 			}
 		}

@@ -17,6 +17,8 @@ namespace megastructure
 			
 		void run();
 		bool successful() const { return m_bSuccess; }
+        
+        const std::string& getProgramName() const { return m_strProgramName; } 
 	private:
 		Component& m_component;
         std::string m_strHostName;

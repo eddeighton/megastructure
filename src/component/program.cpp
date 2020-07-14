@@ -1,5 +1,6 @@
 
 #include "megastructure/program.hpp"
+#include "megastructure/log.hpp"
 
 #include "egcomponent/egcomponent.hpp"
 
@@ -39,9 +40,9 @@ Program::Program( Component& component, const std::string& strHostName, const st
 	}
 	catch( std::exception& ex )
 	{
-		std::cout << "Error attempting to load project tree for: " << 
-			m_component.getSlaveWorkspacePath().string() << " project: " << 
-			strProjectName << " : " << ex.what() << std::endl;
+        SPDLOG_ERROR( "Error attempting to load project tree for: {} project: {} error: {}",
+            m_component.getSlaveWorkspacePath().string(),
+            strProjectName, ex.what() );
 		throw;
 	}
 	
@@ -68,7 +69,7 @@ Program::Program( Component& component, const std::string& strHostName, const st
     m_strComponentName = m_pProjectTree->getComponentFileNameExt( true );
 
 	m_componentPath = binDirectory / m_strComponentName;
-	std::cout << "Loading component: " << m_componentPath.string() << std::endl;
+    SPDLOG_INFO( "Loading component: {}", m_componentPath.string() );
 
     m_pPlugin = boost::dll::import< megastructure::EGComponent >(   // type of imported symbol is located between `<` and `>`
             m_componentPath,                       					// path to the library and library name
@@ -82,7 +83,7 @@ Program::Program( Component& component, const std::string& strHostName, const st
 	
 	VERIFY_RTE_MSG( m_pEncodeDecode, "Did not get encode decode interface from program: " << m_componentPath.string() );
     
-    //std::cout << "Initialisation complete" << std::endl;
+    SPDLOG_INFO( "Initialisation complete" );
 }
 
 Program::~Program()
@@ -96,10 +97,9 @@ SharedBuffer* Program::getSharedBuffer( const char* pszName, std::size_t szSize 
 {
     std::string strBufferName = pszName;
     
-    //std::cout << "Requesting shared buffer: " << pszName << " size: " << szSize << std::endl;
+    SPDLOG_TRACE( "Requesting shared buffer: {} size: {}", pszName, szSize );
     std::future< std::string > strFuture = m_component.getSharedBuffer( strBufferName, szSize );
     const std::string strBufferSharedName = strFuture.get();
-    //std::cout << "Got shared buffer name of: " << strBufferSharedName << std::endl;
     
     SharedBufferMap::iterator iFind = m_sharedBuffers.find( strBufferName );
     if( iFind != m_sharedBuffers.end() )
@@ -108,6 +108,7 @@ SharedBuffer* Program::getSharedBuffer( const char* pszName, std::size_t szSize 
         if( pSharedBuffer->getSize() == szSize && 
             pSharedBuffer->getSharedName() == strBufferSharedName )
         {
+            SPDLOG_TRACE( "Found existing matching shared buffer: ", strBufferName );
             return pSharedBuffer.get();
         }
     }
@@ -116,8 +117,7 @@ SharedBuffer* Program::getSharedBuffer( const char* pszName, std::size_t szSize 
     SharedBufferImpl::Ptr pSharedBuffer =
         std::make_shared< SharedBufferImpl >( strBufferName, strBufferSharedName, szSize );
     m_sharedBuffers[ strBufferName ] = pSharedBuffer;
-    //std::cout << "Loaded shared buffer: " << strBufferName << 
-    //    " size: " << szSize << " " << strBufferSharedName << std::endl;
+    SPDLOG_TRACE( "Created shared buffer name: {} shared name: {} size: {} ", strBufferName, strBufferSharedName, szSize );
     
     return pSharedBuffer.get();
 }
@@ -130,7 +130,7 @@ LocalBuffer* Program::getLocalBuffer( const char* pszName, std::size_t szSize )
     {
         LocalBufferImpl::Ptr pBuffer = std::make_shared< LocalBufferImpl >( strBufferName, szSize );
         m_cacheBuffers.insert( std::make_pair( std::string( pszName ), pBuffer ) );
-        //std::cout << "Local buffer: " << pszName << " size: " << szSize << std::endl;
+        SPDLOG_TRACE( "Local buffer: {} size: {}", pszName, szSize );
         return pBuffer.get();
     }
     else
@@ -169,7 +169,7 @@ void Program::releaseLocks()
             Message::EG_Msg::Request* pRequest = pEGMsg->mutable_request();
             Message::EG_Msg::Request::Unlock* pUnlock = pRequest->mutable_unlock();
         }
-        //std::cout << "Requesting read un lock on: " << lockInfo.first << " timestamp: " << lockInfo.second << std::endl;
+        SPDLOG_TRACE( "Requesting read un lock on: {} timestamp: {}", lockInfo.first, lockInfo.second );
         m_component.sendeg( message );
     }
     m_readerLocks.clear();
@@ -184,7 +184,7 @@ void Program::releaseLocks()
             Message::EG_Msg::Request* pRequest = pEGMsg->mutable_request();
             Message::EG_Msg::Request::Unlock* pUnlock = pRequest->mutable_unlock();
         }
-        //std::cout << "Requesting write un lock on: " << lockInfo.first << " timestamp: " << lockInfo.second << std::endl;
+        SPDLOG_TRACE( "Requesting write un lock on: {} timestamp: {}", lockInfo.first, lockInfo.second );
         m_component.sendeg( message );
     }
     m_writerLocks.clear();
@@ -204,9 +204,7 @@ void Program::readlock( eg::TypeID iComponentType, std::uint32_t uiTimestamp )
             Message::EG_Msg::Request* pRequest = pEGMsg->mutable_request();
             Message::EG_Msg::Request::Lock* pLock = pRequest->mutable_lock();
         }
-
-        //std::cout << "Requesting read lock on: " << iComponentType << " timestamp:" << uiTimestamp << std::endl;
-        
+        SPDLOG_TRACE( "Requesting lock on: {} timestamp: {}", iComponentType, uiTimestamp );
         m_component.sendeg( message );
     }
     
@@ -221,23 +219,18 @@ void Program::readlock( eg::TypeID iComponentType, std::uint32_t uiTimestamp )
                 if( egMsg.has_response() )
                 {
                     const megastructure::Message::EG_Msg::Response& egResponse = egMsg.response();
-                    
-                    //const std::int32_t    iType 		= egMsg.type();
-                    //const std::size_t     uiInstance 	= egMsg.instance();
-                    //const std::uint32_t   uiTimestamp   = egMsg.cycle();
-                    
-                    //std::cout << "Program received read lock response type: " << egMsg.type() << 
-                    //    " timestamp: " << egMsg.cycle() << std::endl;
-                    
+                    SPDLOG_TRACE( "Program received lock response type: {} instance: {} timestamp: {}", 
+                        egMsg.type(), egMsg.instance(), egMsg.cycle() );
                     m_readerLocks.insert( ComponentLockInfo{ iComponentType, uiTimestamp } );
-                    
                     break;
+                }
+                else if( egMsg.has_error() )
+                {
+                    SPDLOG_ERROR( "Error requesting lock on component: {}", iComponentType );
                 }
                 else
                 {
-                    //queue up other messages? - events?
-                    
-                    THROW_RTE( "Unexpected message" );
+                    THROW_RTE( "Unexpected response to lock request" );
                 }
             }
             else
@@ -248,6 +241,56 @@ void Program::readlock( eg::TypeID iComponentType, std::uint32_t uiTimestamp )
     }
 }
 
+void Program::read( eg::TypeID type, std::uint32_t& uiInstance, std::uint32_t uiTimestamp )
+{
+    {
+        Message message;
+        {
+            Message::EG_Msg* pEGMsg = message.mutable_eg_msg();
+            pEGMsg->set_type( type );
+            pEGMsg->set_instance( uiInstance );
+            pEGMsg->set_cycle( uiTimestamp );
+            
+            Message::EG_Msg::Request* pRequest = pEGMsg->mutable_request();
+            Message::EG_Msg::Request::Read* pRead = pRequest->mutable_read();
+        }
+        SPDLOG_TRACE( "Requesting read on: {} timestamp: {}", type, uiTimestamp );
+        m_component.sendeg( message );
+    }
+    
+    {
+        megastructure::Message message;
+        while( m_component.readegSync( message ) )
+        {
+            if( message.has_eg_msg() )
+            {
+                const megastructure::Message::EG_Msg& egMsg = message.eg_msg();
+                if( egMsg.has_response() )
+                {
+                    const megastructure::Message::EG_Msg::Response& egResponse = egMsg.response();
+                    SPDLOG_TRACE( "Program received read response type: {} instance: {} timestamp: {}", 
+                        egMsg.type(), egMsg.instance(), egMsg.cycle() );
+                        
+                    writeBuffer( type, uiInstance, egResponse.value() );
+                    break;
+                }
+                else if( egMsg.has_error() )
+                {
+                    SPDLOG_ERROR( "Error requesting read on type: {} instance: {}", type, uiInstance );
+                }
+                else
+                {
+                    THROW_RTE( "Unexpected message" );
+                }
+            }
+            else
+            {
+                THROW_RTE( "Did not receive eg msg on eg socket" );
+            }
+        }
+    }  
+}
+        
 void* Program::getRoot() const
 {
     return m_pPlugin->GetRoot();

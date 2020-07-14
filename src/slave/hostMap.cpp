@@ -2,6 +2,8 @@
 
 #include "hostMap.hpp"
 
+#include "megastructure/log.hpp"
+
 #include <iostream>
 
 namespace
@@ -125,14 +127,16 @@ namespace slave
 			{
 				if( h.second.getMegaClientID() == i.second.getMegaClientID() )
 				{
-					std::cout << "Client: " << i.second.getMegaClientID() << " ProcessName: " << i.first << " HostName: " << h.first << std::endl;
+                    SPDLOG_INFO( "Client: {} ProcessName: {} HostName: {}", 
+                        i.second.getMegaClientID(), i.first, h.first );
 					bFound = true;
 					break;
 				}
 			}
 			if( !bFound )
 			{
-				std::cout << "Client: " << i.second.getMegaClientID() << " ProcessName: " << i.first << " HostName: No Host Name Assigned" << std::endl;
+                SPDLOG_INFO( "Client: {} ProcessName: {} No Host Name Assigned", 
+                    i.second.getMegaClientID(), i.first );
 			}
 		}
 	}
@@ -159,13 +163,8 @@ namespace slave
 			if( host.getUniqueID() == strUniqueID )
 			{
 				host.setEGClientID( clientID );
-				
-				std::cout << "Host enrolled " <<
-					" process: " << 		host.getProcessName() << 
-					" mega client id: " << 	host.getMegaClientID() <<
-					" eg client id: " << 	host.getEGClientID() <<
-					std::endl;
-				
+                SPDLOG_INFO( "Host enrolled as process: {} mega client id: {} eg client id: {}",
+                    host.getProcessName(), host.getMegaClientID(), host.getEGClientID() );
 				return true;
 			}
 		}

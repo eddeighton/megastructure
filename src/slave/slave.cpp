@@ -139,7 +139,7 @@ namespace slave
         
         m_sharedBuffers[ strBufferName ] = 
             std::make_shared< megastructure::SharedBufferImpl >( strBufferName, strSharedBufferName, szSize );
-        //std::cout << "Created shared buffer: " << strBufferName << " size: " << szSize << " " << strSharedBufferName << std::endl;
+        SPDLOG_TRACE( "Created shared buffer: {} shared name: {} size: {}", strBufferName, strSharedBufferName, szSize );
         
         return strSharedBufferName;
     }

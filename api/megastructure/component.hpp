@@ -6,6 +6,7 @@
 #include "megastructure/queue.hpp"
 #include "megastructure/clientServer.hpp"
 #include "megastructure/queue.hpp"
+#include "megastructure/log.hpp"
 
 #include "egcomponent/egcomponent.hpp"
 
@@ -151,6 +152,8 @@ namespace megastructure
 		std::condition_variable m_simJobCondition;
 		
 		std::shared_ptr< Program > m_pProgram;
+        
+        std::shared_ptr< spdlog::details::thread_pool > m_logThreadPool;
 	};
 	
 }

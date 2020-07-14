@@ -22,6 +22,7 @@ struct Args
 {
 	std::string slave_mega_port;
 	std::string slave_eg_port;
+    std::string programName;
 };
 
 bool parse_args( int argc, const char* argv[], Args& args )
@@ -35,6 +36,7 @@ bool parse_args( int argc, const char* argv[], Args& args )
 		options.add_options()
 			("sport", po::value< std::string >( &args.slave_mega_port )->default_value( megastructure::MEGA_PORT ), "Slave Mega Port" )
 			("eport", po::value< std::string >( &args.slave_eg_port )->default_value( megastructure::EG_PORT ), "Slave EG Port" )
+            ("name", po::value< std::string >( &args.programName ), "Alternative name for program to be known by instead of default actual process name" )
 			("help", "produce help message")
 		;
 
@@ -68,61 +70,6 @@ std::string readInput()
 	return str;
 }
 
-bool handleEGTest( megastructure::Component& component, const std::string& strLine/*, boost::optional< std::future< std::string > >& optResult*/ )
-{
-    /*
-	if( strLine.substr( 0, 4 ) == "read" )
-	{
-		std::uint32_t uiType 		= 0U;
-		std::uint32_t uiInstance 	= 0U;
-		
-		{
-			std::istringstream is( strLine.substr( 5 ) );
-			is >> uiType >> uiInstance;
-			std::cout << "Reading type: " << uiType << " instance: " << uiInstance << std::endl;
-		}
-		
-		std::cout << "Result: " << component.egRead( uiType, uiInstance ) << std::endl;
-		
-		return true;
-	}
-	else if( strLine.substr( 0, 5 ) == "write" )
-	{
-		std::uint32_t uiType = 0U;
-		std::uint32_t uiInstance = 0U;
-		std::string strBuffer;
-		
-		{
-			std::istringstream is( strLine.substr( 6 ) );
-			is >> uiType >> uiInstance >> strBuffer;
-			std::cout << "Reading type: " << uiType << " instance: " << uiInstance << " buffer: " << strBuffer << std::endl;
-		}
-		
-		component.egWrite( uiType, uiInstance, strBuffer );
-		
-		return true;
-	}
-	else if( strLine.substr( 0, 4 ) == "call" )
-	{
-		std::uint32_t uiType = 0U;
-		std::uint32_t uiInstance = 0U;
-		std::string strBuffer;
-		
-		{
-			std::istringstream is( strLine.substr( 5 ) );
-			is >> uiType >> uiInstance >> strBuffer;
-			std::cout << "Reading type: " << uiType << " instance: " << uiInstance << " buffer: " << strBuffer << std::endl;
-		}
-		
-		component.egCall( uiType, uiInstance, strBuffer );
-		
-		return true;
-	}*/
-	
-	return false;
-}
-
-
 int main( int argc, const char* argv[] )
 {
 	Args args;
@@ -132,10 +79,11 @@ int main( int argc, const char* argv[] )
 	}
 	
 	try
-	{		
-		std::cout << "Host: " << 
-			megastructure::getHostProgramName() << " : " << 
-			Common::getProcessID() << std::endl;
+	{	
+        if( args.programName.empty() )
+        {
+            args.programName = megastructure::getHostProgramName();
+        }
 		
 		std::future< std::string > inputStringFuture =
 			std::async( std::launch::async, readInput );
@@ -146,14 +94,12 @@ int main( int argc, const char* argv[] )
 			environment,
 			args.slave_mega_port,
 			args.slave_eg_port,
-			megastructure::getHostProgramName() );
+			args.programName );
+            
+        SPDLOG_INFO( "Host: {} pid: {}", args.programName, Common::getProcessID() );
 			
-		//std::vector< std::future< std::string > > resultFutures, temp;
-		
 		while( true )
 		{
-			//boost::optional< std::future< std::string > > optResult;
-	
 			using namespace std::chrono_literals;
 			const std::future_status status =
 				inputStringFuture.wait_for( 100ms );
@@ -165,14 +111,6 @@ int main( int argc, const char* argv[] )
 				{
 					break;
 				}
-                else if( handleEGTest( component, strInput/*, optResult*/ ) )
-                {
-					/*if( optResult )
-					{
-						std::future< std::string >* f = boost::get_pointer( optResult );
-						resultFutures.push_back( std::move( *f ) );
-					}*/
-                }
                 else if( strInput == "" )
                 {
                     //do nothing
@@ -187,23 +125,6 @@ int main( int argc, const char* argv[] )
 			}
 			
 			component.runCycle();
-			/*
-			//handle any pending response results
-			temp.swap( resultFutures );
-			for( auto& f : temp )
-			{
-				const std::future_status status = f.wait_for( 1ms );
-				if( status == std::future_status::deferred ||
-					status == std::future_status::ready )
-				{
-					std::cout << "Result: " << f.get() << std::endl;
-				}
-				else
-				{
-					resultFutures.push_back( std::move( f ) );
-				}
-			}
-			temp.clear();*/
 		}
 		
 	}

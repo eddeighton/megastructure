@@ -2918,13 +2918,13 @@ class Message_EG_Msg_Request_Write PROTOBUF_FINAL :
   enum : int {
     kValueFieldNumber = 1,
   };
-  // string value = 1;
+  // bytes value = 1;
   void clear_value();
   const std::string& value() const;
   void set_value(const std::string& value);
   void set_value(std::string&& value);
   void set_value(const char* value);
-  void set_value(const char* value, size_t size);
+  void set_value(const void* value, size_t size);
   std::string* mutable_value();
   std::string* release_value();
   void set_allocated_value(std::string* value);
@@ -3071,13 +3071,13 @@ class Message_EG_Msg_Request_Call PROTOBUF_FINAL :
   enum : int {
     kArgsFieldNumber = 1,
   };
-  // string args = 1;
+  // bytes args = 1;
   void clear_args();
   const std::string& args() const;
   void set_args(const std::string& value);
   void set_args(std::string&& value);
   void set_args(const char* value);
-  void set_args(const char* value, size_t size);
+  void set_args(const void* value, size_t size);
   std::string* mutable_args();
   std::string* release_args();
   void set_allocated_args(std::string* args);
@@ -3752,13 +3752,13 @@ class Message_EG_Msg_Response PROTOBUF_FINAL :
     kCoordinatorFieldNumber = 1,
     kHostFieldNumber = 2,
   };
-  // string value = 3;
+  // bytes value = 3;
   void clear_value();
   const std::string& value() const;
   void set_value(const std::string& value);
   void set_value(std::string&& value);
   void set_value(const char* value);
-  void set_value(const char* value, size_t size);
+  void set_value(const void* value, size_t size);
   std::string* mutable_value();
   std::string* release_value();
   void set_allocated_value(std::string* value);
@@ -4073,13 +4073,13 @@ class Message_EG_Msg_Event PROTOBUF_FINAL :
   enum : int {
     kValueFieldNumber = 1,
   };
-  // string value = 1;
+  // bytes value = 1;
   void clear_value();
   const std::string& value() const;
   void set_value(const std::string& value);
   void set_value(std::string&& value);
   void set_value(const char* value);
-  void set_value(const char* value, size_t size);
+  void set_value(const void* value, size_t size);
   std::string* mutable_value();
   std::string* release_value();
   void set_allocated_value(std::string* value);
@@ -6361,7 +6361,7 @@ inline void Message_CHS_Buffer::unsafe_arena_set_allocated_sharedname(
 
 // Message_EG_Msg_Request_Write
 
-// string value = 1;
+// bytes value = 1;
 inline void Message_EG_Msg_Request_Write::clear_value() {
   value_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
@@ -6397,7 +6397,7 @@ inline void Message_EG_Msg_Request_Write::set_value(const char* value) {
               GetArena());
   // @@protoc_insertion_point(field_set_char:megastructure.Message.EG_Msg.Request.Write.value)
 }
-inline void Message_EG_Msg_Request_Write::set_value(const char* value,
+inline void Message_EG_Msg_Request_Write::set_value(const void* value,
     size_t size) {
   
   value_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
@@ -6446,7 +6446,7 @@ inline void Message_EG_Msg_Request_Write::unsafe_arena_set_allocated_value(
 
 // Message_EG_Msg_Request_Call
 
-// string args = 1;
+// bytes args = 1;
 inline void Message_EG_Msg_Request_Call::clear_args() {
   args_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
@@ -6482,7 +6482,7 @@ inline void Message_EG_Msg_Request_Call::set_args(const char* value) {
               GetArena());
   // @@protoc_insertion_point(field_set_char:megastructure.Message.EG_Msg.Request.Call.args)
 }
-inline void Message_EG_Msg_Request_Call::set_args(const char* value,
+inline void Message_EG_Msg_Request_Call::set_args(const void* value,
     size_t size) {
   
   args_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
@@ -6997,7 +6997,7 @@ inline void Message_EG_Msg_Response::set_host(::PROTOBUF_NAMESPACE_ID::uint32 va
   // @@protoc_insertion_point(field_set:megastructure.Message.EG_Msg.Response.host)
 }
 
-// string value = 3;
+// bytes value = 3;
 inline void Message_EG_Msg_Response::clear_value() {
   value_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
@@ -7033,7 +7033,7 @@ inline void Message_EG_Msg_Response::set_value(const char* value) {
               GetArena());
   // @@protoc_insertion_point(field_set_char:megastructure.Message.EG_Msg.Response.value)
 }
-inline void Message_EG_Msg_Response::set_value(const char* value,
+inline void Message_EG_Msg_Response::set_value(const void* value,
     size_t size) {
   
   value_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
@@ -7126,7 +7126,7 @@ inline void Message_EG_Msg_Error::set_host(::PROTOBUF_NAMESPACE_ID::uint32 value
 
 // Message_EG_Msg_Event
 
-// string value = 1;
+// bytes value = 1;
 inline void Message_EG_Msg_Event::clear_value() {
   value_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
@@ -7162,7 +7162,7 @@ inline void Message_EG_Msg_Event::set_value(const char* value) {
               GetArena());
   // @@protoc_insertion_point(field_set_char:megastructure.Message.EG_Msg.Event.value)
 }
-inline void Message_EG_Msg_Event::set_value(const char* value,
+inline void Message_EG_Msg_Event::set_value(const void* value,
     size_t size) {
   
   value_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(

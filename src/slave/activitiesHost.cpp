@@ -1,6 +1,8 @@
 
 #include "activitiesHost.hpp"
 
+#include "megastructure/log.hpp"
+
 #include "schema/projectTree.hpp"
 
 #include <boost/optional.hpp>
@@ -33,12 +35,12 @@ bool TestHostActivity::clientMessage( std::uint32_t uiClient, const megastructur
 			const megastructure::Message::HCS_Alive& alive = message.hcs_alive();
 			if( !alive.success() )
 			{
-				std::cout << "Client: " << uiClient << " with name: " << m_strProcessName << " is not alive" << std::endl;
+                SPDLOG_INFO( "Client: {} name: {} is NOT alive", uiClient, m_strProcessName );
 				m_slave.removeClient( m_host.getMegaClientID() );
 			}
 			else
 			{
-				std::cout << "Client: " << uiClient << " with name: " << m_strProcessName << " is alive" << std::endl;
+                SPDLOG_INFO( "Client: {} name: {} IS alive", uiClient, m_strProcessName );
 				m_bSuccess = true;
 			}
 			m_slave.activityComplete( shared_from_this() );
@@ -103,7 +105,7 @@ bool HostEnrollActivity::clientMessage( std::uint32_t uiClient, const megastruct
 		}
 		else 
 		{
-			std::cout << "HostEnrollActivity error" << std::endl;
+            SPDLOG_WARN( "HostEnrollActivity error" );
 			m_slave.sendHost( chs_enroll( false ), uiClient );
 		}
 		
@@ -122,7 +124,7 @@ bool HostEnrollActivity::clientMessage( std::uint32_t uiClient, const megastruct
 		}
 		else
 		{
-			std::cout << "Enrollment failed for unique: " << enrolleg.unique() << std::endl;
+            SPDLOG_WARN( "Enrollment failed for unique: {}", enrolleg.unique() );
 		}
 		/*else 
 		{
@@ -161,14 +163,14 @@ bool LoadHostProgramActivity::clientMessage( std::uint32_t uiClient, const megas
 			const megastructure::Message::HCS_Load& load = message.hcs_load();
 			if( !load.success() )
 			{
-				std::cout << "Client: " << uiClient << " has NOT assumed host name: " << 
-					m_hostName << " with process name: " << m_programName << std::endl;
+                SPDLOG_WARN( "Client: {} has NOT assumed host name: {} with process name: {}", 
+                  uiClient, m_hostName, m_programName );
 				m_slave.removeClient( m_host.getMegaClientID() );
 			}
 			else
 			{
-				std::cout << "Client: " << uiClient << " has assumed host name: " << 
-					m_hostName << " with process name: " << m_programName << std::endl;
+                SPDLOG_INFO( "Client: {} has assumed host name: {} with process name: {}", 
+                  uiClient, m_hostName, m_programName );
 				m_bSuccess = true;
 			}
 			m_slave.activityComplete( shared_from_this() );
@@ -195,8 +197,8 @@ void LoadHostsProgramActivity::start()
 	}
 	catch( std::exception& ex )
 	{
-		std::cout << "Error attempting to load project tree for: " << 
-			m_programName << " : " << ex.what() << std::endl;
+        SPDLOG_ERROR( "Error attempting to load project tree for: {} error: {}", 
+            m_programName, ex.what() );
 	}
 	
 	if( pProjectTree )
@@ -256,11 +258,15 @@ void LoadHostsProgramActivity::start()
 		}
 		
 		//given processNameToHostName can now determine the new association of hosts to hostNames
-		std::cout << "Found process name to host name pairs:" << std::endl;
-		for( auto& i : processNameToHostName )
-		{
-			std::cout << i.first << " : " << i.second << std::endl;
-		}
+        {
+            std::ostringstream osPairs;
+            osPairs << "Found process name to host name pairs:\n" << std::endl;
+            for( auto& i : processNameToHostName )
+            {
+                osPairs << i.first << " : " << i.second << "\n";
+            }
+            SPDLOG_INFO( "Found process name to host name pairs: {}", osPairs.str() );
+        }
 		
 		std::vector< Host > unmappedClients; 
 		std::vector< std::string > unmappedHostNames;
@@ -334,8 +340,7 @@ bool HostBufferActivity::clientMessage( std::uint32_t uiClient, const megastruct
     {
         const megastructure::Message::HCQ_Buffer& bufferRequest = message.hcq_buffer();
         
-        //std::cout << "Received request for shared buffer: " << bufferRequest.buffername() << 
-        //    " size: " << bufferRequest.size() << std::endl;
+        SPDLOG_TRACE( "Received request for shared buffer: {} size: {}", bufferRequest.buffername(), bufferRequest.size() );
         
         const std::string strSharedBufferName =
             m_slave.getSharedBufferName( bufferRequest.buffername(), bufferRequest.size() );

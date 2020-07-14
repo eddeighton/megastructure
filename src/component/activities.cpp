@@ -4,6 +4,7 @@
 #include "jobs.hpp"
 
 #include "megastructure/mega.hpp"
+#include "megastructure/log.hpp"
 
 #include "protocol/protocol_helpers.hpp"
 
@@ -57,7 +58,7 @@ bool EnrollHostActivity::serverMessage( const Message& message )
 		}
 		else
 		{
-			std::cout << "Enroll failed" << std::endl;
+            SPDLOG_WARN( "Enroll failed" );
 			m_component.activityComplete( shared_from_this() );
 		}
 		return true;
@@ -69,8 +70,8 @@ bool EnrollHostActivity::serverMessage( const Message& message )
 		{
 			m_component.setSlaveWorkspacePath( m_strWorkspace );
 			m_component.setSlaveName( m_strSlaveName );
-			std::cout << "Enroll succeeded.  Slave workspace: " << m_strWorkspace << 
-				" Slave name: " <<  m_strSlaveName << std::endl;
+            SPDLOG_INFO( "Enroll succeeded. Slave workspace: {} Slave name: {}",
+                m_strWorkspace, m_strSlaveName );
 		}
 		else
 		{
@@ -93,7 +94,8 @@ bool LoadProgramActivity::serverMessage( const Message& message )
 		if( m_pLoadProgramJob )
 		{
 			//existing job active so deny
-			std::cout << "Cannot load program while already loading a program" << std::endl;
+            SPDLOG_WARN( "Cannot load program: {} while already loading program : {}", 
+                loadProgramRequest.programname(), m_pLoadProgramJob->getProgramName() );
 			m_component.send( megastructure::hcs_load( false ) );
 		}
 		else
@@ -118,16 +120,12 @@ bool LoadProgramActivity::jobComplete( Job::Ptr pJob )
 	{
         if( m_pLoadProgramJob->successful() )
         {
-			std::cout << "Program: " << m_strProgramName << 
-				" HostName: " << m_strHostName << 
-				" loaded successfully" << std::endl;
+            SPDLOG_INFO( "Program: {} HostName: {} loaded successfully", m_strProgramName, m_strHostName );
             m_component.send( megastructure::hcs_load( true ) );
         }
         else
         {
-			std::cout << "Program: " << m_strProgramName << 
-				" HostName: " << m_strHostName << 
-				" failed to load" << std::endl;
+            SPDLOG_WARN( "Program: {} HostName: {} failed to load", m_strProgramName, m_strHostName );
             m_component.send( megastructure::hcs_load( false ) );
         }
 		m_pLoadProgramJob.reset();
@@ -141,7 +139,7 @@ bool LoadProgramActivity::jobComplete( Job::Ptr pJob )
 ////////////////////////////////////////////////////////////////////
 void BufferActivity::start()
 {
-    //std::cout << "Sending buffer request for: " << m_bufferName << " size: " << m_bufferSize << std::endl;
+    SPDLOG_TRACE( "Sending buffer request for: {} size: {}", m_bufferName, m_bufferSize );
     Message message;
     {
         Message::HCQ_Buffer* pBufferRequest = message.mutable_hcq_buffer();
@@ -158,9 +156,8 @@ bool BufferActivity::serverMessage( const Message& message )
 		const Message::CHS_Buffer& bufferResponse = message.chs_buffer();
         if( bufferResponse.buffername() == m_bufferName )
         {
-            //std::cout << "Got buffer response for: " << 
-            //    m_bufferName << " size: " << m_bufferSize << 
-            //    " : " << bufferResponse.sharedname() << std::endl;
+            SPDLOG_TRACE( "Got buffer response for: {} size: {} shared name: {}", 
+                m_bufferName, m_bufferSize, bufferResponse.sharedname() );
             m_result.set_value( bufferResponse.sharedname() );
 			m_component.activityComplete( shared_from_this() );
             return true;
@@ -219,16 +216,17 @@ void EGRequestHandlerActivity::processMessages()
 					Message::EG_Msg* pEGMsg = responseMessage.mutable_eg_msg();
 					pEGMsg->set_type( iType );
 					pEGMsg->set_instance( uiInstance );
-					pEGMsg->set_cycle( 0 ); //TODO - get actual clock cycle
+					pEGMsg->set_cycle( egMsg.cycle() );
 					
 					Message::EG_Msg::Response* pResponse = pEGMsg->mutable_response();
 					pResponse->set_coordinator( egRequest.coordinator() );
 					pResponse->set_host( egRequest.host() );
 					pResponse->set_value( strBuffer );
 				}
-				//std::cout << "Sending eg response type: " << egMsg.type() << " instance: " << egMsg.instance() <<
-				//	" cycle: " << egMsg.cycle() << " coordinator: " << egRequest.coordinator() << 
-				//	" host: " << egRequest.host() << std::endl;
+                
+                SPDLOG_TRACE( "Sending eg read response type: {} instance: {} cycle: {} coordinator: {} host: {}", 
+                    egMsg.type(), egMsg.instance(), egMsg.cycle(), egRequest.coordinator(), egRequest.host() );
+                
 				m_component.sendeg( responseMessage );
 			}
 			else
@@ -245,9 +243,9 @@ void EGRequestHandlerActivity::processMessages()
 					pErrorEGMsgError->set_coordinator( egRequest.coordinator() );
 					pErrorEGMsgError->set_host( egRequest.host() );
 				}
-				//std::cout << "Sending eg error type: " << egMsg.type() << " instance: " << egMsg.instance() <<
-				//	" cycle: " << egMsg.cycle() << " coordinator: " << egRequest.coordinator() << 
-				//	" host: " << egRequest.host() << std::endl;
+                SPDLOG_WARN( "Sending eg read response error type: {} instance: {} cycle: {} coordinator: {} host: {}", 
+                    egMsg.type(), egMsg.instance(), egMsg.cycle(), egRequest.coordinator(), egRequest.host() );
+                    
 				m_component.sendeg( errorMessage );
 			}
 		}
@@ -270,16 +268,16 @@ void EGRequestHandlerActivity::processMessages()
                 pResponse->set_coordinator( egRequest.coordinator() );
                 pResponse->set_host( egRequest.host() );
             }
-            //std::cout << "Sending eg lock response type: " << egMsg.type() << " instance: " << egMsg.instance() <<
-            //    " cycle: " << egMsg.cycle() << " coordinator: " << egRequest.coordinator() << 
-            //    " host: " << egRequest.host() << std::endl;
+            SPDLOG_TRACE( "Sending eg lock response type: {} instance: {} cycle: {} coordinator: {} host: {}", 
+                egMsg.type(), egMsg.instance(), egMsg.cycle(), egRequest.coordinator(), egRequest.host() );
+                
             m_component.sendeg( responseMessage );
 		}
 		else if( egRequest.has_unlock() )
 		{
-            //std::cout << "Got unlock request from: " << egMsg.type() << " instance: " << egMsg.instance() <<
-            //    " cycle: " << egMsg.cycle() << " coordinator: " << egRequest.coordinator() << 
-            //    " host: " << egRequest.host() << std::endl;
+            SPDLOG_TRACE( "Releasing simulation lock type: {} instance: {} cycle: {} coordinator: {} host: {}", 
+                egMsg.type(), egMsg.instance(), egMsg.cycle(), egRequest.coordinator(), egRequest.host() );
+                
             m_component.releaseSimulationLock( shared_from_this() );
             m_component.activityComplete( shared_from_this() );
 		}

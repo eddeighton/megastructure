@@ -9,6 +9,7 @@
 #include "schema/project.hpp"
 
 #include "common/assert_verify.hpp"
+#include "common/processID.hpp"
 
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
@@ -112,7 +113,7 @@ int main( int argc, const char* argv[] )
 		slave::getWorkspaceAndSlaveNameFromPath( 
 			args.slave_path, workspacePath, strSlaveName );
             
-        megastructure::configureLog( strSlaveName );
+        auto logThreadPool = megastructure::configureLog( strSlaveName );
 		
 		slave::Slave slave( 
 			environment,
@@ -125,16 +126,14 @@ int main( int argc, const char* argv[] )
 			
 		if( !slave.getEnrollment().get() )
 		{
-			std::cout << "Failed to enroll slave with master as: " << slave.getName() << 
-				" in workspace: " << slave.getWorkspace().string() << 
-				" program: " << slave.getActiveProgramName() << std::endl;
+            SPDLOG_WARN( "Failed to enroll slave with master as: {} in workspace: {} program: {}",
+                slave.getName(), slave.getWorkspace().string(), slave.getActiveProgramName() );
 			return 0;
 		}
 		else
 		{
-			std::cout << "Slave successfully enrolled with master as: " << slave.getName() << 
-				" in workspace: " << slave.getWorkspace().string() << 
-				" program: " << slave.getActiveProgramName() << std::endl;
+            SPDLOG_INFO( "Slave successfully enrolled with master as: {} in workspace: {} program: {} pid: {}",
+                slave.getName(), slave.getWorkspace().string(), slave.getActiveProgramName(), Common::getProcessID() );
 		}
 		
 		std::string str, strResponse;

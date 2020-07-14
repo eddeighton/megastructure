@@ -2,6 +2,8 @@
 #include "activitiesMaster.hpp"
 #include "activitiesHost.hpp"
 
+#include "megastructure/log.hpp"
+
 #include "protocol/protocol_helpers.hpp"
 
 namespace slave
@@ -58,12 +60,12 @@ bool AliveTestActivity::serverMessage( const megastructure::Message& message )
 			if( alive.slavename() == m_slave.getName() )
 			{
 				pAlive->set_success( true );
-				std::cout << "Got alive test request. Responded true."  << std::endl;
+                SPDLOG_TRACE( "Got alive test request. Responded true." );
 			}
 			else
 			{
 				pAlive->set_success( false );
-				std::cout << "Got alive test request. Responded false."  << std::endl;
+                SPDLOG_TRACE( "Got alive test request. Responded false." );
 			}
 		}
 		
@@ -101,8 +103,8 @@ bool LoadProgramActivity::serverMessage( const megastructure::Message& message )
 		}
 		else
 		{
-			std::cout << "Got request to load program: " << loadProgram.programname() 
-				<< " while loading program: " << m_currentlyLoadingProgramName << std::endl;
+            SPDLOG_WARN( "Got request to load program: {} while loading program: {}", 
+                loadProgram.programname(), m_currentlyLoadingProgramName );
 			m_slave.sendMaster( sms_load( false ) );
 		}
 			
@@ -129,13 +131,13 @@ bool LoadProgramActivity::activityComplete( Activity::Ptr pActivity )
 		if( pLoad->Successful() )
 		{
 			m_slave.setActiveProgramName( m_currentlyLoadingProgramName );
-			std::cout << "Active program is now: " << m_currentlyLoadingProgramName << std::endl;
+            SPDLOG_INFO( "Active program is now: {}", m_currentlyLoadingProgramName );
 			m_slave.sendMaster( sms_load( true ) );
 		}
 		else
 		{
 			m_slave.sendMaster( sms_load( false ) );
-			std::cout << "Failed to load program: " << m_currentlyLoadingProgramName << std::endl;
+            SPDLOG_WARN( "Failed to load program: {}", m_currentlyLoadingProgramName );
 		}
 		
 		m_currentlyLoadingProgramName.clear();

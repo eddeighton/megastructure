@@ -54,8 +54,7 @@ namespace megastructure
 	{
 	public:
         virtual void readlock( eg::TypeID component, std::uint32_t uiTimestamp ) = 0;
-		//virtual bool receive( std::int32_t& iType, std::uint32_t& uiInstance, std::uint32_t& uiTimestamp ) = 0;
-		//virtual void send( const char* type, std::size_t timestamp, const void* value, std::size_t size ) = 0;
+        virtual void read( eg::TypeID type, std::uint32_t& uiInstance, std::uint32_t uiTimestamp ) = 0;
 		
 	};
 	

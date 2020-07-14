@@ -80,7 +80,7 @@ int main( int argc, const char* argv[] )
     try 
     {
         //configure log
-        megastructure::configureLog( "master" );
+        auto logThreadPool = megastructure::configureLog( "master" );
     
         {
             spdlog::info( "Master started with pid:{}", Common::getProcessID() );

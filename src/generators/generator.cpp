@@ -788,16 +788,17 @@ const char szComponentPart2[] = R"(
     {
         m_pMegaProtocol->readlock( component, clock::cycle() );
     }
+    
+    void read( eg::TypeID type, eg::Instance instance )
+    {
+        m_pMegaProtocol->read( type, instance, clock::cycle() );
+    }
 
     void writelock( eg::TypeID component )
     {
         
     }
 
-    void read( eg::TypeID component, eg::TypeID type, eg::Instance instance )
-    {
-        
-    }
 
 };
 
@@ -839,14 +840,14 @@ namespace eg
         megastructure::g_pluginSymbol.readlock( component );
     }
 
+    void Component::read( eg::TypeID type, eg::Instance instance )
+    {
+        megastructure::g_pluginSymbol.read( type, instance );
+    }
+
     void Component::writelock( eg::TypeID component )
     {
         megastructure::g_pluginSymbol.writelock( component );
-    }
-
-    void Component::read( eg::TypeID component, eg::TypeID type, eg::Instance instance )
-    {
-        megastructure::g_pluginSymbol.read( component, type, instance );
     }
 }
 

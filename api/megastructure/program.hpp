@@ -53,16 +53,8 @@ namespace megastructure
         
         //MegaProtocol
         virtual void readlock( eg::TypeID component, std::uint32_t uiTimestamp );
-		//virtual bool receive( std::int32_t& iType, std::uint32_t& uiInstance, std::uint32_t& uiTimestamp );
-		//virtual void send( const char* type, std::size_t timestamp, const void* value, std::size_t size );
+        virtual void read( eg::TypeID type, std::uint32_t& uiInstance, std::uint32_t uiTimestamp );
 		
-		//test routines
-        /*
-		std::string egRead( std::int32_t iType, std::uint32_t uiInstance );
-		void egWrite( std::int32_t iType, std::uint32_t uiInstance, const std::string& strBuffer );
-		void egCall( std::int32_t iType, std::uint32_t uiInstance, const std::string& strBuffer );
-		*/
-        
 		//memory access
 		void readBuffer( std::int32_t iType, std::uint32_t uiInstance, std::string& strBuffer );
 		void writeBuffer( std::int32_t iType, std::uint32_t uiInstance, const std::string& strBuffer );

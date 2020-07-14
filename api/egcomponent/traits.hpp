@@ -105,8 +105,8 @@ class Component
 {
 public:
     static void readlock( eg::TypeID component );
+    static void read( eg::TypeID type, eg::Instance instance );
     static void writelock( eg::TypeID component );
-    static void read( eg::TypeID component, eg::TypeID type, eg::Instance instance );
 };
 
 template< typename T, std::size_t szComponentBit, std::size_t szComponentRTT >
@@ -125,13 +125,14 @@ inline T& readlock( eg::Instance instance, T& value )
 {
     if( !g_hostLocks.test( szComponentBit ) )
     {
-        Component::read( szComponentRTT, szType, instance );
+        Component::readlock( szComponentRTT );
         g_hostLocks.set( szComponentBit );
+        Component::read( szType, instance );
         g_reads.set( szHashBase + instance );
     }
     else if( !g_reads.test( szHashBase + instance ) )
     {
-        Component::read( szComponentRTT, szType, instance );
+        Component::read( szType, instance );
         g_reads.set( szHashBase + instance );
     }
     return value;

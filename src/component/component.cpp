@@ -31,7 +31,7 @@ namespace megastructure
 			m_client( TCPRemoteSocketName( "localhost", strMegaPort ) ),
 			m_egClient( TCPRemoteSocketName( "localhost", strEGPort ) )
 	{
-        megastructure::configureLog( strProgramName );
+        m_logThreadPool = megastructure::configureLog( strProgramName );
         
         SPDLOG_INFO( "Created megastructure component with mega port:{} eg port:{} program name:{}", strMegaPort, strEGPort, strProgramName );
         
@@ -187,7 +187,7 @@ namespace megastructure
     
     std::future< std::string > Component::getSharedBuffer( const std::string& strName, std::size_t szSize )
     {
-        //std::cout << "Creating BufferActivity for buffer: " << strName << " size: " << szSize << std::endl;
+        SPDLOG_TRACE( "Creating BufferActivity for buffer: {} size: {}", strName, szSize );
         BufferActivity* pBufferActivity = 
             new BufferActivity( *this, strName, szSize );
             

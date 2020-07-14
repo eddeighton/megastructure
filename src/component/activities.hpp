@@ -61,6 +61,8 @@ namespace megastructure
 		std::string m_name;
 	};
 
+    class LoadProgramJob;
+    
 	////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////
 	class LoadProgramActivity : public Activity
@@ -78,7 +80,7 @@ namespace megastructure
 		Component& m_component;
 		std::string m_strProgramName;
 		std::string m_strHostName;
-		Job::Ptr m_pLoadProgramJob;
+        std::shared_ptr< LoadProgramJob > m_pLoadProgramJob;
 	};
 	
 	////////////////////////////////////////////////////////////////////

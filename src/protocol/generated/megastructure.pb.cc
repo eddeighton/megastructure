@@ -904,12 +904,12 @@ const char descriptor_table_protodef_megastructure_2eproto[] PROTOBUF_SECTION_VA
   " \001(\0132*.megastructure.Message.EG_Msg.Requ"
   "est.LockH\000\022>\n\006unlock\030\007 \001(\0132,.megastructu"
   "re.Message.EG_Msg.Request.UnlockH\000\032\006\n\004Re"
-  "ad\032\026\n\005Write\022\r\n\005value\030\001 \001(\t\032\024\n\004Call\022\014\n\004ar"
-  "gs\030\001 \001(\t\032\006\n\004Lock\032\010\n\006UnlockB\010\n\006foobar\032<\n\010"
+  "ad\032\026\n\005Write\022\r\n\005value\030\001 \001(\014\032\024\n\004Call\022\014\n\004ar"
+  "gs\030\001 \001(\014\032\006\n\004Lock\032\010\n\006UnlockB\010\n\006foobar\032<\n\010"
   "Response\022\023\n\013coordinator\030\001 \001(\r\022\014\n\004host\030\002 "
-  "\001(\r\022\r\n\005value\030\003 \001(\t\032*\n\005Error\022\023\n\013coordinat"
+  "\001(\r\022\r\n\005value\030\003 \001(\014\032*\n\005Error\022\023\n\013coordinat"
   "or\030\001 \001(\r\022\014\n\004host\030\002 \001(\r\032\026\n\005Event\022\r\n\005value"
-  "\030\001 \001(\tB\010\n\006foobarB\010\n\006foobarb\006proto3"
+  "\030\001 \001(\014B\010\n\006foobarB\010\n\006foobarb\006proto3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_megastructure_2eproto_deps[1] = {
 };
@@ -4696,12 +4696,11 @@ const char* Message_EG_Msg_Request_Write::_InternalParse(const char* ptr, ::PROT
     ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
     CHK_(ptr);
     switch (tag >> 3) {
-      // string value = 1;
+      // bytes value = 1;
       case 1:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
           auto str = _internal_mutable_value();
           ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
-          CHK_(::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, "megastructure.Message.EG_Msg.Request.Write.value"));
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -4733,13 +4732,9 @@ failure:
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  // string value = 1;
+  // bytes value = 1;
   if (this->value().size() > 0) {
-    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
-      this->_internal_value().data(), static_cast<int>(this->_internal_value().length()),
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
-      "megastructure.Message.EG_Msg.Request.Write.value");
-    target = stream->WriteStringMaybeAliased(
+    target = stream->WriteBytesMaybeAliased(
         1, this->_internal_value(), target);
   }
 
@@ -4759,10 +4754,10 @@ size_t Message_EG_Msg_Request_Write::ByteSizeLong() const {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  // string value = 1;
+  // bytes value = 1;
   if (this->value().size() > 0) {
     total_size += 1 +
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::BytesSize(
         this->_internal_value());
   }
 
@@ -4905,12 +4900,11 @@ const char* Message_EG_Msg_Request_Call::_InternalParse(const char* ptr, ::PROTO
     ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
     CHK_(ptr);
     switch (tag >> 3) {
-      // string args = 1;
+      // bytes args = 1;
       case 1:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
           auto str = _internal_mutable_args();
           ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
-          CHK_(::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, "megastructure.Message.EG_Msg.Request.Call.args"));
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -4942,13 +4936,9 @@ failure:
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  // string args = 1;
+  // bytes args = 1;
   if (this->args().size() > 0) {
-    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
-      this->_internal_args().data(), static_cast<int>(this->_internal_args().length()),
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
-      "megastructure.Message.EG_Msg.Request.Call.args");
-    target = stream->WriteStringMaybeAliased(
+    target = stream->WriteBytesMaybeAliased(
         1, this->_internal_args(), target);
   }
 
@@ -4968,10 +4958,10 @@ size_t Message_EG_Msg_Request_Call::ByteSizeLong() const {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  // string args = 1;
+  // bytes args = 1;
   if (this->args().size() > 0) {
     total_size += 1 +
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::BytesSize(
         this->_internal_args());
   }
 
@@ -6023,12 +6013,11 @@ const char* Message_EG_Msg_Response::_InternalParse(const char* ptr, ::PROTOBUF_
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
-      // string value = 3;
+      // bytes value = 3;
       case 3:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 26)) {
           auto str = _internal_mutable_value();
           ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
-          CHK_(::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, "megastructure.Message.EG_Msg.Response.value"));
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -6072,13 +6061,9 @@ failure:
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteUInt32ToArray(2, this->_internal_host(), target);
   }
 
-  // string value = 3;
+  // bytes value = 3;
   if (this->value().size() > 0) {
-    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
-      this->_internal_value().data(), static_cast<int>(this->_internal_value().length()),
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
-      "megastructure.Message.EG_Msg.Response.value");
-    target = stream->WriteStringMaybeAliased(
+    target = stream->WriteBytesMaybeAliased(
         3, this->_internal_value(), target);
   }
 
@@ -6098,10 +6083,10 @@ size_t Message_EG_Msg_Response::ByteSizeLong() const {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  // string value = 3;
+  // bytes value = 3;
   if (this->value().size() > 0) {
     total_size += 1 +
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::BytesSize(
         this->_internal_value());
   }
 
@@ -6501,12 +6486,11 @@ const char* Message_EG_Msg_Event::_InternalParse(const char* ptr, ::PROTOBUF_NAM
     ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
     CHK_(ptr);
     switch (tag >> 3) {
-      // string value = 1;
+      // bytes value = 1;
       case 1:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
           auto str = _internal_mutable_value();
           ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
-          CHK_(::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, "megastructure.Message.EG_Msg.Event.value"));
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -6538,13 +6522,9 @@ failure:
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  // string value = 1;
+  // bytes value = 1;
   if (this->value().size() > 0) {
-    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
-      this->_internal_value().data(), static_cast<int>(this->_internal_value().length()),
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
-      "megastructure.Message.EG_Msg.Event.value");
-    target = stream->WriteStringMaybeAliased(
+    target = stream->WriteBytesMaybeAliased(
         1, this->_internal_value(), target);
   }
 
@@ -6564,10 +6544,10 @@ size_t Message_EG_Msg_Event::ByteSizeLong() const {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  // string value = 1;
+  // bytes value = 1;
   if (this->value().size() > 0) {
     total_size += 1 +
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::BytesSize(
         this->_internal_value());
   }
 
