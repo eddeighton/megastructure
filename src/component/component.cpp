@@ -29,7 +29,8 @@ namespace megastructure
 			m_strHostProgram( strProgramName ),
 			m_queue(),
 			m_client( TCPRemoteSocketName( "localhost", strMegaPort ) ),
-			m_egClient( TCPRemoteSocketName( "localhost", strEGPort ) )
+			m_egClient( TCPRemoteSocketName( "localhost", strEGPort ) ),
+            m_bCurrentLockReleased( false )
 	{
         m_logThreadPool = megastructure::configureLog( strProgramName );
         
@@ -53,52 +54,52 @@ namespace megastructure
 		m_zeromq1.join();
 	}
 	
-	
-	void Component::grantNextSimulationLock()
-	{
-		//assumes m_simulationMutex is locked
-		if( !m_bSimulationHasLock )
-		{
-			if( !m_pLockActivity )
-			{
-				if( !m_simulationLockActivities.empty() )
-				{
-					m_pLockActivity = m_simulationLockActivities.front();
-					m_simulationLockActivities.pop_front();
-					m_queue.simulationLockGranted( m_pLockActivity );
-				}
-			}
-		}
-	}
-	
-	void Component::requestSimulationLock( Activity::Ptr pActivity )
-	{
+    
+    SimulationLock::Ptr Component::getCurrentLock()
+    {
+        //called from message queue thread
 		std::unique_lock< std::mutex > simLock( m_simulationMutex );
-		
-		m_simulationLockActivities.push_back( pActivity );
-	}
-	
-	void Component::releaseSimulationLock( Activity::Ptr pActivity )
-	{
+        return m_pCurrentSimLock;
+    }
+    SimulationLock::Ptr Component::getOrCreateCurrentLock()
+    {
+        //called from message queue thread
 		std::unique_lock< std::mutex > simLock( m_simulationMutex );
-		
-		if( pActivity != m_pLockActivity )
-		{
-			Activity::PtrList::iterator iFind =
-				std::find( m_simulationLockActivities.begin(), 
-					m_simulationLockActivities.end(), pActivity );
-			VERIFY_RTE( iFind != m_simulationLockActivities.end() );
-			m_simulationLockActivities.erase( iFind );
-		}
-		else
-		{
-			m_pLockActivity.reset();
-			if( !m_simulationLockActivities.empty() )
-				grantNextSimulationLock();
-			else
-				m_simJobCondition.notify_one();
-		}
-	}
+        if( !m_pCurrentSimLock )
+        {
+            if( m_pFutureSimLock )
+                m_pFutureSimLock.swap( m_pCurrentSimLock );
+            else
+                m_pCurrentSimLock = std::make_shared< SimulationLock >();
+        }
+        return m_pCurrentSimLock;
+    }
+    
+    SimulationLock::Ptr Component::getOrCreateFutureLock()
+    {
+        //called from message queue thread
+		std::unique_lock< std::mutex > simLock( m_simulationMutex );
+        if( !m_pFutureSimLock )
+        {
+            m_pFutureSimLock = std::make_shared< SimulationLock >();
+        }
+        return m_pFutureSimLock;
+    }
+    
+    void Component::releaseCurrentLock()
+    {
+        //called from message queue thread
+		std::unique_lock< std::mutex > simLock( m_simulationMutex );
+        
+        m_pCurrentSimLock.reset();
+        if( !m_pCurrentSimLock && m_pFutureSimLock )
+        {
+            m_pFutureSimLock.swap( m_pCurrentSimLock );
+        }
+        
+        m_bCurrentLockReleased = true;
+        m_simJobCondition.notify_one();
+    }    
 
 	void Component::runAllJobs()
 	{
@@ -107,63 +108,37 @@ namespace megastructure
 			std::unique_lock< std::mutex > simLock( m_simulationMutex );
 			temp.swap( m_jobs );
 		}
-		if( !temp.empty() )
-		{
-			//process all jobs
-			for( Job::Ptr pJob : temp )
-				pJob->run();
-			temp.clear();
-		}
+        for( Job::Ptr pJob : temp )
+            pJob->run();
 	}
 	
 	void Component::runCycle()
 	{
-		bool bIsActivityLock = false;
-		{
-			std::unique_lock< std::mutex > simLock( m_simulationMutex );
-			if( m_pLockActivity || !m_jobs.empty() )
-			{
-				bIsActivityLock = true;
-			}
-		}
+        runAllJobs();
 		
-		if( bIsActivityLock )
-		{
-			Component& component = *this;
-			
-			//enter locked state
-			while( true )
-			{
-				runAllJobs();
-				
-				//wait for more jobs OR completion
-				std::unique_lock< std::mutex > simLock( m_simulationMutex );
-				m_simJobCondition.wait
-				( 
-					simLock, 
-					[ &component ]
-					{ 
-						return !component.m_pLockActivity || !component.m_jobs.empty();
-					} 
-				);
-				if( !m_pLockActivity )
-				{
-					m_bSimulationHasLock = true;
-					break;
-				}
-			}
-		}
+        {
+            std::unique_lock< std::mutex > simLock( m_simulationMutex );
+            
+            if( m_pCurrentSimLock )
+            {
+                m_queue.startSimulationLock();
+                m_bCurrentLockReleased = false;
+                const bool& bCurrentLockReleased = m_bCurrentLockReleased;
+                m_simJobCondition.wait
+                ( 
+                    simLock, 
+                    [ &bCurrentLockReleased ]
+                    { 
+                        return bCurrentLockReleased;
+                    } 
+                );
+            }
+        }
 	
 		//run simulation
 		if( m_pProgram )
 		{
 			m_pProgram->run();
-		}
-		
-		{
-			std::unique_lock< std::mutex > simLock( m_simulationMutex );
-			m_bSimulationHasLock = false;
-			grantNextSimulationLock();
 		}
 	}
     
@@ -171,7 +146,6 @@ namespace megastructure
 	{
 		std::unique_lock< std::mutex > simLock( m_simulationMutex );
 		m_jobs.push_back( pJob );
-		m_simJobCondition.notify_one();
 	}
 	
 	void Component::jobComplete( Job::Ptr pJob )

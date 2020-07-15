@@ -47,7 +47,7 @@ struct TableStruct_megastructure_2eproto {
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::AuxillaryParseTableField aux[]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
-  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[27]
+  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[26]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::FieldMetadata field_metadata[];
   static const ::PROTOBUF_NAMESPACE_ID::internal::SerializationTable serialization_table[];
@@ -85,9 +85,6 @@ extern Message_EG_Msg_EventDefaultTypeInternal _Message_EG_Msg_Event_default_ins
 class Message_EG_Msg_Request;
 class Message_EG_Msg_RequestDefaultTypeInternal;
 extern Message_EG_Msg_RequestDefaultTypeInternal _Message_EG_Msg_Request_default_instance_;
-class Message_EG_Msg_Request_Call;
-class Message_EG_Msg_Request_CallDefaultTypeInternal;
-extern Message_EG_Msg_Request_CallDefaultTypeInternal _Message_EG_Msg_Request_Call_default_instance_;
 class Message_EG_Msg_Request_Lock;
 class Message_EG_Msg_Request_LockDefaultTypeInternal;
 extern Message_EG_Msg_Request_LockDefaultTypeInternal _Message_EG_Msg_Request_Lock_default_instance_;
@@ -148,7 +145,6 @@ template<> ::megastructure::Message_EG_Msg* Arena::CreateMaybeMessage<::megastru
 template<> ::megastructure::Message_EG_Msg_Error* Arena::CreateMaybeMessage<::megastructure::Message_EG_Msg_Error>(Arena*);
 template<> ::megastructure::Message_EG_Msg_Event* Arena::CreateMaybeMessage<::megastructure::Message_EG_Msg_Event>(Arena*);
 template<> ::megastructure::Message_EG_Msg_Request* Arena::CreateMaybeMessage<::megastructure::Message_EG_Msg_Request>(Arena*);
-template<> ::megastructure::Message_EG_Msg_Request_Call* Arena::CreateMaybeMessage<::megastructure::Message_EG_Msg_Request_Call>(Arena*);
 template<> ::megastructure::Message_EG_Msg_Request_Lock* Arena::CreateMaybeMessage<::megastructure::Message_EG_Msg_Request_Lock>(Arena*);
 template<> ::megastructure::Message_EG_Msg_Request_Read* Arena::CreateMaybeMessage<::megastructure::Message_EG_Msg_Request_Read>(Arena*);
 template<> ::megastructure::Message_EG_Msg_Request_Unlock* Arena::CreateMaybeMessage<::megastructure::Message_EG_Msg_Request_Unlock>(Arena*);
@@ -2956,159 +2952,6 @@ class Message_EG_Msg_Request_Write PROTOBUF_FINAL :
 };
 // -------------------------------------------------------------------
 
-class Message_EG_Msg_Request_Call PROTOBUF_FINAL :
-    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:megastructure.Message.EG_Msg.Request.Call) */ {
- public:
-  inline Message_EG_Msg_Request_Call() : Message_EG_Msg_Request_Call(nullptr) {};
-  virtual ~Message_EG_Msg_Request_Call();
-
-  Message_EG_Msg_Request_Call(const Message_EG_Msg_Request_Call& from);
-  Message_EG_Msg_Request_Call(Message_EG_Msg_Request_Call&& from) noexcept
-    : Message_EG_Msg_Request_Call() {
-    *this = ::std::move(from);
-  }
-
-  inline Message_EG_Msg_Request_Call& operator=(const Message_EG_Msg_Request_Call& from) {
-    CopyFrom(from);
-    return *this;
-  }
-  inline Message_EG_Msg_Request_Call& operator=(Message_EG_Msg_Request_Call&& from) noexcept {
-    if (GetArena() == from.GetArena()) {
-      if (this != &from) InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
-
-  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
-    return GetDescriptor();
-  }
-  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
-    return GetMetadataStatic().descriptor;
-  }
-  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
-    return GetMetadataStatic().reflection;
-  }
-  static const Message_EG_Msg_Request_Call& default_instance();
-
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
-  static inline const Message_EG_Msg_Request_Call* internal_default_instance() {
-    return reinterpret_cast<const Message_EG_Msg_Request_Call*>(
-               &_Message_EG_Msg_Request_Call_default_instance_);
-  }
-  static constexpr int kIndexInFileMessages =
-    18;
-
-  friend void swap(Message_EG_Msg_Request_Call& a, Message_EG_Msg_Request_Call& b) {
-    a.Swap(&b);
-  }
-  inline void Swap(Message_EG_Msg_Request_Call* other) {
-    if (other == this) return;
-    if (GetArena() == other->GetArena()) {
-      InternalSwap(other);
-    } else {
-      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
-    }
-  }
-  void UnsafeArenaSwap(Message_EG_Msg_Request_Call* other) {
-    if (other == this) return;
-    GOOGLE_DCHECK(GetArena() == other->GetArena());
-    InternalSwap(other);
-  }
-
-  // implements Message ----------------------------------------------
-
-  inline Message_EG_Msg_Request_Call* New() const final {
-    return CreateMaybeMessage<Message_EG_Msg_Request_Call>(nullptr);
-  }
-
-  Message_EG_Msg_Request_Call* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
-    return CreateMaybeMessage<Message_EG_Msg_Request_Call>(arena);
-  }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void CopyFrom(const Message_EG_Msg_Request_Call& from);
-  void MergeFrom(const Message_EG_Msg_Request_Call& from);
-  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
-
-  size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
-      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
-  int GetCachedSize() const final { return _cached_size_.Get(); }
-
-  private:
-  inline void SharedCtor();
-  inline void SharedDtor();
-  void SetCachedSize(int size) const final;
-  void InternalSwap(Message_EG_Msg_Request_Call* other);
-  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
-    return "megastructure.Message.EG_Msg.Request.Call";
-  }
-  protected:
-  explicit Message_EG_Msg_Request_Call(::PROTOBUF_NAMESPACE_ID::Arena* arena);
-  private:
-  static void ArenaDtor(void* object);
-  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
-  public:
-
-  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
-  private:
-  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
-    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_megastructure_2eproto);
-    return ::descriptor_table_megastructure_2eproto.file_level_metadata[kIndexInFileMessages];
-  }
-
-  public:
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  enum : int {
-    kArgsFieldNumber = 1,
-  };
-  // bytes args = 1;
-  void clear_args();
-  const std::string& args() const;
-  void set_args(const std::string& value);
-  void set_args(std::string&& value);
-  void set_args(const char* value);
-  void set_args(const void* value, size_t size);
-  std::string* mutable_args();
-  std::string* release_args();
-  void set_allocated_args(std::string* args);
-  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
-  "    string fields are deprecated and will be removed in a"
-  "    future release.")
-  std::string* unsafe_arena_release_args();
-  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
-  "    string fields are deprecated and will be removed in a"
-  "    future release.")
-  void unsafe_arena_set_allocated_args(
-      std::string* args);
-  private:
-  const std::string& _internal_args() const;
-  void _internal_set_args(const std::string& value);
-  std::string* _internal_mutable_args();
-  public:
-
-  // @@protoc_insertion_point(class_scope:megastructure.Message.EG_Msg.Request.Call)
- private:
-  class _Internal;
-
-  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
-  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr args_;
-  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
-  friend struct ::TableStruct_megastructure_2eproto;
-};
-// -------------------------------------------------------------------
-
 class Message_EG_Msg_Request_Lock PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:megastructure.Message.EG_Msg.Request.Lock) */ {
  public:
@@ -3151,7 +2994,7 @@ class Message_EG_Msg_Request_Lock PROTOBUF_FINAL :
                &_Message_EG_Msg_Request_Lock_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    19;
+    18;
 
   friend void swap(Message_EG_Msg_Request_Lock& a, Message_EG_Msg_Request_Lock& b) {
     a.Swap(&b);
@@ -3221,6 +3064,18 @@ class Message_EG_Msg_Request_Lock PROTOBUF_FINAL :
 
   // accessors -------------------------------------------------------
 
+  enum : int {
+    kReadFieldNumber = 1,
+  };
+  // bool read = 1;
+  void clear_read();
+  bool read() const;
+  void set_read(bool value);
+  private:
+  bool _internal_read() const;
+  void _internal_set_read(bool value);
+  public:
+
   // @@protoc_insertion_point(class_scope:megastructure.Message.EG_Msg.Request.Lock)
  private:
   class _Internal;
@@ -3228,6 +3083,7 @@ class Message_EG_Msg_Request_Lock PROTOBUF_FINAL :
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
+  bool read_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_megastructure_2eproto;
 };
@@ -3275,7 +3131,7 @@ class Message_EG_Msg_Request_Unlock PROTOBUF_FINAL :
                &_Message_EG_Msg_Request_Unlock_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    20;
+    19;
 
   friend void swap(Message_EG_Msg_Request_Unlock& a, Message_EG_Msg_Request_Unlock& b) {
     a.Swap(&b);
@@ -3396,7 +3252,6 @@ class Message_EG_Msg_Request PROTOBUF_FINAL :
   enum FoobarCase {
     kRead = 3,
     kWrite = 4,
-    kCall = 5,
     kLock = 6,
     kUnlock = 7,
     FOOBAR_NOT_SET = 0,
@@ -3408,7 +3263,7 @@ class Message_EG_Msg_Request PROTOBUF_FINAL :
                &_Message_EG_Msg_Request_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    21;
+    20;
 
   friend void swap(Message_EG_Msg_Request& a, Message_EG_Msg_Request& b) {
     a.Swap(&b);
@@ -3478,7 +3333,6 @@ class Message_EG_Msg_Request PROTOBUF_FINAL :
 
   typedef Message_EG_Msg_Request_Read Read;
   typedef Message_EG_Msg_Request_Write Write;
-  typedef Message_EG_Msg_Request_Call Call;
   typedef Message_EG_Msg_Request_Lock Lock;
   typedef Message_EG_Msg_Request_Unlock Unlock;
 
@@ -3489,7 +3343,6 @@ class Message_EG_Msg_Request PROTOBUF_FINAL :
     kHostFieldNumber = 2,
     kReadFieldNumber = 3,
     kWriteFieldNumber = 4,
-    kCallFieldNumber = 5,
     kLockFieldNumber = 6,
     kUnlockFieldNumber = 7,
   };
@@ -3547,24 +3400,6 @@ class Message_EG_Msg_Request PROTOBUF_FINAL :
       ::megastructure::Message_EG_Msg_Request_Write* write);
   ::megastructure::Message_EG_Msg_Request_Write* unsafe_arena_release_write();
 
-  // .megastructure.Message.EG_Msg.Request.Call call = 5;
-  bool has_call() const;
-  private:
-  bool _internal_has_call() const;
-  public:
-  void clear_call();
-  const ::megastructure::Message_EG_Msg_Request_Call& call() const;
-  ::megastructure::Message_EG_Msg_Request_Call* release_call();
-  ::megastructure::Message_EG_Msg_Request_Call* mutable_call();
-  void set_allocated_call(::megastructure::Message_EG_Msg_Request_Call* call);
-  private:
-  const ::megastructure::Message_EG_Msg_Request_Call& _internal_call() const;
-  ::megastructure::Message_EG_Msg_Request_Call* _internal_mutable_call();
-  public:
-  void unsafe_arena_set_allocated_call(
-      ::megastructure::Message_EG_Msg_Request_Call* call);
-  ::megastructure::Message_EG_Msg_Request_Call* unsafe_arena_release_call();
-
   // .megastructure.Message.EG_Msg.Request.Lock lock = 6;
   bool has_lock() const;
   private:
@@ -3608,7 +3443,6 @@ class Message_EG_Msg_Request PROTOBUF_FINAL :
   class _Internal;
   void set_has_read();
   void set_has_write();
-  void set_has_call();
   void set_has_lock();
   void set_has_unlock();
 
@@ -3624,7 +3458,6 @@ class Message_EG_Msg_Request PROTOBUF_FINAL :
     FoobarUnion() {}
     ::megastructure::Message_EG_Msg_Request_Read* read_;
     ::megastructure::Message_EG_Msg_Request_Write* write_;
-    ::megastructure::Message_EG_Msg_Request_Call* call_;
     ::megastructure::Message_EG_Msg_Request_Lock* lock_;
     ::megastructure::Message_EG_Msg_Request_Unlock* unlock_;
   } foobar_;
@@ -3677,7 +3510,7 @@ class Message_EG_Msg_Response PROTOBUF_FINAL :
                &_Message_EG_Msg_Response_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    22;
+    21;
 
   friend void swap(Message_EG_Msg_Response& a, Message_EG_Msg_Response& b) {
     a.Swap(&b);
@@ -3852,7 +3685,7 @@ class Message_EG_Msg_Error PROTOBUF_FINAL :
                &_Message_EG_Msg_Error_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    23;
+    22;
 
   friend void swap(Message_EG_Msg_Error& a, Message_EG_Msg_Error& b) {
     a.Swap(&b);
@@ -4000,7 +3833,7 @@ class Message_EG_Msg_Event PROTOBUF_FINAL :
                &_Message_EG_Msg_Event_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    24;
+    23;
 
   friend void swap(Message_EG_Msg_Event& a, Message_EG_Msg_Event& b) {
     a.Swap(&b);
@@ -4161,7 +3994,7 @@ class Message_EG_Msg PROTOBUF_FINAL :
                &_Message_EG_Msg_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    25;
+    24;
 
   friend void swap(Message_EG_Msg& a, Message_EG_Msg& b) {
     a.Swap(&b);
@@ -4440,7 +4273,7 @@ class Message PROTOBUF_FINAL :
                &_Message_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    26;
+    25;
 
   friend void swap(Message& a, Message& b) {
     a.Swap(&b);
@@ -6444,92 +6277,27 @@ inline void Message_EG_Msg_Request_Write::unsafe_arena_set_allocated_value(
 
 // -------------------------------------------------------------------
 
-// Message_EG_Msg_Request_Call
-
-// bytes args = 1;
-inline void Message_EG_Msg_Request_Call::clear_args() {
-  args_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
-}
-inline const std::string& Message_EG_Msg_Request_Call::args() const {
-  // @@protoc_insertion_point(field_get:megastructure.Message.EG_Msg.Request.Call.args)
-  return _internal_args();
-}
-inline void Message_EG_Msg_Request_Call::set_args(const std::string& value) {
-  _internal_set_args(value);
-  // @@protoc_insertion_point(field_set:megastructure.Message.EG_Msg.Request.Call.args)
-}
-inline std::string* Message_EG_Msg_Request_Call::mutable_args() {
-  // @@protoc_insertion_point(field_mutable:megastructure.Message.EG_Msg.Request.Call.args)
-  return _internal_mutable_args();
-}
-inline const std::string& Message_EG_Msg_Request_Call::_internal_args() const {
-  return args_.Get();
-}
-inline void Message_EG_Msg_Request_Call::_internal_set_args(const std::string& value) {
-  
-  args_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
-}
-inline void Message_EG_Msg_Request_Call::set_args(std::string&& value) {
-  
-  args_.Set(
-    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
-  // @@protoc_insertion_point(field_set_rvalue:megastructure.Message.EG_Msg.Request.Call.args)
-}
-inline void Message_EG_Msg_Request_Call::set_args(const char* value) {
-  GOOGLE_DCHECK(value != nullptr);
-  
-  args_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
-              GetArena());
-  // @@protoc_insertion_point(field_set_char:megastructure.Message.EG_Msg.Request.Call.args)
-}
-inline void Message_EG_Msg_Request_Call::set_args(const void* value,
-    size_t size) {
-  
-  args_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
-      reinterpret_cast<const char*>(value), size), GetArena());
-  // @@protoc_insertion_point(field_set_pointer:megastructure.Message.EG_Msg.Request.Call.args)
-}
-inline std::string* Message_EG_Msg_Request_Call::_internal_mutable_args() {
-  
-  return args_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
-}
-inline std::string* Message_EG_Msg_Request_Call::release_args() {
-  // @@protoc_insertion_point(field_release:megastructure.Message.EG_Msg.Request.Call.args)
-  return args_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
-}
-inline void Message_EG_Msg_Request_Call::set_allocated_args(std::string* args) {
-  if (args != nullptr) {
-    
-  } else {
-    
-  }
-  args_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), args,
-      GetArena());
-  // @@protoc_insertion_point(field_set_allocated:megastructure.Message.EG_Msg.Request.Call.args)
-}
-inline std::string* Message_EG_Msg_Request_Call::unsafe_arena_release_args() {
-  // @@protoc_insertion_point(field_unsafe_arena_release:megastructure.Message.EG_Msg.Request.Call.args)
-  GOOGLE_DCHECK(GetArena() != nullptr);
-  
-  return args_.UnsafeArenaRelease(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
-      GetArena());
-}
-inline void Message_EG_Msg_Request_Call::unsafe_arena_set_allocated_args(
-    std::string* args) {
-  GOOGLE_DCHECK(GetArena() != nullptr);
-  if (args != nullptr) {
-    
-  } else {
-    
-  }
-  args_.UnsafeArenaSetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
-      args, GetArena());
-  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:megastructure.Message.EG_Msg.Request.Call.args)
-}
-
-// -------------------------------------------------------------------
-
 // Message_EG_Msg_Request_Lock
+
+// bool read = 1;
+inline void Message_EG_Msg_Request_Lock::clear_read() {
+  read_ = false;
+}
+inline bool Message_EG_Msg_Request_Lock::_internal_read() const {
+  return read_;
+}
+inline bool Message_EG_Msg_Request_Lock::read() const {
+  // @@protoc_insertion_point(field_get:megastructure.Message.EG_Msg.Request.Lock.read)
+  return _internal_read();
+}
+inline void Message_EG_Msg_Request_Lock::_internal_set_read(bool value) {
+  
+  read_ = value;
+}
+inline void Message_EG_Msg_Request_Lock::set_read(bool value) {
+  _internal_set_read(value);
+  // @@protoc_insertion_point(field_set:megastructure.Message.EG_Msg.Request.Lock.read)
+}
 
 // -------------------------------------------------------------------
 
@@ -6723,79 +6491,6 @@ inline ::megastructure::Message_EG_Msg_Request_Write* Message_EG_Msg_Request::_i
 inline ::megastructure::Message_EG_Msg_Request_Write* Message_EG_Msg_Request::mutable_write() {
   // @@protoc_insertion_point(field_mutable:megastructure.Message.EG_Msg.Request.write)
   return _internal_mutable_write();
-}
-
-// .megastructure.Message.EG_Msg.Request.Call call = 5;
-inline bool Message_EG_Msg_Request::_internal_has_call() const {
-  return foobar_case() == kCall;
-}
-inline bool Message_EG_Msg_Request::has_call() const {
-  return _internal_has_call();
-}
-inline void Message_EG_Msg_Request::set_has_call() {
-  _oneof_case_[0] = kCall;
-}
-inline void Message_EG_Msg_Request::clear_call() {
-  if (_internal_has_call()) {
-    if (GetArena() == nullptr) {
-      delete foobar_.call_;
-    }
-    clear_has_foobar();
-  }
-}
-inline ::megastructure::Message_EG_Msg_Request_Call* Message_EG_Msg_Request::release_call() {
-  // @@protoc_insertion_point(field_release:megastructure.Message.EG_Msg.Request.call)
-  if (_internal_has_call()) {
-    clear_has_foobar();
-      ::megastructure::Message_EG_Msg_Request_Call* temp = foobar_.call_;
-    if (GetArena() != nullptr) {
-      temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
-    }
-    foobar_.call_ = nullptr;
-    return temp;
-  } else {
-    return nullptr;
-  }
-}
-inline const ::megastructure::Message_EG_Msg_Request_Call& Message_EG_Msg_Request::_internal_call() const {
-  return _internal_has_call()
-      ? *foobar_.call_
-      : *reinterpret_cast< ::megastructure::Message_EG_Msg_Request_Call*>(&::megastructure::_Message_EG_Msg_Request_Call_default_instance_);
-}
-inline const ::megastructure::Message_EG_Msg_Request_Call& Message_EG_Msg_Request::call() const {
-  // @@protoc_insertion_point(field_get:megastructure.Message.EG_Msg.Request.call)
-  return _internal_call();
-}
-inline ::megastructure::Message_EG_Msg_Request_Call* Message_EG_Msg_Request::unsafe_arena_release_call() {
-  // @@protoc_insertion_point(field_unsafe_arena_release:megastructure.Message.EG_Msg.Request.call)
-  if (_internal_has_call()) {
-    clear_has_foobar();
-    ::megastructure::Message_EG_Msg_Request_Call* temp = foobar_.call_;
-    foobar_.call_ = nullptr;
-    return temp;
-  } else {
-    return nullptr;
-  }
-}
-inline void Message_EG_Msg_Request::unsafe_arena_set_allocated_call(::megastructure::Message_EG_Msg_Request_Call* call) {
-  clear_foobar();
-  if (call) {
-    set_has_call();
-    foobar_.call_ = call;
-  }
-  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:megastructure.Message.EG_Msg.Request.call)
-}
-inline ::megastructure::Message_EG_Msg_Request_Call* Message_EG_Msg_Request::_internal_mutable_call() {
-  if (!_internal_has_call()) {
-    clear_foobar();
-    set_has_call();
-    foobar_.call_ = CreateMaybeMessage< ::megastructure::Message_EG_Msg_Request_Call >(GetArena());
-  }
-  return foobar_.call_;
-}
-inline ::megastructure::Message_EG_Msg_Request_Call* Message_EG_Msg_Request::mutable_call() {
-  // @@protoc_insertion_point(field_mutable:megastructure.Message.EG_Msg.Request.call)
-  return _internal_mutable_call();
 }
 
 // .megastructure.Message.EG_Msg.Request.Lock lock = 6;
@@ -8829,8 +8524,6 @@ inline Message::FoobarCase Message::foobar_case() const {
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
-// -------------------------------------------------------------------
-
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

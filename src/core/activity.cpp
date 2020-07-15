@@ -49,8 +49,7 @@ namespace megastructure
 	{
 		return false;
 	}
-
-	void Activity::simulationLockGranted()
-	{
-	}
+    void Activity::simulationLockStarted()
+    {
+    }
 }

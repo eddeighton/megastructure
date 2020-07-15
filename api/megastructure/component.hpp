@@ -26,6 +26,144 @@ namespace megastructure
 	std::string getHostProgramName();
 	
 	class Program;
+    
+    class SimulationLock
+    {
+    public:
+        using Ptr = std::shared_ptr< SimulationLock >;
+        
+        enum State
+        {
+            eRead,
+            eReading,
+            eWrite,
+            eWriting,
+            eFinished,
+            TOTAL_STATES
+        };
+        
+        struct CycleState
+        {
+            std::uint32_t uiCycle;
+            State state;
+        };
+        
+        struct HostCycleState
+        {
+            std::uint32_t uiCoordinator;
+            std::uint32_t uiHost;
+            CycleState cycleState;
+        };
+        
+        using HostCycleStateVector = std::vector< HostCycleState >;
+        
+        HostCycleStateVector& getHostCycleStates() { return m_hostCycleStates; }
+        
+        bool isRead() const
+        {
+            for( const HostCycleState& hcs : m_hostCycleStates )
+            {
+                switch( hcs.cycleState.state )
+                {
+                    case eRead        : return true;
+                    case eReading     : break;
+                    case eWrite       : break;
+                    case eWriting     : break;
+                    case eFinished    : break;
+                    case TOTAL_STATES : break;
+                }
+            }
+            return false;
+        }
+        
+        bool isWrite() const
+        {
+            for( const HostCycleState& hcs : m_hostCycleStates )
+            {
+                switch( hcs.cycleState.state )
+                {
+                    case eRead        : break;
+                    case eReading     : break;
+                    case eWrite       : return true;
+                    case eWriting     : break;
+                    case eFinished    : break;
+                    case TOTAL_STATES : break;
+                }
+            }
+            return false;
+        }
+        
+        bool isReading() const
+        {
+            for( const HostCycleState& hcs : m_hostCycleStates )
+            {
+                switch( hcs.cycleState.state )
+                {
+                    case eRead        : break;
+                    case eReading     : return true;
+                    case eWrite       : break;
+                    case eWriting     : break;
+                    case eFinished    : break;
+                    case TOTAL_STATES : break;
+                }
+            }
+            return false;
+        }
+        
+        bool allFinished() const
+        {
+            for( const HostCycleState& hcs : m_hostCycleStates )
+            {
+                switch( hcs.cycleState.state )
+                {
+                    case eRead        : return false;
+                    case eReading     : return false;
+                    case eWrite       : return false;
+                    case eWriting     : return false;
+                    case eFinished    : break;
+                    case TOTAL_STATES : break;
+                }
+            }
+            return true;
+        }
+        
+    
+        bool getHostCycleState( std::uint32_t uiHost, CycleState& cycleState ) const
+        {
+            for( HostCycleStateVector::const_iterator 
+                i = m_hostCycleStates.begin(),
+                iEnd = m_hostCycleStates.end(); i!=iEnd; ++i )
+            {
+                const HostCycleState& hcs = *i;
+                if( hcs.uiHost == uiHost )
+                {
+                    cycleState = hcs.cycleState;
+                    return true;
+                }
+            }
+            return false;
+        }
+        
+        const HostCycleState& setHostCycleState( std::uint32_t uiCoordinator, std::uint32_t uiHost, std::uint32_t uiCycle, State state )
+        {
+            for( HostCycleStateVector::iterator 
+                i = m_hostCycleStates.begin(),
+                iEnd = m_hostCycleStates.end(); i!=iEnd; ++i )
+            {
+                HostCycleState& hcs = *i;
+                if( hcs.uiHost == uiHost )
+                {
+                    hcs.cycleState = CycleState{ uiCycle, state };
+                    return hcs;
+                }
+            }
+            m_hostCycleStates.push_back( HostCycleState{ uiCoordinator, uiHost, CycleState{ uiCycle, state } } );
+            return m_hostCycleStates.back();
+        }
+        
+    private:
+        HostCycleStateVector m_hostCycleStates;
+    };
 	
 	class Component
 	{
@@ -38,7 +176,6 @@ namespace megastructure
 		friend class TestEGWriteActivity;
 		friend class TestEGCallActivity;
 		friend class EGRequestManagerActivity;
-		friend class EGRequestHandlerActivity;
         
 		friend class LoadProgramJob;
         
@@ -78,9 +215,10 @@ namespace megastructure
 		}
 		
 		//simulation lock
-		void requestSimulationLock( Activity::Ptr pActivity );
-		void releaseSimulationLock( Activity::Ptr pActivity );
-		void grantNextSimulationLock();
+        SimulationLock::Ptr getCurrentLock();
+        SimulationLock::Ptr getOrCreateCurrentLock();
+        SimulationLock::Ptr getOrCreateFutureLock();
+        void releaseCurrentLock();
 		
 		//jobs
 		void startJob( Job::Ptr pJob );
@@ -144,10 +282,11 @@ namespace megastructure
 		std::thread m_zeromq1;
 		
 		//simulation lock
-		Activity::PtrList m_simulationLockActivities;
+        SimulationLock::Ptr m_pCurrentSimLock;
+        SimulationLock::Ptr m_pFutureSimLock;
+        bool m_bCurrentLockReleased;
+        
 		std::mutex m_simulationMutex;
-		Activity::Ptr m_pLockActivity;
-		bool m_bSimulationHasLock;
 		std::list< Job::Ptr > m_jobs;
 		std::condition_variable m_simJobCondition;
 		

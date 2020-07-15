@@ -26,7 +26,7 @@ namespace megastructure
         }
         
         std::ostringstream osLogFileName;
-        osLogFileName << strLogName << "_" << Common::getProcessID() << ".log";
+        osLogFileName << "logs/" << strLogName << "_" << Common::getProcessID() << ".log";
         
         auto file_sink = std::make_shared< spdlog::sinks::daily_file_sink_st >( osLogFileName.str(), 23, 59 );
         {

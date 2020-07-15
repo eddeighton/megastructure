@@ -22,8 +22,7 @@ extern PROTOBUF_INTERNAL_EXPORT_megastructure_2eproto ::PROTOBUF_NAMESPACE_ID::i
 extern PROTOBUF_INTERNAL_EXPORT_megastructure_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<4> scc_info_Message_EG_Msg_megastructure_2eproto;
 extern PROTOBUF_INTERNAL_EXPORT_megastructure_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Message_EG_Msg_Error_megastructure_2eproto;
 extern PROTOBUF_INTERNAL_EXPORT_megastructure_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Message_EG_Msg_Event_megastructure_2eproto;
-extern PROTOBUF_INTERNAL_EXPORT_megastructure_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<5> scc_info_Message_EG_Msg_Request_megastructure_2eproto;
-extern PROTOBUF_INTERNAL_EXPORT_megastructure_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Message_EG_Msg_Request_Call_megastructure_2eproto;
+extern PROTOBUF_INTERNAL_EXPORT_megastructure_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<4> scc_info_Message_EG_Msg_Request_megastructure_2eproto;
 extern PROTOBUF_INTERNAL_EXPORT_megastructure_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Message_EG_Msg_Request_Lock_megastructure_2eproto;
 extern PROTOBUF_INTERNAL_EXPORT_megastructure_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Message_EG_Msg_Request_Read_megastructure_2eproto;
 extern PROTOBUF_INTERNAL_EXPORT_megastructure_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Message_EG_Msg_Request_Unlock_megastructure_2eproto;
@@ -113,10 +112,6 @@ class Message_EG_Msg_Request_WriteDefaultTypeInternal {
  public:
   ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<Message_EG_Msg_Request_Write> _instance;
 } _Message_EG_Msg_Request_Write_default_instance_;
-class Message_EG_Msg_Request_CallDefaultTypeInternal {
- public:
-  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<Message_EG_Msg_Request_Call> _instance;
-} _Message_EG_Msg_Request_Call_default_instance_;
 class Message_EG_Msg_Request_LockDefaultTypeInternal {
  public:
   ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<Message_EG_Msg_Request_Lock> _instance;
@@ -130,7 +125,6 @@ class Message_EG_Msg_RequestDefaultTypeInternal {
   ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<Message_EG_Msg_Request> _instance;
   const ::megastructure::Message_EG_Msg_Request_Read* read_;
   const ::megastructure::Message_EG_Msg_Request_Write* write_;
-  const ::megastructure::Message_EG_Msg_Request_Call* call_;
   const ::megastructure::Message_EG_Msg_Request_Lock* lock_;
   const ::megastructure::Message_EG_Msg_Request_Unlock* unlock_;
 } _Message_EG_Msg_Request_default_instance_;
@@ -334,27 +328,12 @@ static void InitDefaultsscc_info_Message_EG_Msg_Request_megastructure_2eproto() 
   ::megastructure::Message_EG_Msg_Request::InitAsDefaultInstance();
 }
 
-::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<5> scc_info_Message_EG_Msg_Request_megastructure_2eproto =
-    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 5, 0, InitDefaultsscc_info_Message_EG_Msg_Request_megastructure_2eproto}, {
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<4> scc_info_Message_EG_Msg_Request_megastructure_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 4, 0, InitDefaultsscc_info_Message_EG_Msg_Request_megastructure_2eproto}, {
       &scc_info_Message_EG_Msg_Request_Read_megastructure_2eproto.base,
       &scc_info_Message_EG_Msg_Request_Write_megastructure_2eproto.base,
-      &scc_info_Message_EG_Msg_Request_Call_megastructure_2eproto.base,
       &scc_info_Message_EG_Msg_Request_Lock_megastructure_2eproto.base,
       &scc_info_Message_EG_Msg_Request_Unlock_megastructure_2eproto.base,}};
-
-static void InitDefaultsscc_info_Message_EG_Msg_Request_Call_megastructure_2eproto() {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
-
-  {
-    void* ptr = &::megastructure::_Message_EG_Msg_Request_Call_default_instance_;
-    new (ptr) ::megastructure::Message_EG_Msg_Request_Call();
-    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
-  }
-  ::megastructure::Message_EG_Msg_Request_Call::InitAsDefaultInstance();
-}
-
-::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Message_EG_Msg_Request_Call_megastructure_2eproto =
-    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_Message_EG_Msg_Request_Call_megastructure_2eproto}, {}};
 
 static void InitDefaultsscc_info_Message_EG_Msg_Request_Lock_megastructure_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -580,7 +559,7 @@ static void InitDefaultsscc_info_Message_SMS_Load_megastructure_2eproto() {
 ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Message_SMS_Load_megastructure_2eproto =
     {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_Message_SMS_Load_megastructure_2eproto}, {}};
 
-static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_megastructure_2eproto[27];
+static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_megastructure_2eproto[26];
 static constexpr ::PROTOBUF_NAMESPACE_ID::EnumDescriptor const** file_level_enum_descriptors_megastructure_2eproto = nullptr;
 static constexpr ::PROTOBUF_NAMESPACE_ID::ServiceDescriptor const** file_level_service_descriptors_megastructure_2eproto = nullptr;
 
@@ -700,16 +679,11 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_megastructure_2eproto::offsets
   ~0u,  // no _weak_field_map_
   PROTOBUF_FIELD_OFFSET(::megastructure::Message_EG_Msg_Request_Write, value_),
   ~0u,  // no _has_bits_
-  PROTOBUF_FIELD_OFFSET(::megastructure::Message_EG_Msg_Request_Call, _internal_metadata_),
-  ~0u,  // no _extensions_
-  ~0u,  // no _oneof_case_
-  ~0u,  // no _weak_field_map_
-  PROTOBUF_FIELD_OFFSET(::megastructure::Message_EG_Msg_Request_Call, args_),
-  ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::megastructure::Message_EG_Msg_Request_Lock, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
+  PROTOBUF_FIELD_OFFSET(::megastructure::Message_EG_Msg_Request_Lock, read_),
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::megastructure::Message_EG_Msg_Request_Unlock, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -724,7 +698,6 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_megastructure_2eproto::offsets
   PROTOBUF_FIELD_OFFSET(::megastructure::Message_EG_Msg_Request, host_),
   offsetof(::megastructure::Message_EG_Msg_RequestDefaultTypeInternal, read_),
   offsetof(::megastructure::Message_EG_Msg_RequestDefaultTypeInternal, write_),
-  offsetof(::megastructure::Message_EG_Msg_RequestDefaultTypeInternal, call_),
   offsetof(::megastructure::Message_EG_Msg_RequestDefaultTypeInternal, lock_),
   offsetof(::megastructure::Message_EG_Msg_RequestDefaultTypeInternal, unlock_),
   PROTOBUF_FIELD_OFFSET(::megastructure::Message_EG_Msg_Request, foobar_),
@@ -805,15 +778,14 @@ static const ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema schemas[] PROTOB
   { 96, -1, sizeof(::megastructure::Message_CHS_Buffer)},
   { 103, -1, sizeof(::megastructure::Message_EG_Msg_Request_Read)},
   { 108, -1, sizeof(::megastructure::Message_EG_Msg_Request_Write)},
-  { 114, -1, sizeof(::megastructure::Message_EG_Msg_Request_Call)},
-  { 120, -1, sizeof(::megastructure::Message_EG_Msg_Request_Lock)},
-  { 125, -1, sizeof(::megastructure::Message_EG_Msg_Request_Unlock)},
-  { 130, -1, sizeof(::megastructure::Message_EG_Msg_Request)},
-  { 143, -1, sizeof(::megastructure::Message_EG_Msg_Response)},
-  { 151, -1, sizeof(::megastructure::Message_EG_Msg_Error)},
-  { 158, -1, sizeof(::megastructure::Message_EG_Msg_Event)},
-  { 164, -1, sizeof(::megastructure::Message_EG_Msg)},
-  { 177, -1, sizeof(::megastructure::Message)},
+  { 114, -1, sizeof(::megastructure::Message_EG_Msg_Request_Lock)},
+  { 120, -1, sizeof(::megastructure::Message_EG_Msg_Request_Unlock)},
+  { 125, -1, sizeof(::megastructure::Message_EG_Msg_Request)},
+  { 137, -1, sizeof(::megastructure::Message_EG_Msg_Response)},
+  { 145, -1, sizeof(::megastructure::Message_EG_Msg_Error)},
+  { 152, -1, sizeof(::megastructure::Message_EG_Msg_Event)},
+  { 158, -1, sizeof(::megastructure::Message_EG_Msg)},
+  { 171, -1, sizeof(::megastructure::Message)},
 };
 
 static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] = {
@@ -835,7 +807,6 @@ static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] =
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::megastructure::_Message_CHS_Buffer_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::megastructure::_Message_EG_Msg_Request_Read_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::megastructure::_Message_EG_Msg_Request_Write_default_instance_),
-  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::megastructure::_Message_EG_Msg_Request_Call_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::megastructure::_Message_EG_Msg_Request_Lock_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::megastructure::_Message_EG_Msg_Request_Unlock_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::megastructure::_Message_EG_Msg_Request_default_instance_),
@@ -847,7 +818,7 @@ static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] =
 };
 
 const char descriptor_table_protodef_megastructure_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
-  "\n\023megastructure.proto\022\rmegastructure\"\243\023\n"
+  "\n\023megastructure.proto\022\rmegastructure\"\337\022\n"
   "\007Message\0227\n\nsmq_enroll\030\002 \001(\0132!.megastruc"
   "ture.Message.SMQ_EnrollH\000\0227\n\nmss_enroll\030"
   "\003 \001(\0132!.megastructure.Message.MSS_Enroll"
@@ -887,7 +858,7 @@ const char descriptor_table_protodef_megastructure_2eproto[] PROTOBUF_SECTION_VA
   "\001 \001(\t\022\023\n\013programname\030\002 \001(\t\032\033\n\010HCS_Load\022\017"
   "\n\007success\030\001 \001(\010\032.\n\nHCQ_Buffer\022\022\n\nbuffern"
   "ame\030\001 \001(\t\022\014\n\004size\030\002 \001(\r\0324\n\nCHS_Buffer\022\022\n"
-  "\nbuffername\030\001 \001(\t\022\022\n\nsharedname\030\002 \001(\t\032\330\006"
+  "\nbuffername\030\001 \001(\t\022\022\n\nsharedname\030\002 \001(\t\032\224\006"
   "\n\006EG_Msg\022\014\n\004type\030\001 \001(\005\022\020\n\010instance\030\002 \001(\r"
   "\022\r\n\005cycle\030\003 \001(\r\0228\n\007request\030\004 \001(\0132%.megas"
   "tructure.Message.EG_Msg.RequestH\000\022:\n\010res"
@@ -895,25 +866,24 @@ const char descriptor_table_protodef_megastructure_2eproto[] PROTOBUF_SECTION_VA
   "sg.ResponseH\000\0224\n\005error\030\006 \001(\0132#.megastruc"
   "ture.Message.EG_Msg.ErrorH\000\0224\n\005event\030\007 \001"
   "(\0132#.megastructure.Message.EG_Msg.EventH"
-  "\000\032\260\003\n\007Request\022\023\n\013coordinator\030\001 \001(\r\022\014\n\004ho"
+  "\000\032\354\002\n\007Request\022\023\n\013coordinator\030\001 \001(\r\022\014\n\004ho"
   "st\030\002 \001(\r\022:\n\004read\030\003 \001(\0132*.megastructure.M"
   "essage.EG_Msg.Request.ReadH\000\022<\n\005write\030\004 "
   "\001(\0132+.megastructure.Message.EG_Msg.Reque"
-  "st.WriteH\000\022:\n\004call\030\005 \001(\0132*.megastructure"
-  ".Message.EG_Msg.Request.CallH\000\022:\n\004lock\030\006"
-  " \001(\0132*.megastructure.Message.EG_Msg.Requ"
-  "est.LockH\000\022>\n\006unlock\030\007 \001(\0132,.megastructu"
-  "re.Message.EG_Msg.Request.UnlockH\000\032\006\n\004Re"
-  "ad\032\026\n\005Write\022\r\n\005value\030\001 \001(\014\032\024\n\004Call\022\014\n\004ar"
-  "gs\030\001 \001(\014\032\006\n\004Lock\032\010\n\006UnlockB\010\n\006foobar\032<\n\010"
-  "Response\022\023\n\013coordinator\030\001 \001(\r\022\014\n\004host\030\002 "
-  "\001(\r\022\r\n\005value\030\003 \001(\014\032*\n\005Error\022\023\n\013coordinat"
-  "or\030\001 \001(\r\022\014\n\004host\030\002 \001(\r\032\026\n\005Event\022\r\n\005value"
-  "\030\001 \001(\014B\010\n\006foobarB\010\n\006foobarb\006proto3"
+  "st.WriteH\000\022:\n\004lock\030\006 \001(\0132*.megastructure"
+  ".Message.EG_Msg.Request.LockH\000\022>\n\006unlock"
+  "\030\007 \001(\0132,.megastructure.Message.EG_Msg.Re"
+  "quest.UnlockH\000\032\006\n\004Read\032\026\n\005Write\022\r\n\005value"
+  "\030\001 \001(\014\032\024\n\004Lock\022\014\n\004read\030\001 \001(\010\032\010\n\006UnlockB\010"
+  "\n\006foobar\032<\n\010Response\022\023\n\013coordinator\030\001 \001("
+  "\r\022\014\n\004host\030\002 \001(\r\022\r\n\005value\030\003 \001(\014\032*\n\005Error\022"
+  "\023\n\013coordinator\030\001 \001(\r\022\014\n\004host\030\002 \001(\r\032\026\n\005Ev"
+  "ent\022\r\n\005value\030\001 \001(\014B\010\n\006foobarB\010\n\006foobarb\006"
+  "proto3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_megastructure_2eproto_deps[1] = {
 };
-static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_megastructure_2eproto_sccs[27] = {
+static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_megastructure_2eproto_sccs[26] = {
   &scc_info_Message_megastructure_2eproto.base,
   &scc_info_Message_CHQ_Alive_megastructure_2eproto.base,
   &scc_info_Message_CHQ_Load_megastructure_2eproto.base,
@@ -924,7 +894,6 @@ static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_meg
   &scc_info_Message_EG_Msg_Error_megastructure_2eproto.base,
   &scc_info_Message_EG_Msg_Event_megastructure_2eproto.base,
   &scc_info_Message_EG_Msg_Request_megastructure_2eproto.base,
-  &scc_info_Message_EG_Msg_Request_Call_megastructure_2eproto.base,
   &scc_info_Message_EG_Msg_Request_Lock_megastructure_2eproto.base,
   &scc_info_Message_EG_Msg_Request_Read_megastructure_2eproto.base,
   &scc_info_Message_EG_Msg_Request_Unlock_megastructure_2eproto.base,
@@ -944,10 +913,10 @@ static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_meg
 };
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_megastructure_2eproto_once;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_megastructure_2eproto = {
-  false, false, descriptor_table_protodef_megastructure_2eproto, "megastructure.proto", 2514,
-  &descriptor_table_megastructure_2eproto_once, descriptor_table_megastructure_2eproto_sccs, descriptor_table_megastructure_2eproto_deps, 27, 0,
+  false, false, descriptor_table_protodef_megastructure_2eproto, "megastructure.proto", 2446,
+  &descriptor_table_megastructure_2eproto_once, descriptor_table_megastructure_2eproto_sccs, descriptor_table_megastructure_2eproto_deps, 26, 0,
   schemas, file_default_instances, TableStruct_megastructure_2eproto::offsets,
-  file_level_metadata_megastructure_2eproto, 27, file_level_enum_descriptors_megastructure_2eproto, file_level_service_descriptors_megastructure_2eproto,
+  file_level_metadata_megastructure_2eproto, 26, file_level_enum_descriptors_megastructure_2eproto, file_level_service_descriptors_megastructure_2eproto,
 };
 
 // Force running AddDescriptors() at dynamic initialization time.
@@ -4828,210 +4797,6 @@ void Message_EG_Msg_Request_Write::InternalSwap(Message_EG_Msg_Request_Write* ot
 
 // ===================================================================
 
-void Message_EG_Msg_Request_Call::InitAsDefaultInstance() {
-}
-class Message_EG_Msg_Request_Call::_Internal {
- public:
-};
-
-Message_EG_Msg_Request_Call::Message_EG_Msg_Request_Call(::PROTOBUF_NAMESPACE_ID::Arena* arena)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
-  SharedCtor();
-  RegisterArenaDtor(arena);
-  // @@protoc_insertion_point(arena_constructor:megastructure.Message.EG_Msg.Request.Call)
-}
-Message_EG_Msg_Request_Call::Message_EG_Msg_Request_Call(const Message_EG_Msg_Request_Call& from)
-  : ::PROTOBUF_NAMESPACE_ID::Message() {
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  args_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  if (!from._internal_args().empty()) {
-    args_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from._internal_args(),
-      GetArena());
-  }
-  // @@protoc_insertion_point(copy_constructor:megastructure.Message.EG_Msg.Request.Call)
-}
-
-void Message_EG_Msg_Request_Call::SharedCtor() {
-  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_Message_EG_Msg_Request_Call_megastructure_2eproto.base);
-  args_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-}
-
-Message_EG_Msg_Request_Call::~Message_EG_Msg_Request_Call() {
-  // @@protoc_insertion_point(destructor:megastructure.Message.EG_Msg.Request.Call)
-  SharedDtor();
-  _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
-}
-
-void Message_EG_Msg_Request_Call::SharedDtor() {
-  GOOGLE_DCHECK(GetArena() == nullptr);
-  args_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-}
-
-void Message_EG_Msg_Request_Call::ArenaDtor(void* object) {
-  Message_EG_Msg_Request_Call* _this = reinterpret_cast< Message_EG_Msg_Request_Call* >(object);
-  (void)_this;
-}
-void Message_EG_Msg_Request_Call::RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena*) {
-}
-void Message_EG_Msg_Request_Call::SetCachedSize(int size) const {
-  _cached_size_.Set(size);
-}
-const Message_EG_Msg_Request_Call& Message_EG_Msg_Request_Call::default_instance() {
-  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_Message_EG_Msg_Request_Call_megastructure_2eproto.base);
-  return *internal_default_instance();
-}
-
-
-void Message_EG_Msg_Request_Call::Clear() {
-// @@protoc_insertion_point(message_clear_start:megastructure.Message.EG_Msg.Request.Call)
-  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  args_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
-  _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
-}
-
-const char* Message_EG_Msg_Request_Call::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
-#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
-  ::PROTOBUF_NAMESPACE_ID::Arena* arena = GetArena(); (void)arena;
-  while (!ctx->Done(&ptr)) {
-    ::PROTOBUF_NAMESPACE_ID::uint32 tag;
-    ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
-    CHK_(ptr);
-    switch (tag >> 3) {
-      // bytes args = 1;
-      case 1:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
-          auto str = _internal_mutable_args();
-          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
-          CHK_(ptr);
-        } else goto handle_unusual;
-        continue;
-      default: {
-      handle_unusual:
-        if ((tag & 7) == 4 || tag == 0) {
-          ctx->SetLastTag(tag);
-          goto success;
-        }
-        ptr = UnknownFieldParse(tag,
-            _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(),
-            ptr, ctx);
-        CHK_(ptr != nullptr);
-        continue;
-      }
-    }  // switch
-  }  // while
-success:
-  return ptr;
-failure:
-  ptr = nullptr;
-  goto success;
-#undef CHK_
-}
-
-::PROTOBUF_NAMESPACE_ID::uint8* Message_EG_Msg_Request_Call::_InternalSerialize(
-    ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-  // @@protoc_insertion_point(serialize_to_array_start:megastructure.Message.EG_Msg.Request.Call)
-  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
-  (void) cached_has_bits;
-
-  // bytes args = 1;
-  if (this->args().size() > 0) {
-    target = stream->WriteBytesMaybeAliased(
-        1, this->_internal_args(), target);
-  }
-
-  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
-        _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
-  }
-  // @@protoc_insertion_point(serialize_to_array_end:megastructure.Message.EG_Msg.Request.Call)
-  return target;
-}
-
-size_t Message_EG_Msg_Request_Call::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:megastructure.Message.EG_Msg.Request.Call)
-  size_t total_size = 0;
-
-  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  // bytes args = 1;
-  if (this->args().size() > 0) {
-    total_size += 1 +
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::BytesSize(
-        this->_internal_args());
-  }
-
-  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
-    return ::PROTOBUF_NAMESPACE_ID::internal::ComputeUnknownFieldsSize(
-        _internal_metadata_, total_size, &_cached_size_);
-  }
-  int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
-  SetCachedSize(cached_size);
-  return total_size;
-}
-
-void Message_EG_Msg_Request_Call::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:megastructure.Message.EG_Msg.Request.Call)
-  GOOGLE_DCHECK_NE(&from, this);
-  const Message_EG_Msg_Request_Call* source =
-      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<Message_EG_Msg_Request_Call>(
-          &from);
-  if (source == nullptr) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:megastructure.Message.EG_Msg.Request.Call)
-    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
-  } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:megastructure.Message.EG_Msg.Request.Call)
-    MergeFrom(*source);
-  }
-}
-
-void Message_EG_Msg_Request_Call::MergeFrom(const Message_EG_Msg_Request_Call& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:megastructure.Message.EG_Msg.Request.Call)
-  GOOGLE_DCHECK_NE(&from, this);
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
-  (void) cached_has_bits;
-
-  if (from.args().size() > 0) {
-    _internal_set_args(from._internal_args());
-  }
-}
-
-void Message_EG_Msg_Request_Call::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:megastructure.Message.EG_Msg.Request.Call)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
-void Message_EG_Msg_Request_Call::CopyFrom(const Message_EG_Msg_Request_Call& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:megastructure.Message.EG_Msg.Request.Call)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
-bool Message_EG_Msg_Request_Call::IsInitialized() const {
-  return true;
-}
-
-void Message_EG_Msg_Request_Call::InternalSwap(Message_EG_Msg_Request_Call* other) {
-  using std::swap;
-  _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
-  args_.Swap(&other->args_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
-}
-
-::PROTOBUF_NAMESPACE_ID::Metadata Message_EG_Msg_Request_Call::GetMetadata() const {
-  return GetMetadataStatic();
-}
-
-
-// ===================================================================
-
 void Message_EG_Msg_Request_Lock::InitAsDefaultInstance() {
 }
 class Message_EG_Msg_Request_Lock::_Internal {
@@ -5047,10 +4812,12 @@ Message_EG_Msg_Request_Lock::Message_EG_Msg_Request_Lock(::PROTOBUF_NAMESPACE_ID
 Message_EG_Msg_Request_Lock::Message_EG_Msg_Request_Lock(const Message_EG_Msg_Request_Lock& from)
   : ::PROTOBUF_NAMESPACE_ID::Message() {
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  read_ = from.read_;
   // @@protoc_insertion_point(copy_constructor:megastructure.Message.EG_Msg.Request.Lock)
 }
 
 void Message_EG_Msg_Request_Lock::SharedCtor() {
+  read_ = false;
 }
 
 Message_EG_Msg_Request_Lock::~Message_EG_Msg_Request_Lock() {
@@ -5084,6 +4851,7 @@ void Message_EG_Msg_Request_Lock::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  read_ = false;
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
@@ -5094,6 +4862,16 @@ const char* Message_EG_Msg_Request_Lock::_InternalParse(const char* ptr, ::PROTO
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
     ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
     CHK_(ptr);
+    switch (tag >> 3) {
+      // bool read = 1;
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 8)) {
+          read_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      default: {
+      handle_unusual:
         if ((tag & 7) == 4 || tag == 0) {
           ctx->SetLastTag(tag);
           goto success;
@@ -5103,6 +4881,8 @@ const char* Message_EG_Msg_Request_Lock::_InternalParse(const char* ptr, ::PROTO
             ptr, ctx);
         CHK_(ptr != nullptr);
         continue;
+      }
+    }  // switch
   }  // while
 success:
   return ptr;
@@ -5117,6 +4897,12 @@ failure:
   // @@protoc_insertion_point(serialize_to_array_start:megastructure.Message.EG_Msg.Request.Lock)
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
+
+  // bool read = 1;
+  if (this->read() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteBoolToArray(1, this->_internal_read(), target);
+  }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
@@ -5133,6 +4919,11 @@ size_t Message_EG_Msg_Request_Lock::ByteSizeLong() const {
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
+
+  // bool read = 1;
+  if (this->read() != 0) {
+    total_size += 1 + 1;
+  }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     return ::PROTOBUF_NAMESPACE_ID::internal::ComputeUnknownFieldsSize(
@@ -5165,6 +4956,9 @@ void Message_EG_Msg_Request_Lock::MergeFrom(const Message_EG_Msg_Request_Lock& f
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
+  if (from.read() != 0) {
+    _internal_set_read(from._internal_read());
+  }
 }
 
 void Message_EG_Msg_Request_Lock::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
@@ -5188,6 +4982,7 @@ bool Message_EG_Msg_Request_Lock::IsInitialized() const {
 void Message_EG_Msg_Request_Lock::InternalSwap(Message_EG_Msg_Request_Lock* other) {
   using std::swap;
   _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
+  swap(read_, other->read_);
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata Message_EG_Msg_Request_Lock::GetMetadata() const {
@@ -5367,8 +5162,6 @@ void Message_EG_Msg_Request::InitAsDefaultInstance() {
       ::megastructure::Message_EG_Msg_Request_Read::internal_default_instance());
   ::megastructure::_Message_EG_Msg_Request_default_instance_.write_ = const_cast< ::megastructure::Message_EG_Msg_Request_Write*>(
       ::megastructure::Message_EG_Msg_Request_Write::internal_default_instance());
-  ::megastructure::_Message_EG_Msg_Request_default_instance_.call_ = const_cast< ::megastructure::Message_EG_Msg_Request_Call*>(
-      ::megastructure::Message_EG_Msg_Request_Call::internal_default_instance());
   ::megastructure::_Message_EG_Msg_Request_default_instance_.lock_ = const_cast< ::megastructure::Message_EG_Msg_Request_Lock*>(
       ::megastructure::Message_EG_Msg_Request_Lock::internal_default_instance());
   ::megastructure::_Message_EG_Msg_Request_default_instance_.unlock_ = const_cast< ::megastructure::Message_EG_Msg_Request_Unlock*>(
@@ -5378,7 +5171,6 @@ class Message_EG_Msg_Request::_Internal {
  public:
   static const ::megastructure::Message_EG_Msg_Request_Read& read(const Message_EG_Msg_Request* msg);
   static const ::megastructure::Message_EG_Msg_Request_Write& write(const Message_EG_Msg_Request* msg);
-  static const ::megastructure::Message_EG_Msg_Request_Call& call(const Message_EG_Msg_Request* msg);
   static const ::megastructure::Message_EG_Msg_Request_Lock& lock(const Message_EG_Msg_Request* msg);
   static const ::megastructure::Message_EG_Msg_Request_Unlock& unlock(const Message_EG_Msg_Request* msg);
 };
@@ -5390,10 +5182,6 @@ Message_EG_Msg_Request::_Internal::read(const Message_EG_Msg_Request* msg) {
 const ::megastructure::Message_EG_Msg_Request_Write&
 Message_EG_Msg_Request::_Internal::write(const Message_EG_Msg_Request* msg) {
   return *msg->foobar_.write_;
-}
-const ::megastructure::Message_EG_Msg_Request_Call&
-Message_EG_Msg_Request::_Internal::call(const Message_EG_Msg_Request* msg) {
-  return *msg->foobar_.call_;
 }
 const ::megastructure::Message_EG_Msg_Request_Lock&
 Message_EG_Msg_Request::_Internal::lock(const Message_EG_Msg_Request* msg) {
@@ -5432,21 +5220,6 @@ void Message_EG_Msg_Request::set_allocated_write(::megastructure::Message_EG_Msg
     foobar_.write_ = write;
   }
   // @@protoc_insertion_point(field_set_allocated:megastructure.Message.EG_Msg.Request.write)
-}
-void Message_EG_Msg_Request::set_allocated_call(::megastructure::Message_EG_Msg_Request_Call* call) {
-  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArena();
-  clear_foobar();
-  if (call) {
-    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena =
-      ::PROTOBUF_NAMESPACE_ID::Arena::GetArena(call);
-    if (message_arena != submessage_arena) {
-      call = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
-          message_arena, call, submessage_arena);
-    }
-    set_has_call();
-    foobar_.call_ = call;
-  }
-  // @@protoc_insertion_point(field_set_allocated:megastructure.Message.EG_Msg.Request.call)
 }
 void Message_EG_Msg_Request::set_allocated_lock(::megastructure::Message_EG_Msg_Request_Lock* lock) {
   ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArena();
@@ -5498,10 +5271,6 @@ Message_EG_Msg_Request::Message_EG_Msg_Request(const Message_EG_Msg_Request& fro
     }
     case kWrite: {
       _internal_mutable_write()->::megastructure::Message_EG_Msg_Request_Write::MergeFrom(from._internal_write());
-      break;
-    }
-    case kCall: {
-      _internal_mutable_call()->::megastructure::Message_EG_Msg_Request_Call::MergeFrom(from._internal_call());
       break;
     }
     case kLock: {
@@ -5567,12 +5336,6 @@ void Message_EG_Msg_Request::clear_foobar() {
     case kWrite: {
       if (GetArena() == nullptr) {
         delete foobar_.write_;
-      }
-      break;
-    }
-    case kCall: {
-      if (GetArena() == nullptr) {
-        delete foobar_.call_;
       }
       break;
     }
@@ -5642,13 +5405,6 @@ const char* Message_EG_Msg_Request::_InternalParse(const char* ptr, ::PROTOBUF_N
       case 4:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 34)) {
           ptr = ctx->ParseMessage(_internal_mutable_write(), ptr);
-          CHK_(ptr);
-        } else goto handle_unusual;
-        continue;
-      // .megastructure.Message.EG_Msg.Request.Call call = 5;
-      case 5:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 42)) {
-          ptr = ctx->ParseMessage(_internal_mutable_call(), ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -5722,14 +5478,6 @@ failure:
         4, _Internal::write(this), target, stream);
   }
 
-  // .megastructure.Message.EG_Msg.Request.Call call = 5;
-  if (_internal_has_call()) {
-    target = stream->EnsureSpace(target);
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-      InternalWriteMessage(
-        5, _Internal::call(this), target, stream);
-  }
-
   // .megastructure.Message.EG_Msg.Request.Lock lock = 6;
   if (_internal_has_lock()) {
     target = stream->EnsureSpace(target);
@@ -5789,13 +5537,6 @@ size_t Message_EG_Msg_Request::ByteSizeLong() const {
       total_size += 1 +
         ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
           *foobar_.write_);
-      break;
-    }
-    // .megastructure.Message.EG_Msg.Request.Call call = 5;
-    case kCall: {
-      total_size += 1 +
-        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
-          *foobar_.call_);
       break;
     }
     // .megastructure.Message.EG_Msg.Request.Lock lock = 6;
@@ -5860,10 +5601,6 @@ void Message_EG_Msg_Request::MergeFrom(const Message_EG_Msg_Request& from) {
     }
     case kWrite: {
       _internal_mutable_write()->::megastructure::Message_EG_Msg_Request_Write::MergeFrom(from._internal_write());
-      break;
-    }
-    case kCall: {
-      _internal_mutable_call()->::megastructure::Message_EG_Msg_Request_Call::MergeFrom(from._internal_call());
       break;
     }
     case kLock: {
@@ -8384,9 +8121,6 @@ template<> PROTOBUF_NOINLINE ::megastructure::Message_EG_Msg_Request_Read* Arena
 }
 template<> PROTOBUF_NOINLINE ::megastructure::Message_EG_Msg_Request_Write* Arena::CreateMaybeMessage< ::megastructure::Message_EG_Msg_Request_Write >(Arena* arena) {
   return Arena::CreateMessageInternal< ::megastructure::Message_EG_Msg_Request_Write >(arena);
-}
-template<> PROTOBUF_NOINLINE ::megastructure::Message_EG_Msg_Request_Call* Arena::CreateMaybeMessage< ::megastructure::Message_EG_Msg_Request_Call >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::megastructure::Message_EG_Msg_Request_Call >(arena);
 }
 template<> PROTOBUF_NOINLINE ::megastructure::Message_EG_Msg_Request_Lock* Arena::CreateMaybeMessage< ::megastructure::Message_EG_Msg_Request_Lock >(Arena* arena) {
   return Arena::CreateMessageInternal< ::megastructure::Message_EG_Msg_Request_Lock >(arena);

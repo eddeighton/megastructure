@@ -100,8 +100,6 @@ bool LoadProgramActivity::serverMessage( const Message& message )
 		}
 		else
 		{
-			m_component.requestSimulationLock( shared_from_this() );
-					
 			m_strProgramName 	= loadProgramRequest.programname();
 			m_strHostName 		= loadProgramRequest.hostname();
             m_pLoadProgramJob.reset( new LoadProgramJob( m_component, 
@@ -129,7 +127,6 @@ bool LoadProgramActivity::jobComplete( Job::Ptr pJob )
             m_component.send( megastructure::hcs_load( false ) );
         }
 		m_pLoadProgramJob.reset();
-		m_component.releaseSimulationLock( shared_from_this() );
 		return true;
 	}
 	return false;
@@ -169,128 +166,308 @@ bool BufferActivity::serverMessage( const Message& message )
 ////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////
 
-EGRequestHandlerActivity::EGRequestHandlerActivity( Component& component, CoordinatorHostCycle chc ) 
-	:	m_component( component ),
-		m_chc( chc ),
-        m_bHasSimulationLock( false )
+void EGRequestManagerActivity::OnReadRequest( const Message::EG_Msg& egMsg )
 {
-	
-}
-
-
-void EGRequestHandlerActivity::request( const Message& message )
-{
-	m_messages.push_back( message );
-	
-	if( m_bHasSimulationLock )
-	{
-        processMessages();
-	}
-}
-
-void EGRequestHandlerActivity::simulationLockGranted()
-{
-	m_bHasSimulationLock = true;
-	processMessages();
-}
-
-void EGRequestHandlerActivity::processMessages()
-{
-	for( const Message& msg : m_messages )
-	{
-		const Message::EG_Msg& egMsg = msg.eg_msg();
-		const Message::EG_Msg::Request& egRequest = egMsg.request();
-		
-		if( egRequest.has_read() )
-		{
-			const std::int32_t iType = egMsg.type();
-			const std::uint32_t uiInstance = egMsg.instance();
-			
-			if( std::shared_ptr< Program > pProgram = m_component.getProgram() )
-			{
-				std::string strBuffer;
-				pProgram->readBuffer( iType, uiInstance, strBuffer );
-				
-				Message responseMessage;
-				{
-					Message::EG_Msg* pEGMsg = responseMessage.mutable_eg_msg();
-					pEGMsg->set_type( iType );
-					pEGMsg->set_instance( uiInstance );
-					pEGMsg->set_cycle( egMsg.cycle() );
-					
-					Message::EG_Msg::Response* pResponse = pEGMsg->mutable_response();
-					pResponse->set_coordinator( egRequest.coordinator() );
-					pResponse->set_host( egRequest.host() );
-					pResponse->set_value( strBuffer );
-				}
-                
-                SPDLOG_TRACE( "Sending eg read response type: {} instance: {} cycle: {} coordinator: {} host: {}", 
-                    egMsg.type(), egMsg.instance(), egMsg.cycle(), egRequest.coordinator(), egRequest.host() );
-                
-				m_component.sendeg( responseMessage );
-			}
-			else
-			{
-				//error
-				megastructure::Message errorMessage;
-				{
-					megastructure::Message::EG_Msg* pErrorEGMsg = errorMessage.mutable_eg_msg();
-					pErrorEGMsg->set_type( egMsg.type() );
-					pErrorEGMsg->set_instance( egMsg.instance() );
-					pErrorEGMsg->set_cycle( egMsg.cycle() );
-					
-					megastructure::Message::EG_Msg::Error* pErrorEGMsgError = pErrorEGMsg->mutable_error();
-					pErrorEGMsgError->set_coordinator( egRequest.coordinator() );
-					pErrorEGMsgError->set_host( egRequest.host() );
-				}
-                SPDLOG_WARN( "Sending eg read response error type: {} instance: {} cycle: {} coordinator: {} host: {}", 
-                    egMsg.type(), egMsg.instance(), egMsg.cycle(), egRequest.coordinator(), egRequest.host() );
+    const std::uint32_t uiCycle 		            = egMsg.cycle();
+    const Message::EG_Msg::Request& egRequest       = egMsg.request();
+    const std::uint32_t uiCoordinator 	            = egRequest.coordinator();
+    const std::uint32_t uiHost 			            = egRequest.host();
+    const Message::EG_Msg::Request::Read& egRead    = egRequest.read();
+    
+    SimulationLock::Ptr pCurrentLock = m_component.getOrCreateCurrentLock();
+    
+    SimulationLock::CycleState currentCycleState;
+    if( pCurrentLock->getHostCycleState( uiHost, currentCycleState ) )
+    {
+        switch( currentCycleState.state )
+        {
+            case SimulationLock::eReading     : 
+            case SimulationLock::eWriting     : 
+                {
+                    const std::int32_t iType = egMsg.type();
+                    const std::uint32_t uiInstance = egMsg.instance();
                     
-				m_component.sendeg( errorMessage );
-			}
-		}
-		else if( egRequest.has_write() )
-		{
-		}
-		else if( egRequest.has_call() )
-		{
-		}
-		else if( egRequest.has_lock() )
-		{
-            Message responseMessage;
-            {
-                Message::EG_Msg* pEGMsg = responseMessage.mutable_eg_msg();
-                pEGMsg->set_type( std::get< 0 >( m_chc ) );
-                pEGMsg->set_instance( std::get< 1 >( m_chc ) );
-                pEGMsg->set_cycle( std::get< 2 >( m_chc ) );
-                
-                Message::EG_Msg::Response* pResponse = pEGMsg->mutable_response();
-                pResponse->set_coordinator( egRequest.coordinator() );
-                pResponse->set_host( egRequest.host() );
-            }
-            SPDLOG_TRACE( "Sending eg lock response type: {} instance: {} cycle: {} coordinator: {} host: {}", 
-                egMsg.type(), egMsg.instance(), egMsg.cycle(), egRequest.coordinator(), egRequest.host() );
-                
-            m_component.sendeg( responseMessage );
-		}
-		else if( egRequest.has_unlock() )
-		{
-            SPDLOG_TRACE( "Releasing simulation lock type: {} instance: {} cycle: {} coordinator: {} host: {}", 
-                egMsg.type(), egMsg.instance(), egMsg.cycle(), egRequest.coordinator(), egRequest.host() );
-                
-            m_component.releaseSimulationLock( shared_from_this() );
-            m_component.activityComplete( shared_from_this() );
-		}
-		else
-		{
-			THROW_RTE( "Unknown eg message type" );
-		}
-	}
-	m_messages.clear();
-	
+                    if( std::shared_ptr< Program > pProgram = m_component.getProgram() )
+                    {
+                        std::string strBuffer;
+                        pProgram->readRequest( iType, uiInstance, strBuffer );
+                        
+                        Message responseMessage;
+                        {
+                            Message::EG_Msg* pEGMsg = responseMessage.mutable_eg_msg();
+                            pEGMsg->set_type( iType );
+                            pEGMsg->set_instance( uiInstance );
+                            pEGMsg->set_cycle( egMsg.cycle() );
+                            
+                            Message::EG_Msg::Response* pResponse = pEGMsg->mutable_response();
+                            pResponse->set_coordinator( egRequest.coordinator() );
+                            pResponse->set_host( egRequest.host() );
+                            pResponse->set_value( strBuffer );
+                        }
+                        
+                        SPDLOG_TRACE( "Sending eg read response type: {} instance: {} cycle: {} coordinator: {} host: {}", 
+                            egMsg.type(), egMsg.instance(), egMsg.cycle(), egRequest.coordinator(), egRequest.host() );
+                        
+                        m_component.sendeg( responseMessage );
+                    }
+                    else
+                    {
+                        //error
+                        megastructure::Message errorMessage;
+                        {
+                            megastructure::Message::EG_Msg* pErrorEGMsg = errorMessage.mutable_eg_msg();
+                            pErrorEGMsg->set_type( egMsg.type() );
+                            pErrorEGMsg->set_instance( egMsg.instance() );
+                            pErrorEGMsg->set_cycle( egMsg.cycle() );
+                            
+                            megastructure::Message::EG_Msg::Error* pErrorEGMsgError = pErrorEGMsg->mutable_error();
+                            pErrorEGMsgError->set_coordinator( egRequest.coordinator() );
+                            pErrorEGMsgError->set_host( egRequest.host() );
+                        }
+                        SPDLOG_WARN( "Sending eg read response error type: {} instance: {} cycle: {} coordinator: {} host: {}", 
+                            egMsg.type(), egMsg.instance(), egMsg.cycle(), egRequest.coordinator(), egRequest.host() );
+                            
+                        m_component.sendeg( errorMessage );
+                    }
+                }
+                break;
+            case SimulationLock::eRead        : 
+            case SimulationLock::eWrite       : 
+            case SimulationLock::eFinished    : 
+            case SimulationLock::TOTAL_STATES : 
+                THROW_RTE( "Invalid state for lock in read request" );
+        }
+    }
+    else
+    {
+        SPDLOG_ERROR( "Read request when no current lock" );
+        THROW_RTE( "Read request when no current lock" );
+    }
 }
-////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////
+
+void EGRequestManagerActivity::OnWriteRequest( const Message::EG_Msg& egMsg )
+{
+    const std::uint32_t uiCycle 		            = egMsg.cycle();
+    const Message::EG_Msg::Request& egRequest       = egMsg.request();
+    const std::uint32_t uiCoordinator 	            = egRequest.coordinator();
+    const std::uint32_t uiHost 			            = egRequest.host();
+    const Message::EG_Msg::Request::Write& egWrite  = egRequest.write();
+    
+    SimulationLock::Ptr pCurrentLock = m_component.getOrCreateCurrentLock();
+    
+    SimulationLock::CycleState currentCycleState;
+    if( pCurrentLock->getHostCycleState( uiHost, currentCycleState ) )
+    {
+        switch( currentCycleState.state )
+        {
+            case SimulationLock::eWriting     : 
+                {
+                    const std::string& strBuffer = egWrite.value();
+                    if( std::shared_ptr< Program > pProgram = m_component.getProgram() )
+                    {
+                        SPDLOG_TRACE( "Got write request size: {}", strBuffer.size() );
+                        pProgram->writeRequest( strBuffer );
+                    }
+                    else
+                    {
+                        SPDLOG_WARN( "Attempting to write when program not loaded" );
+                    }
+                }
+                break;
+            case SimulationLock::eReading     : 
+            case SimulationLock::eRead        : 
+            case SimulationLock::eWrite       : 
+            case SimulationLock::eFinished    : 
+            case SimulationLock::TOTAL_STATES : 
+                THROW_RTE( "Invalid state for lock in read request" );
+        }
+    }
+    else
+    {
+        SPDLOG_ERROR( "Read request when no current lock" );
+        THROW_RTE( "Read request when no current lock" );
+    }
+}
+
+void EGRequestManagerActivity::OnLockRequest( const Message::EG_Msg& egMsg )
+{
+    const std::uint32_t uiCycle 		            = egMsg.cycle();
+    const Message::EG_Msg::Request& egRequest       = egMsg.request();
+    const std::uint32_t uiCoordinator 	            = egRequest.coordinator();
+    const std::uint32_t uiHost 			            = egRequest.host();
+    const Message::EG_Msg::Request::Lock& egLock    = egRequest.lock();
+    
+    if( egLock.read() )
+    {
+        SimulationLock::Ptr pCurrentLock = m_component.getOrCreateCurrentLock();
+        SimulationLock::CycleState currentCycleState;
+        if( pCurrentLock->getHostCycleState( uiHost, currentCycleState ) )
+        {
+            if( currentCycleState.uiCycle == uiCycle )
+            {
+                //already have a state when request read lock
+                SPDLOG_ERROR( "Already have lock state when requesting read lock" );
+                THROW_RTE( "Already have lock state when requesting read lock" );
+            }
+            else
+            {
+                //new lock has been requested so create future lock
+                SimulationLock::Ptr pFutureLock = m_component.getOrCreateFutureLock();
+                SimulationLock::CycleState futureCycleState;
+                if( pFutureLock->getHostCycleState( uiHost, futureCycleState ) )
+                {
+                    SPDLOG_ERROR( "Already have future lock state" );
+                    THROW_RTE( "Already have future lock state" );
+                }
+                else
+                {
+                    pFutureLock->setHostCycleState( uiCoordinator, uiHost, uiCycle, SimulationLock::eRead );
+                }
+            }
+        }
+        else
+        {
+            //if currently reading then issue response immediately
+            if( pCurrentLock->isReading() )
+            {
+                const SimulationLock::HostCycleState& hcs = 
+                    pCurrentLock->setHostCycleState( uiCoordinator, uiHost, uiCycle, SimulationLock::eReading );
+                issueLockResponse( hcs );
+            }
+            else
+            {
+                pCurrentLock->setHostCycleState( uiCoordinator, uiHost, uiCycle, SimulationLock::eRead );
+            }
+        }
+    }
+    else //write lock
+    {
+        SimulationLock::Ptr pCurrentLock = m_component.getOrCreateCurrentLock();
+        
+        SimulationLock::CycleState currentCycleState;
+        if( pCurrentLock->getHostCycleState( uiHost, currentCycleState ) )
+        {
+            if( currentCycleState.uiCycle == uiCycle )
+            {
+                if( currentCycleState.state == SimulationLock::eRead )
+                {
+                    //upgrade to write lock
+                    pCurrentLock->setHostCycleState( uiCoordinator, uiHost, uiCycle, SimulationLock::eWrite );
+                }
+                else if( currentCycleState.state == SimulationLock::eReading )
+                {
+                    //upgrade to write lock
+                    pCurrentLock->setHostCycleState( uiCoordinator, uiHost, uiCycle, SimulationLock::eWrite );
+                    
+                    //if no longer reading - then start the writer lock immediately
+                    if( !pCurrentLock->isReading() )
+                    {
+                        const SimulationLock::HostCycleState& hcs = 
+                            pCurrentLock->setHostCycleState( uiCoordinator, uiHost, uiCycle, SimulationLock::eWriting );
+                        issueLockResponse( hcs );
+                    }
+                }
+                else
+                {
+                    SPDLOG_ERROR( "Already have lock state when requesting write lock" );
+                    THROW_RTE( "Already have lock state when requesting write lock" );
+                }
+            }
+            else
+            {
+                //new lock has been requested so create future lock
+                SimulationLock::Ptr pFutureLock = m_component.getOrCreateFutureLock();
+                SimulationLock::CycleState futureCycleState;
+                if( pFutureLock->getHostCycleState( uiHost, futureCycleState ) )
+                {
+                    if( ( futureCycleState.uiCycle == uiCycle ) && 
+                        ( futureCycleState.state == SimulationLock::eRead ) )
+                    {
+                        //upgrade to future lock to write lock
+                        pFutureLock->setHostCycleState( uiCoordinator, uiHost, uiCycle, SimulationLock::eWrite );
+                    }
+                    else
+                    {
+                        SPDLOG_ERROR( "Already have future write lock state" );
+                        THROW_RTE( "Already have future write lock state" );
+                    }
+                }
+                else
+                {
+                    pFutureLock->setHostCycleState( uiCoordinator, uiHost, uiCycle, SimulationLock::eWrite );
+                }
+            }
+        }
+        else
+        {
+            //start write lock
+            pCurrentLock->setHostCycleState( uiCoordinator, uiHost, uiCycle, SimulationLock::eWrite );
+        }
+    }
+}
+void EGRequestManagerActivity::OnUnlockRequest( const Message::EG_Msg& egMsg )
+{
+    const std::uint32_t uiCycle 		                = egMsg.cycle();
+    const Message::EG_Msg::Request& egRequest           = egMsg.request();
+    const std::uint32_t uiCoordinator 	                = egRequest.coordinator();
+    const std::uint32_t uiHost 			                = egRequest.host();
+    const Message::EG_Msg::Request::Unlock& egUnLock    = egRequest.unlock();
+    
+    SimulationLock::Ptr pCurrentLock = m_component.getCurrentLock();
+    VERIFY_RTE( pCurrentLock );
+    
+    SimulationLock::HostCycleStateVector& hostCycleStates = 
+        pCurrentLock->getHostCycleStates();
+    
+    SimulationLock::CycleState oldCycleState;
+    if( pCurrentLock->getHostCycleState( uiHost, oldCycleState ) )
+    {
+        pCurrentLock->setHostCycleState( uiCoordinator, uiHost, uiCycle, SimulationLock::eFinished );
+        
+        if( pCurrentLock->allFinished() )
+        {
+            //done - release the entire simulation lock
+            m_component.releaseCurrentLock();
+        }
+        else if( !pCurrentLock->isReading() )
+        {
+            if( pCurrentLock->isRead() )
+            {
+                //start all readers
+                for( SimulationLock::HostCycleState& hcs : hostCycleStates )
+                {
+                    if( hcs.cycleState.state == SimulationLock::eRead )
+                    {                
+                        hcs.cycleState.state = SimulationLock::eReading;
+                        issueLockResponse( hcs );
+                    }
+                }
+            }
+            else
+            {
+                //attempt to start a writer
+                bool bFoundFirst = false;
+                for( SimulationLock::HostCycleState& hcs : hostCycleStates )
+                {
+                    if( hcs.cycleState.state == SimulationLock::eWrite )
+                    {
+                        hcs.cycleState.state = SimulationLock::eWriting; 
+                        issueLockResponse( hcs );
+                        bFoundFirst = true;
+                        break;
+                    }
+                }
+                VERIFY_RTE( bFoundFirst );
+            }
+        }
+    }
+    else
+    {
+        SPDLOG_ERROR( "Received unlock from host with no lock" );
+        THROW_RTE( "Received unlock from host with no lock" );
+    } 
+}
+
 
 bool EGRequestManagerActivity::serverMessage( const Message& message )
 {
@@ -301,68 +478,90 @@ bool EGRequestManagerActivity::serverMessage( const Message& message )
 		{
 			const Message::EG_Msg::Request& egRequest = egMsg.request();
 			
-			const std::uint32_t uiCoordinator 	= egRequest.coordinator();
-			const std::uint32_t uiHost 			= egRequest.host();
-			const std::uint32_t uiCycle 		= egMsg.cycle();
-            
-            //std::cout << "EGRequestManagerActivity got request from: " << uiCoordinator << "," << uiHost << "," << uiCycle << std::endl;
-			
-			const CoordinatorHostCycle chc( uiCoordinator, uiHost, uiCycle );
-			
-			EGRequestHandlerActivity::Ptr pHandler;
-			{
-				ActivityMap::const_iterator iFind = m_activities.find( chc );
-				if( iFind != m_activities.end() )
-				{
-					pHandler = iFind->second;
-				}
-				else
-				{
-					//create new handler
-					pHandler.reset( new EGRequestHandlerActivity( m_component, chc ) );
-					m_component.startActivity( pHandler );
-					m_component.requestSimulationLock( pHandler );
-					m_activities.insert( std::make_pair( chc, pHandler ) );
-				}
-			}
-			
-			pHandler->request( message );
-		}
-		else if( egMsg.has_response() )
-		{
-			THROW_RTE( "EGRequestManagerActivity received eg response" );
-		}
-		else if( egMsg.has_error() )
-		{
-			const Message::EG_Msg::Error& egError = egMsg.error();
-			
-			//std::cout << "Got eg error type: " << egMsg.type() << " instance: " << egMsg.instance() <<
-			//	" cycle: " << egMsg.cycle() << " coordinator: " << egError.coordinator() << 
-			//	" host: " << egError.host() << std::endl;
-		}
-		else if( egMsg.has_event() )
-		{
-			THROW_RTE( "EGRequestManagerActivity received eg event" );
-		}
+            if( egRequest.has_read() )
+            {
+                OnReadRequest( egMsg );
+            }
+            else if( egRequest.has_write() )
+            {
+                OnWriteRequest( egMsg );
+            }
+            else if( egRequest.has_lock() )
+            {
+                OnLockRequest( egMsg );
+            }
+            else if( egRequest.has_unlock() )
+            {
+                OnUnlockRequest( egMsg );
+            }
+            else 
+            {
+                SPDLOG_ERROR( "Unknown request type" );
+                THROW_RTE( "Unknown request type" );
+            }
+        }
 		
 		return true;
 	}
 	return false;
 }
 
+
 bool EGRequestManagerActivity::activityComplete( Activity::Ptr pActivity )
 {
-	for( ActivityMap::iterator i = m_activities.begin(),
-		iEnd = m_activities.end(); i!=iEnd; ++i )
-	{
-		if( i->second == pActivity )
-		{
-			m_activities.erase( i );
-			return true;
-		}
-	}
-	
 	return false;
+}
+
+void EGRequestManagerActivity::simulationLockStarted()
+{
+    SimulationLock::Ptr pCurrentLock = m_component.getCurrentLock();
+    VERIFY_RTE( pCurrentLock );
+    
+    SimulationLock::HostCycleStateVector& hostCycleStates = 
+        pCurrentLock->getHostCycleStates();
+        
+    if( pCurrentLock->isRead() )
+    {
+        //start all readers
+        for( SimulationLock::HostCycleState& hcs : hostCycleStates )
+        {
+            if( hcs.cycleState.state == SimulationLock::eRead )
+            {                
+                hcs.cycleState.state = SimulationLock::eReading;
+                issueLockResponse( hcs );
+            }
+        }
+    }
+    else
+    {
+        //start first writer
+        bool bFoundFirst = false;
+        for( SimulationLock::HostCycleState& hcs : hostCycleStates )
+        {
+            if( hcs.cycleState.state == SimulationLock::eWrite )
+            {
+                hcs.cycleState.state = SimulationLock::eWriting; 
+                issueLockResponse( hcs );
+                bFoundFirst = true;
+                break;
+            }
+        }
+        VERIFY_RTE( bFoundFirst );
+    }
+}
+
+void EGRequestManagerActivity::issueLockResponse( const SimulationLock::HostCycleState& hcs ) const
+{
+    Message responseMessage;
+    {
+        Message::EG_Msg* pEGMsg = responseMessage.mutable_eg_msg();
+        Message::EG_Msg::Response* pResponse = pEGMsg->mutable_response();
+        pResponse->set_coordinator( hcs.uiCoordinator );
+        pResponse->set_host( hcs.uiHost );
+    }
+    SPDLOG_TRACE( "Sending eg lock response coordinator: {} host: {}", 
+        hcs.uiCoordinator, hcs.uiHost );
+    m_component.sendeg( responseMessage );
 }
 
 }

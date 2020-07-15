@@ -120,12 +120,9 @@ message Message
 			{
 				bytes value = 1;
 			}
-			message Call
-			{
-				bytes args = 1;
-			}
 			message Lock
 			{
+                bool read = 1;
 			}
 			message Unlock
 			{
@@ -136,7 +133,6 @@ message Message
 				//eg protocol
 				Read   	read   	= 3;
 				Write  	write  	= 4;
-				Call    call    = 5;
 				Lock    lock    = 6;
 				Unlock  unlock  = 7;
 			}

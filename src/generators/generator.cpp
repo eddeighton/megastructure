@@ -589,17 +589,6 @@ void generate_eg_component( std::ostream& os,
         os << "std::set< eg::TypeInstance > " << i.second.strActivationSetName << ";\n";
     }
     
-    os << "void resetNetworkState()\n";
-    os << "{\n";
-    os << "    g_reads.reset();\n";
-    os << "    g_hostLocks.reset();\n";
-    for( const auto& i : hostStructures )
-    {
-        os << "    " << i.second.strWriteSetName << ".clear();\n";
-        os << "    " << i.second.strActivationSetName << ".clear();\n";
-    }
-    os << "}\n";
-    
     os << "\n//buffers\n";
     for( const eg::Buffer* pBuffer : layout.getBuffers() )
     {
@@ -677,7 +666,7 @@ void generate_eg_component( std::ostream& os,
     os << "        default: \n";
     os << "        {\n";
     os << "            std::ostringstream _os;\n";
-    os << "            _os << \"Unknown type: \" << iType << \" instance: \" << uiInstance;\n";
+    os << "            _os << \"encode error: unknown type: \" << iType << \" instance: \" << uiInstance;\n";
     os << "            throw std::runtime_error( _os.str() );\n";
     os << "        }\n";
     os << "    }\n";
@@ -690,12 +679,55 @@ void generate_eg_component( std::ostream& os,
     os << "        default: \n";
     os << "        {\n";
     os << "            std::ostringstream _os;\n";
-    os << "            _os << \"Unknown type: \" << iType << \" instance: \" << uiInstance;\n";
+    os << "            _os << \"decode error: unknown type: \" << iType << \" instance: \" << uiInstance;\n";
     os << "            throw std::runtime_error( _os.str() );\n";
     os << "        }\n";
     os << "    }\n";
     os << "}\n";
     os << "\n";
+    
+    
+    os << "void completeSimulationLocks( megastructure::MegaProtocol* pMegaProtocol )\n";
+    os << "{\n";
+    
+    for( const auto& i : hostStructures )
+    {
+    os << "    if( g_hostLocks.test( " << i.second.strIdentityEnumName << "_write ) )\n";
+    os << "    {\n";
+    
+    os << "        msgpack::sbuffer buffer;\n";
+    os << "        msgpack::packer< msgpack::sbuffer > encoder( &buffer );\n";
+    os << "        for( const eg::TypeInstance& typeInstance : " << i.second.strWriteSetName << " )\n";
+    os << "        {\n";
+    os << "            eg::encode( encoder, typeInstance.type );\n";
+    os << "            eg::encode( encoder, typeInstance.instance );\n";
+    os << "            encode( typeInstance.type, typeInstance.instance, encoder );\n";
+    os << "        }\n";
+    os << "        pMegaProtocol->write( " << i.second.pRoot->getIndex() << ", buffer.data(), buffer.size(), clock::cycle() );\n";
+    os << "    }\n";
+    }
+    
+    os << "\n";
+    os << "    g_reads.reset();\n";
+    os << "    g_hostLocks.reset();\n";
+    for( const auto& i : hostStructures )
+    {
+        os << "    " << i.second.strWriteSetName << ".clear();\n";
+        os << "    " << i.second.strActivationSetName << ".clear();\n";
+    }
+    os << "}\n";
+    
+    os << "void decodeWriteRequest( eg::Decoder& decoder )\n";
+    os << "{\n";
+    os << "    eg::TypeInstance typeInstance;\n";
+    os << "    msgpack::object_handle objectHandle;\n";
+    os << "    while( decoder.next( objectHandle ) )\n";
+    os << "    {\n";
+    os << "        objectHandle.get().convert( typeInstance.type );\n";
+    os << "        eg::decode( decoder, typeInstance.instance );\n";
+    os << "        decode( typeInstance.type, typeInstance.instance, decoder );\n";
+    os << "    }\n";
+    os << "}\n";
     
     if( bPythonBindings )
     {
@@ -768,8 +800,8 @@ const char szComponentPart2[] = R"(
     virtual void Cycle()
     {
         eg::Scheduler::cycle();
+        completeSimulationLocks( m_pMegaProtocol );
         clock::next();
-        resetNetworkState();
     }
     
     virtual void encode( std::int32_t iType, std::uint32_t uiInstance, eg::Encoder& buffer )
@@ -777,9 +809,14 @@ const char szComponentPart2[] = R"(
         ::encode( iType, uiInstance, buffer );
     }
     
-    virtual void decode( std::int32_t iType, std::uint32_t uiInstance, eg::Decoder& buffer )
+    virtual void decode( std::int32_t iType, std::uint32_t uiInstance, eg::Decoder& decoder )
     {
-        ::decode( iType, uiInstance, buffer );
+        ::decode( iType, uiInstance, decoder );
+    }
+    
+	virtual void decode( eg::Decoder& decoder )
+    {
+        ::decodeWriteRequest( decoder );
     }
     
     
@@ -796,7 +833,7 @@ const char szComponentPart2[] = R"(
 
     void writelock( eg::TypeID component )
     {
-        
+        m_pMegaProtocol->writelock( component, clock::cycle() );
     }
 
 

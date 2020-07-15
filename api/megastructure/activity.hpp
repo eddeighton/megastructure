@@ -36,7 +36,7 @@ namespace megastructure
 		virtual bool clientMessage( std::uint32_t uiClient, const Message& message );
 		virtual bool jobComplete( Job::Ptr pJob );
 		virtual bool activityComplete( Activity::Ptr pActivity );
-		virtual void simulationLockGranted();
+        virtual void simulationLockStarted();
 	};
 	
 	template< typename ParentType >

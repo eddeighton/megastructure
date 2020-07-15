@@ -108,35 +108,11 @@ namespace megastructure
         std::promise< std::string > m_result;
 	};
 	
+	
 	////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////
-	
-    using CoordinatorHostCycle = 
-        std::tuple< std::uint32_t, std::uint32_t, std::uint32_t >;
-        
-	class EGRequestHandlerActivity : public Activity
-	{
-	public:
-		using Ptr = std::shared_ptr< EGRequestHandlerActivity >;
-		
-		EGRequestHandlerActivity( Component& component, CoordinatorHostCycle chc );
-		void request( const Message& message );
-		void simulationLockGranted();
-	private:
-		void processMessages();
-	
-		Component& m_component;
-        CoordinatorHostCycle m_chc;
-		std::vector< Message > m_messages;
-		bool m_bHasSimulationLock;
-		
-	};
-	
 	class EGRequestManagerActivity : public Activity
 	{
-		
-		using ActivityMap =
-			std::map< CoordinatorHostCycle, EGRequestHandlerActivity::Ptr >;
 		
 	public:
 		EGRequestManagerActivity( Component& component ) 
@@ -146,10 +122,17 @@ namespace megastructure
 		
 		virtual bool serverMessage( const Message& message );
 		virtual bool activityComplete( Activity::Ptr pActivity );
-		
+        virtual void simulationLockStarted();
 	private:
+    
+        void OnReadRequest( const Message::EG_Msg& egMsg );
+        void OnWriteRequest( const Message::EG_Msg& egMsg );
+        void OnLockRequest( const Message::EG_Msg& egMsg );
+        void OnUnlockRequest( const Message::EG_Msg& egMsg );
+    
+        void issueLockResponse( const SimulationLock::HostCycleState& hcs ) const;
+
 		Component& m_component;
-		ActivityMap m_activities;
 		
 	};
 }

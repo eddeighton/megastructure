@@ -28,8 +28,7 @@ namespace megastructure
         using CacheBufferMap = std::map< std::string, LocalBufferImpl::Ptr >;
         using SharedBufferMap = std::map< std::string, SharedBufferImpl::Ptr >;
         using ComponentLockInfo = std::pair< std::int32_t, std::uint32_t >;
-        using ReaderLockSet = std::set< ComponentLockInfo >;
-        using WriterLockSet = std::set< ComponentLockInfo >;
+        using ComponentLockSet = std::set< ComponentLockInfo >;
 
 		friend class EGReadFunctor;
 	public:
@@ -54,10 +53,13 @@ namespace megastructure
         //MegaProtocol
         virtual void readlock( eg::TypeID component, std::uint32_t uiTimestamp );
         virtual void read( eg::TypeID type, std::uint32_t& uiInstance, std::uint32_t uiTimestamp );
+		virtual void writelock( eg::TypeID component, std::uint32_t uiTimestamp );
+		virtual void write( eg::TypeID component, const char* pBuffer, std::size_t szSize, std::uint32_t uiTimestamp );
 		
-		//memory access
-		void readBuffer( std::int32_t iType, std::uint32_t uiInstance, std::string& strBuffer );
-		void writeBuffer( std::int32_t iType, std::uint32_t uiInstance, const std::string& strBuffer );
+		//request handling
+		void readRequest( std::int32_t iType, std::uint32_t uiInstance, std::string& strBuffer );
+        void readResponse( std::int32_t iType, std::uint32_t uiInstance, const std::string& strBuffer );
+		void writeRequest( const std::string& strBuffer );
         
     private:
         void releaseLocks();
@@ -80,8 +82,7 @@ namespace megastructure
         CacheBufferMap m_cacheBuffers;
         SharedBufferMap m_sharedBuffers;
         
-        ReaderLockSet m_readerLocks;
-        WriterLockSet m_writerLocks;
+        ComponentLockSet m_componentLocks;
 	};
 }
 

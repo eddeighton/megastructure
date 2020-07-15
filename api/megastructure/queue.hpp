@@ -38,7 +38,7 @@ namespace megastructure
 		void clientMessage( std::uint32_t uiClient, const Message& message );
 		void jobComplete( Job::Ptr pJob );
 		void activityComplete( Activity::Ptr pActivity );
-		void simulationLockGranted( Activity::Ptr pActivity );
+        void startSimulationLock();
 	private:
 		void runQueue();
 		void OnKeepAlive( const boost::system::error_code& ec );
@@ -47,7 +47,7 @@ namespace megastructure
 		void OnClientMessage( std::uint32_t uiClient, Message message );
 		void OnJobComplete( Job::Ptr pJob );
 		void OnActivityComplete( Activity::Ptr pActivity );
-		void OnSimulationLockGranted( Activity::Ptr pActivity );
+		void OnSimulationLockStarted();
 		
 	protected:
 		std::atomic< bool > m_stop;
