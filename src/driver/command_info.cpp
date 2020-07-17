@@ -46,6 +46,7 @@ void command_info( bool bHelp, const std::vector< std::string >& args )
     bool bCode = false;
     bool bAbstract = false;
     bool bConcrete = false;
+    bool bFiles = false;
     bool bAll = false;
     
     namespace po = boost::program_options;
@@ -57,6 +58,7 @@ void command_info( bool bHelp, const std::vector< std::string >& args )
             ("code",       po::bool_switch( &bCode ), "Print entire program as single eg file" )
             ("abstract",   po::bool_switch( &bAbstract ), "Print the abstract tree" )
             ("concrete",   po::bool_switch( &bConcrete ), "Print the concrete tree (default)" )
+            ("files",      po::bool_switch( &bFiles ), "Print project file structure info" )
             ("all",        po::bool_switch( &bAll ), "Print all forms" )
         ;
     }
@@ -74,7 +76,7 @@ void command_info( bool bHelp, const std::vector< std::string >& args )
     }
     else
     {
-        if( !bCode && !bAbstract && !bConcrete )
+        if( !bCode && !bAbstract && !bConcrete && !bFiles )
             bAll = true;
         
         if( bAll )
@@ -82,6 +84,7 @@ void command_info( bool bHelp, const std::vector< std::string >& args )
             bCode       = true;
             bAbstract   = true;
             bConcrete   = true;
+            bFiles      = true;
         }
 		
 		if( strProject.empty() )
@@ -107,33 +110,45 @@ void command_info( bool bHelp, const std::vector< std::string >& args )
         
         ProjectTree projectTree( environment, projectDirectory, strProject );
         
-        eg::ReadSession session( projectTree.getAnalysisFileName() );
+        if( bFiles )
+        {
+            std::cout << "Megastructure Project File Structure Info.\n";
+            std::cout << "Project Root:     " << projectTree.getRootPath().string() << "\n";
+            std::cout << "Interface:        " << projectTree.getInterfaceFolder().string() << "\n";
+            std::cout << "Impl:             " << projectTree.getImplFolder().string() << "\n";
+            std::cout << "Build:            " << projectTree.getBuildFolder().string() << "\n";
+        }
+        
+        if( bCode || bAbstract || bConcrete )
+        {
+            eg::ReadSession session( projectTree.getAnalysisFileName() );
 
-        if( bCode )
-        {
-            std::cout << "//Code\n";
-            const eg::interface::Root* pInterfaceRoot = session.getTreeRoot();
-            std::string strIndent;
-            pInterfaceRoot->print( std::cout, strIndent, true );
-            std::cout << "\n\n\n";
-        }
-        
-        if( bAbstract )
-        {
-            std::cout << "//Abstract Interface\n";
-            const eg::interface::Root* pInterfaceRoot = session.getTreeRoot();
-            std::string strIndent;
-            pInterfaceRoot->print( std::cout, strIndent, false );
-            std::cout << "\n\n\n";
-        }
-        
-        if( bConcrete )
-        {
-            std::cout << "//Concrete Memory Model\n";
-            const eg::concrete::Action* pConcreteRoot = session.getInstanceRoot();
-            std::string strIndent;
-            pConcreteRoot->print( std::cout, strIndent );
-            std::cout << "\n\n\n";
+            if( bCode )
+            {
+                std::cout << "//Code\n";
+                const eg::interface::Root* pInterfaceRoot = session.getTreeRoot();
+                std::string strIndent;
+                pInterfaceRoot->print( std::cout, strIndent, true );
+                std::cout << "\n\n\n";
+            }
+            
+            if( bAbstract )
+            {
+                std::cout << "//Abstract Interface\n";
+                const eg::interface::Root* pInterfaceRoot = session.getTreeRoot();
+                std::string strIndent;
+                pInterfaceRoot->print( std::cout, strIndent, false );
+                std::cout << "\n\n\n";
+            }
+            
+            if( bConcrete )
+            {
+                std::cout << "//Concrete Memory Model\n";
+                const eg::concrete::Action* pConcreteRoot = session.getInstanceRoot();
+                std::string strIndent;
+                pConcreteRoot->print( std::cout, strIndent );
+                std::cout << "\n\n\n";
+            }
         }
     }
 }

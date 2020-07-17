@@ -93,6 +93,9 @@ public:
 	ProjectTree( Environment& environment, const boost::filesystem::path& root, const std::string& projectName );
 	ProjectTree( Environment& environment, const boost::filesystem::path& root, 
 		const std::string& coordinatorName, const std::string& hostName, const std::string& projectName );
+private:
+    void commonCtor( Environment& environment );
+public:
 	
 	void print( std::ostream& os );
 	
@@ -151,9 +154,19 @@ public:
 		return includes;
 	}
 	
+	boost::filesystem::path getSourceFolder() const
+	{
+		return m_path / "src";
+	}
+    
 	boost::filesystem::path getInterfaceFolder() const
 	{
 		return m_path / "interface" / m_projectName;
+	}
+	
+	boost::filesystem::path getImplFolder() const
+	{
+		return m_path / "impl";
 	}
 	
 	boost::filesystem::path getBuildFolder() const
@@ -230,8 +243,41 @@ public:
 		collateIncludeDirectories( environment, uniquified, directories, "${PROTOBUF}/include" );
 		collateIncludeDirectories( environment, uniquified, directories, "${MESSAGEPACK}/include" );
 		
+		directories.push_back( 
+            boost::filesystem::edsCannonicalise(
+                boost::filesystem::absolute( 
+                    getInterfaceFolder() ) ) );
+        
+		/*if( m_host.Directories_present() )
+			collateIncludeDirectories( m_environment, uniquified, directories, m_host.Directories() );
 		
+		for( const megaxml::Package& package : m_packages )
+		{
+			if( package.Directories_present() )
+				collateIncludeDirectories( m_environment, uniquified, directories, package.Directories() );
+		}*/
+		
+		return directories;
+	}
 
+	std::vector< boost::filesystem::path > getImplIncludeDirectories( const Environment& environment ) const
+	{
+		std::set< boost::filesystem::path > uniquified;
+		std::vector< boost::filesystem::path > directories;
+		
+		//collateIncludeDirectories( environment, uniquified, directories, "${BOOST}/include/boost-1_73" );
+		//collateIncludeDirectories( environment, uniquified, directories, "${PYBIND}/include" );
+		//collateIncludeDirectories( environment, uniquified, directories, "${PYTHONHOME}/include" );
+		//collateIncludeDirectories( environment, uniquified, directories, "${EG}/include" );
+		//collateIncludeDirectories( environment, uniquified, directories, "${MEGA}/include" );
+		//collateIncludeDirectories( environment, uniquified, directories, "${PROTOBUF}/include" );
+		//collateIncludeDirectories( environment, uniquified, directories, "${MESSAGEPACK}/include" );
+		
+		directories.push_back( 
+            boost::filesystem::edsCannonicalise(
+                boost::filesystem::absolute( 
+                    getInterfaceFolder() ) ) );
+        
 		/*if( m_host.Directories_present() )
 			collateIncludeDirectories( m_environment, uniquified, directories, m_host.Directories() );
 		
@@ -264,11 +310,13 @@ public:
 	
 	boost::filesystem::path getImplementationSource( const std::string& strTUName ) const
 	{
+		VERIFY_RTE( m_coordinatorName && m_hostName );
 		std::ostringstream os;
 		os << strTUName << "_operations.cpp";
+        
 		return boost::filesystem::edsCannonicalise(
 			boost::filesystem::absolute( 
-				getInterfaceFolder() / os.str() ) );
+				getImplFolder() / m_coordinatorName.get() / m_hostName.get() / m_projectName / os.str() ) );
 	}
     
     std::string getStructuresInclude() const
@@ -284,12 +332,25 @@ public:
 			boost::filesystem::absolute( 
 				getInterfaceFolder() / getStructuresInclude() ) );
 	}
+	
+	boost::filesystem::path getAnalysisFileName() const
+	{
+		std::ostringstream os;
+		os << "database.db";
+		return boost::filesystem::edsCannonicalise(
+			boost::filesystem::absolute( 
+				getInterfaceFolder() / os.str() ) );
+	}
+    
+    
+    ///////////////////////////////////////////////
+    //VERIFY_RTE( m_coordinatorName && m_hostName ); 
     
 	std::string getNetStateSourceInclude() const
 	{
 		VERIFY_RTE( m_coordinatorName && m_hostName );
 		std::ostringstream os;
-		os << m_coordinatorName.get() << '_' << m_hostName.get() << '_' << m_projectName << "_netstate.hpp";
+		os << "netstate.hpp";
         return os.str();
 	}
     
@@ -297,47 +358,30 @@ public:
 	{
 		VERIFY_RTE( m_coordinatorName && m_hostName );
 		return boost::filesystem::edsCannonicalise(
-					boost::filesystem::absolute( 
-						getInterfaceFolder() / getNetStateSourceInclude() ) );
+			boost::filesystem::absolute( 
+				getImplFolder() / m_coordinatorName.get() / m_hostName.get() / m_projectName / getNetStateSourceInclude() ) );
+                
 	}
 	
 	boost::filesystem::path getRuntimeSource() const
 	{
 		VERIFY_RTE( m_coordinatorName && m_hostName );
-		std::ostringstream os;
-		os << m_coordinatorName.get() << '_' << m_hostName.get() << '_' << m_projectName << "_runtime.cpp";
 		return boost::filesystem::edsCannonicalise(
-					boost::filesystem::absolute( 
-						getInterfaceFolder() / os.str() ) );
+			boost::filesystem::absolute( 
+				getImplFolder() / m_coordinatorName.get() / m_hostName.get() / m_projectName / "runtime.cpp" ) );
 	}
 	
-	boost::filesystem::path getPythonFileName() const
-	{
-		VERIFY_RTE( m_coordinatorName && m_hostName );
-		std::ostringstream os;
-		os << m_coordinatorName.get() << '_' << m_hostName.get() << '_' << m_projectName << "_python_bindings.cpp";
-		return os.str();
-	}
 	boost::filesystem::path getPythonSource() const
 	{
 		VERIFY_RTE( m_coordinatorName && m_hostName );
 		return boost::filesystem::edsCannonicalise(
-					boost::filesystem::absolute( 
-						getInterfaceFolder() / getPythonFileName() ) );
-	}
-	
-	boost::filesystem::path getAnalysisFileName() const
-	{
-		//VERIFY_RTE( m_coordinatorName && m_hostName );
-		std::ostringstream os;
-		os << "database.db";
-		return boost::filesystem::edsCannonicalise(
 			boost::filesystem::absolute( 
-				getInterfaceFolder() / os.str() ) );
+				getImplFolder() / m_coordinatorName.get() / m_hostName.get() / m_projectName / "python.cpp" ) );
 	}
 
 	boost::filesystem::path getObjectName( const std::string& strTUName, const boost::filesystem::path& binPath ) const
 	{
+		VERIFY_RTE( m_coordinatorName && m_hostName );
 		std::ostringstream os;
 		os << strTUName << "_object.obj";
 		return boost::filesystem::edsCannonicalise(
@@ -347,6 +391,7 @@ public:
 	
 	boost::filesystem::path getObjectFile( const boost::filesystem::path& sourceFile, const boost::filesystem::path& binPath ) const
 	{
+		VERIFY_RTE( m_coordinatorName && m_hostName );
 		std::ostringstream os;
 		os << sourceFile.stem().string() << "_object.obj";
 		return boost::filesystem::edsCannonicalise(
@@ -358,11 +403,9 @@ public:
 	boost::filesystem::path getEGComponentSource() const
 	{
 		VERIFY_RTE( m_coordinatorName && m_hostName );
-		std::ostringstream os;
-		os << m_coordinatorName.get() << '_' << m_hostName.get() << '_' << m_projectName << "_component.cpp";
 		return boost::filesystem::edsCannonicalise(
 			boost::filesystem::absolute( 
-				getInterfaceFolder() / os.str() ) );
+				getImplFolder() / m_coordinatorName.get() / m_hostName.get() / m_projectName / "component.cpp" ) );
 	}
         
 private:

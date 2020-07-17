@@ -179,16 +179,7 @@ ProjectTree::ProjectTree( Environment& environment, const boost::filesystem::pat
 	:	m_path( root ),
 		m_projectName( projectName )
 {
-	for( auto& directoryItem : boost::filesystem::directory_iterator( m_path ) )
-	{
-		if( boost::filesystem::is_directory( directoryItem ) )
-		{
-			if( Coordinator::Ptr pCoordinator = recurseCoordinatorFolder( environment, directoryItem, m_projectName ) )
-			{
-				m_coordinators.push_back( pCoordinator );
-			}
-		}
-	}
+    commonCtor( environment );
 }
 
 ProjectTree::ProjectTree( Environment& environment, const boost::filesystem::path& root, 
@@ -198,7 +189,19 @@ ProjectTree::ProjectTree( Environment& environment, const boost::filesystem::pat
 		m_hostName( hostName ),
 		m_projectName( projectName )
 {
-	for( auto& directoryItem : boost::filesystem::directory_iterator( m_path ) )
+    commonCtor( environment );
+}
+
+void ProjectTree::commonCtor( Environment& environment )
+{
+    //find the src folder
+	boost::filesystem::path sourceFolder = getSourceFolder();
+    if( !boost::filesystem::exists( sourceFolder ) )
+    {
+        THROW_RTE( "Project source folder does not exist: " << sourceFolder.string() );
+    }
+    
+	for( auto& directoryItem : boost::filesystem::directory_iterator( sourceFolder ) )
 	{
 		if( boost::filesystem::is_directory( directoryItem ) )
 		{
@@ -209,7 +212,7 @@ ProjectTree::ProjectTree( Environment& environment, const boost::filesystem::pat
 		}
 	}
 }
-
+    
 void ProjectTree::print( std::ostream& os )
 {
 	os << "Project: " << m_path.string() << "\n";

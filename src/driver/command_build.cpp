@@ -38,6 +38,7 @@
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/timer/timer.hpp>
+#include <boost/tokenizer.hpp>
 
 #pragma warning( push )
 #pragma warning( disable : 4996) //iterator thing
@@ -225,11 +226,11 @@ void build_interface_header( const Environment& environment, eg::ParserSession* 
 void build_parser_session( const Environment& environment, const ProjectTree& projectTree, const std::string& strCompilationFlags )
 {
 	
-	eg::ParserDiagnosticSystem diagnostics( projectTree.getRootPath(), std::cout );
+	eg::ParserDiagnosticSystem diagnostics( projectTree.getSourceFolder(), std::cout );
 	
 	eg::ParserSession::SourceCodeTree sourceCodeTree;
 	{
-		sourceCodeTree.root = projectTree.getRootPath();
+		sourceCodeTree.root = projectTree.getSourceFolder();
 		projectTree.getSourceFilesMap( sourceCodeTree.files );
 	}
 	
@@ -262,7 +263,7 @@ void build_parser_session( const Environment& environment, const ProjectTree& pr
 		pInterfaceSession->instanceAnalysis();
 		pInterfaceSession->linkAnalysis();
 		
-		pInterfaceSession->translationUnitAnalysis( projectTree.getRootPath(), 
+		pInterfaceSession->translationUnitAnalysis( projectTree.getSourceFolder(), 
 			[ &projectTree ]( const std::string& strName )
 			{
 				eg::IndexedObject::FileID fileID = eg::IndexedObject::NO_FILE;
@@ -521,7 +522,8 @@ void generateMegaStructureNetStateHeader( std::ostream& os, const eg::ReadSessio
 extern void generatePythonBindings( std::ostream&, const eg::ReadSession&, const Environment&, const ProjectTree&, eg::PrinterFactory::Ptr );
 
 void build_component( const eg::ReadSession& session, const Environment& environment,
-    const ProjectTree& projectTree, const boost::filesystem::path& binPath, const std::string& strCompilationFlags )
+    const ProjectTree& projectTree, const boost::filesystem::path& binPath, 
+    const std::string& strCompilationFlags, const std::vector< std::string >& inputSourceFileNameSet )
 {
 	bool bBenchCommands = false;
 	
@@ -659,11 +661,17 @@ void build_component( const eg::ReadSession& session, const Environment& environ
         projectTree.getStructuresInclude(), 
         projectTree.getNetStateSourceInclude() 
     };
-	
+    
 	//generate the implementation files for the coordinator host
     for( const eg::TranslationUnit* pTranslationUnit : translationUnits.getTranslationUnits() )
     {
-		if( pTranslationUnit->getCoordinatorHostnameDefinitionFile().isHost( projectTree.getHostName() ) )
+		if(     std::find( inputSourceFileNameSet.begin(), inputSourceFileNameSet.end(), 
+                    pTranslationUnit->getName() ) != inputSourceFileNameSet.end() ||
+                ( 
+                    pTranslationUnit->getCoordinatorHostnameDefinitionFile().isCoordinator( projectTree.getCoordinatorName() ) &&
+                    pTranslationUnit->getCoordinatorHostnameDefinitionFile().isHost( projectTree.getHostName() ) 
+                ) 
+            )
 		{
 			//generate the implementation source code
 			{
@@ -699,6 +707,11 @@ void build_component( const eg::ReadSession& session, const Environment& environ
 				osCmd << "-Xclang -include-pch ";
 				osCmd << "-Xclang " << environment.printPath( projectTree.getOperationsPCH( pTranslationUnit->getName() ) ) << " ";
 					
+                for( const boost::filesystem::path& includeDirectory : projectTree.getImplIncludeDirectories( environment ) )
+                {
+                    osCmd << "-I " << environment.printPath( includeDirectory ) << " ";
+                }
+                
 				osCmd << environment.printPath( projectTree.getImplementationSource( pTranslationUnit->getName() ) ) << " ";
 					
 				//if( bLogCommands )
@@ -729,12 +742,14 @@ void build_component( const eg::ReadSession& session, const Environment& environ
 void command_build( bool bHelp, const std::string& strBuildCommand, const std::vector< std::string >& args )
 {
     std::string strDirectory, strProject, strCoordinator, strHost, strBin;
+    
 	boost::filesystem::path binPath;
     bool bBenchCommands = false;
     bool bLogCommands = false;
     bool bNoPCH = false;
     bool bFullRebuild = false;
 	std::vector< std::string > flags;
+    std::string names;
     
     namespace po = boost::program_options;
     po::options_description commandOptions(" Build Project Command");
@@ -750,6 +765,7 @@ void command_build( bool bHelp, const std::string& strBuildCommand, const std::v
             ("nopch",   	po::bool_switch( &bNoPCH ), "Force regeneration of precompiled header file" )
             ("full",    	po::bool_switch( &bFullRebuild ), "Full rebuild - do not reuse previous objects or precompiled headers" )
 			("flags",   	po::value< std::vector< std::string > >( &flags ), "C++ Compilation Flags" )
+			("names",   	po::value< std::string >( &names ), "eg source file names ( no extension, semicolon delimited )" )
         ;
     }
     
@@ -810,7 +826,6 @@ void command_build( bool bHelp, const std::string& strBuildCommand, const std::v
 		//}
 		
 		//FileWriteTracker fileTracker( project ); 
-		
 			
         Environment environment;
 		
@@ -832,6 +847,21 @@ void command_build( bool bHelp, const std::string& strBuildCommand, const std::v
 		}
 		else
 		{
+        
+            //tokenize semi colon delimited names
+            std::vector< std::string > egFileNames;
+            {
+                using Tokeniser = boost::tokenizer< boost::char_separator< char > >;
+                boost::char_separator< char > sep( ";" );
+                Tokeniser tokens( names, sep );
+                for ( Tokeniser::iterator i = tokens.begin(); i != tokens.end(); ++i )
+                    egFileNames.push_back( *i );
+            }
+            for( const std::string& str : egFileNames )
+            {
+                std::cout << "eg source name: " << str << std::endl;
+            }
+        
 			VERIFY_RTE_MSG( !strCoordinator.empty(), "Missing Coordinator" );
 			VERIFY_RTE_MSG( !strHost.empty(), "Missing Host Name" );
 			
@@ -839,9 +869,9 @@ void command_build( bool bHelp, const std::string& strBuildCommand, const std::v
 			
 			ProjectTree projectTree( environment, projectDirectory, strCoordinator, strHost, strProject );
 			
-			eg::ReadSession session( projectDirectory / "interface" / projectTree.getProjectName() / "database.db" );
+			eg::ReadSession session( projectTree.getAnalysisFileName() );
 			
-			build_component( session, environment, projectTree, binPath, strCompilationFlags );
+			build_component( session, environment, projectTree, binPath, strCompilationFlags, egFileNames );
 					
 		}
     }
