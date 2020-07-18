@@ -65,9 +65,9 @@ def mega_input_hook(context):
 
 IPython.terminal.pt_inputhooks.register( "qt", mega_input_hook )
 
-os.chdir( "w:/testworkspace/" )
+os.chdir( "w:/megatest/" )
 
-host = python_hostd.Host( "w:/testworkspace/", "1001", "1002", "python_hostd.exe" )
+host = python_hostd.Host( "w:/megatest/", "1001", "1002", "python_hostd.exe" )
 
 cycle = 0
 def runMegaCycle():

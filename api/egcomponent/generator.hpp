@@ -30,6 +30,7 @@
 #include "eg_compiler/translation_unit.hpp"
 #include "eg_compiler/sessions/implementation_session.hpp"
 #include "eg_compiler/codegen/dataAccessPrinter.hpp"
+#include "eg_compiler/codegen/instructionCodeGenerator.hpp"
 
 class ProjectTree;
 class HostName;
@@ -37,85 +38,101 @@ class HostName;
 namespace megastructure
 {
 
-class NetworkAnalysis
-{
-public:
-    enum BufferRelation
+    class NetworkAnalysis
     {
-        eComponent,
-        eProcess,
-        ePlanet,
-        TOTAL_RELATION_TYPES
+    public:
+        enum BufferRelation
+        {
+            eComponent,
+            eProcess,
+            ePlanet,
+            TOTAL_RELATION_TYPES
+        };
+
+        using HostNameBufferMap = std::map< const eg::Buffer*, std::shared_ptr< HostName > >;
+        using BufferTypes = std::map< const eg::Buffer*, BufferRelation >;
+        using DataTypeHashBases = std::map< const eg::DataMember*, int >;
+        
+        struct HostStructures
+        {
+            std::string strWriteSetName, strActivationSetName, strIdentityEnumName;
+            const eg::concrete::Action* pRoot;
+        };
+        using HostStructureMap = std::map< std::shared_ptr< HostName >, HostStructures >;
+        
+        NetworkAnalysis( const eg::ReadSession& session, const ProjectTree& project );
+        
+        inline std::size_t getReadBitSetSize() const { return m_hashTotal; }
+            
+        inline BufferRelation getBufferRelation( const eg::Buffer* pBuffer ) const
+        {
+            BufferTypes::const_iterator iFind = m_bufferTypes.find( pBuffer );
+            VERIFY_RTE( iFind != m_bufferTypes.end() );
+            return iFind->second;
+        }
+        inline bool isBufferForThisComponent( const eg::Buffer* pBuffer ) const
+        {
+            BufferTypes::const_iterator iFind = m_bufferTypes.find( pBuffer );
+            VERIFY_RTE( iFind != m_bufferTypes.end() );
+            return iFind->second == eComponent;
+        }
+        
+        int getDataMemberReadHashBase( const eg::DataMember* pDataMember ) const
+        {
+            DataTypeHashBases::const_iterator iFind = m_hashBases.find( pDataMember );
+            VERIFY_RTE( iFind != m_hashBases.end() );
+            return iFind->second;
+        }
+            
+        ::eg::PrinterFactory::Ptr getMegastructurePrinterFactory();
+        
+        const HostStructures& getHostStructures( std::shared_ptr< HostName > pHostName ) const
+        {
+            HostStructureMap::const_iterator iFind = m_hostStructures.find( pHostName );
+            VERIFY_RTE( iFind != m_hostStructures.end() );
+            return iFind->second;
+        }
+        const HostStructureMap& getHostStructures() const { return m_hostStructures; }
+        
+        const HostStructures& getHostStructures( const eg::Buffer* pBuffer ) const;
+        
+    private:
+        void getBufferTypes();
+        void getDataHashBases();
+        void getHostStructures();
+
+    private:
+        const eg::ReadSession& m_session;
+        const ProjectTree& m_project;
+        HostNameBufferMap m_bufferHostNames;
+        BufferTypes m_bufferTypes;
+        DataTypeHashBases m_hashBases;
+        std::size_t m_hashTotal;
+        HostStructureMap m_hostStructures;
     };
 
-    using HostNameBufferMap = std::map< const eg::Buffer*, std::shared_ptr< HostName > >;
-    using BufferTypes = std::map< const eg::Buffer*, BufferRelation >;
-    using DataTypeHashBases = std::map< const eg::DataMember*, int >;
-    
-    struct HostStructures
+
+    void generate_eg_component( std::ostream& os, 
+            const ProjectTree& project,
+            const eg::ReadSession& session,
+            const NetworkAnalysis& networkAnalysis,
+            bool bPythonBindings );
+
+    class InstructionCodeGeneratorFactoryImpl : public eg::InstructionCodeGeneratorFactory
     {
-        std::string strWriteSetName, strActivationSetName, strIdentityEnumName;
-        const eg::concrete::Action* pRoot;
+    public:
+        InstructionCodeGeneratorFactoryImpl( 
+            const megastructure::NetworkAnalysis& networkAnalysis,
+            const eg::TranslationUnitAnalysis& translationUnitAnalysis,
+            const ProjectTree& projectTree );
+        
+        std::shared_ptr< eg::InstructionCodeGenerator > create( eg::CodeGenerator& generator, std::ostream& os );
+        
+    private:
+        const megastructure::NetworkAnalysis& m_networkAnalysis;
+        const eg::TranslationUnitAnalysis& m_translationUnitAnalysis;
+        const ProjectTree& m_projectTree;
     };
-    using HostStructureMap = std::map< std::shared_ptr< HostName >, HostStructures >;
-    
-    NetworkAnalysis( const eg::ReadSession& session, const ProjectTree& project );
-    
-    inline std::size_t getReadBitSetSize() const { return m_hashTotal; }
-        
-    inline BufferRelation getBufferRelation( const eg::Buffer* pBuffer ) const
-    {
-        BufferTypes::const_iterator iFind = m_bufferTypes.find( pBuffer );
-        VERIFY_RTE( iFind != m_bufferTypes.end() );
-        return iFind->second;
-    }
-    inline bool isBufferForThisComponent( const eg::Buffer* pBuffer ) const
-    {
-        BufferTypes::const_iterator iFind = m_bufferTypes.find( pBuffer );
-        VERIFY_RTE( iFind != m_bufferTypes.end() );
-        return iFind->second == eComponent;
-    }
-    
-    int getDataMemberReadHashBase( const eg::DataMember* pDataMember ) const
-    {
-        DataTypeHashBases::const_iterator iFind = m_hashBases.find( pDataMember );
-        VERIFY_RTE( iFind != m_hashBases.end() );
-        return iFind->second;
-    }
-        
-    ::eg::PrinterFactory::Ptr getMegastructurePrinterFactory();
-    
-    const HostStructures& getHostStructures( std::shared_ptr< HostName > pHostName ) const
-    {
-        HostStructureMap::const_iterator iFind = m_hostStructures.find( pHostName );
-        VERIFY_RTE( iFind != m_hostStructures.end() );
-        return iFind->second;
-    }
-    const HostStructureMap& getHostStructures() const { return m_hostStructures; }
-    
-    const HostStructures& getHostStructures( const eg::Buffer* pBuffer ) const;
-    
-private:
-    void getBufferTypes();
-    void getDataHashBases();
-    void getHostStructures();
-
-private:
-    const eg::ReadSession& m_session;
-    const ProjectTree& m_project;
-    HostNameBufferMap m_bufferHostNames;
-    BufferTypes m_bufferTypes;
-    DataTypeHashBases m_hashBases;
-    std::size_t m_hashTotal;
-    HostStructureMap m_hostStructures;
-};
-
-
-void generate_eg_component( std::ostream& os, 
-        const ProjectTree& project,
-		const eg::ReadSession& session,
-        const NetworkAnalysis& networkAnalysis,
-        bool bPythonBindings );
 
 }
 

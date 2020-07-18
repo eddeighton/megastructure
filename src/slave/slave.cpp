@@ -30,7 +30,7 @@ namespace slave
 		VERIFY_RTE_MSG( boost::filesystem::exists( canonPath ), 
 			"Specified slave path does not exist: " << thePath.string() );
 		
-		workspace = canonPath.parent_path();
+		workspace = canonPath.parent_path().parent_path();
 		strSlaveName = canonPath.stem().string();
 	}
 
