@@ -574,8 +574,6 @@ void build_component( const eg::ReadSession& session, const Environment& environ
 	//generate the eg component interface implementation
     if( strProjectType == "basic" )
     {
-        //do nothing
-        
 		std::ostringstream osEGComponent;
 		megastructure::generate_eg_component( 
             osEGComponent, 

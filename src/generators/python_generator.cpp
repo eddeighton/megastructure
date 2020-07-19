@@ -183,10 +183,19 @@ void generateTypeCasters( std::ostream& os, const eg::ReadSession& session,
 
 
 
+bool isContextWithinComponent( const ProjectTree& projectTree, 
+        const eg::TranslationUnitAnalysis& translationUnitAnalysis, 
+        const eg::interface::Context* pContext )
+{
+    const eg::TranslationUnit* pTU = translationUnitAnalysis.getActionTU( pContext );
+    return pTU->getCoordinatorHostnameDefinitionFile().isCoordinator( projectTree.getCoordinatorName() ) &&
+        pTU->getCoordinatorHostnameDefinitionFile().isHost( projectTree.getHostName() );
+}
 
 void generateRuntimeInterface( std::ostream& os, const eg::ReadSession& session, 
         const Environment& environment, const ProjectTree& projectTree, eg::PrinterFactory::Ptr pPrinterFactory )
 {
+    
     const char* pszComponentInteropImpl = R"(
 
 struct PythonInterop : public eg::ComponentInterop, public eg::RuntimeTypeInterop
@@ -278,6 +287,8 @@ eg::ComponentInterop& getPythonInterop()
     
     
     const eg::Layout& layout = session.getLayout();
+    const eg::TranslationUnitAnalysis& translationUnitAnalysis = session.getTranslationUnitAnalysis();
+    
     
     const eg::IndexedObject::Array& objects = session.getObjects( eg::IndexedObject::MASTER_FILE );
     
@@ -395,6 +406,7 @@ eg::ComponentInterop& getPythonInterop()
     os << "    }\n";
     os << "}\n";
     
+    std::string strIndent = "                    ";
     //virtual void doCall( const eg::reference& reference, eg::TypeID actionType );
     os << "void PythonInterop::doCall( const " << eg::EG_REFERENCE_TYPE << "& reference, " << eg::EG_TYPE_ID << " actionType )\n";
     os << "{\n";
@@ -410,31 +422,159 @@ eg::ComponentInterop& getPythonInterop()
 			VERIFY_RTE( pAction->getParent() && pAction->getParent()->getParent() );
     os << "            case " << pAction->getIndex() << ":\n";
     os << "                {\n";
-    os << "                    " << eg::getStaticType( pAction->getContext() ) << " ref;//" << pAction->getName() << "_starter( reference.instance );\n";
-    /*os << "                    if( ref )\n";
-    os << "                    {\n";
-    if( false && pAction->getContext()->hasDefinition() )
-    {
-    const std::vector< std::string >& parameters = pAction->getContext()->getParameters();
-    os << "                            ref(";
-    bool bFirst = true;
-    int iIndex = 0;
-    for( const std::string& strParamType : parameters )
-    {
-        if( bFirst ) 
-        {
-            bFirst = false;
-            os << " ";
-        }
-        else os << ", ";
-        os << "pybind11::cast< " << strParamType << " >( args[ " << iIndex++ << " ] )";
-    }
-    os << ");\n";
-    }
-    os << "                        " << pAction->getName() << "_stopper( ref.data.instance );\n";
-    
-    os << "                    }\n";*/
-    os << "                    pEvaluation->m_result = pybind11::reinterpret_borrow< pybind11::object >( g_pEGRefType->create( ref.data ) );\n";
+            const eg::concrete::Action* pParent = dynamic_cast< const eg::concrete::Action* >( pAction->getParent() );
+            VERIFY_RTE( pParent );
+            const eg::concrete::Allocator* pAllocator = pParent->getAllocator( pAction );
+            VERIFY_RTE( pAllocator );
+            const eg::interface::Context* pStaticType = pAction->getContext();
+            VERIFY_RTE( pStaticType );
+            
+            const bool bContextIsWithinComponent = 
+                isContextWithinComponent( projectTree, translationUnitAnalysis, pStaticType );
+                
+            if( const eg::interface::Abstract* pContext = dynamic_cast< const eg::interface::Abstract* >( pStaticType ) )
+            {
+                THROW_RTE( "Invalid attempt to invoke abstract" );
+            }
+            else if( const eg::interface::Event* pContext = dynamic_cast< const eg::interface::Event* >( pStaticType ) )
+            {
+                const eg::concrete::SingletonAllocator* pSingletonAllocator =
+                    dynamic_cast< const eg::concrete::SingletonAllocator* >( pAllocator );
+                const eg::concrete::RangeAllocator* pRangeAllocator =
+                    dynamic_cast< const eg::concrete::RangeAllocator* >( pAllocator );
+                    
+                if( const eg::concrete::NothingAllocator* pNothingAllocator =
+                    dynamic_cast< const eg::concrete::NothingAllocator* >( pAllocator ) )
+                {
+                    //*pPrinterFactory->write( pDataMember, "reference.instance" )
+                    
+                    os << strIndent << eg::getStaticType( pStaticType ) << " ref = " << eg::EG_REFERENCE_TYPE << "{ reference.instance, " << pAction->getIndex() << ", clock::cycle() };\n";
+                    if( bContextIsWithinComponent )
+                    {
+                    os << strIndent << "::eg::Scheduler::signal_ref( ref );\n";
+                    }  
+                    else
+                    {
+                        //TODO
+                    }
+                    os << strIndent << "pEvaluation->m_result = pybind11::reinterpret_borrow< pybind11::object >( g_pEGRefType->create( ref.data ) );\n";
+                }
+                else if( pSingletonAllocator || pRangeAllocator )
+                {
+                    os << strIndent << eg::getStaticType( pStaticType ) << " ref = " << pAction->getName() << "_starter( reference.instance );\n";
+                    os << strIndent << "if( ref )\n";
+                    os << strIndent << "{\n";
+                    
+                    if( bContextIsWithinComponent )
+                    {
+                    os << strIndent << "    ::eg::Scheduler::signal_ref( ref );\n";
+                    }
+                    os << strIndent << "    " << pAction->getName() << "_stopper( ref.data.instance );\n";
+                    
+                    os << strIndent << "}\n";
+                    os << strIndent << "else\n";
+                    os << strIndent << "{\n";
+                    os << strIndent << "    ERR( \"Failed to allocate action: " << pAction->getName() << "\" );\n";
+                    os << strIndent << "}\n";
+                    os << strIndent << "pEvaluation->m_result = pybind11::reinterpret_borrow< pybind11::object >( g_pEGRefType->create( ref.data ) );\n";
+                }
+                else
+                {
+                    THROW_RTE( "Unknown allocator type" );
+                }
+            }
+            else if( const eg::interface::Function* pContext = dynamic_cast< const eg::interface::Function* >( pStaticType ) )
+            {
+                VERIFY_RTE( dynamic_cast< const eg::concrete::NothingAllocator* >( pAllocator ) );
+                //directly invoke the function
+                os << strIndent << eg::getStaticType( pStaticType ) << " ref = " << eg::EG_REFERENCE_TYPE << "{ reference.instance, " << pAction->getIndex() << ", clock::cycle() };\n";
+                
+                const std::vector< std::string >& parameters = pAction->getContext()->getParameters();
+                
+                if( pContext->getReturnType() == "void" )
+                {
+                    os << strIndent << "ref(";
+                    bool bFirst = true;
+                    int iIndex = 0;
+                    for( const std::string& strParamType : parameters )
+                    {
+                        if( bFirst ) 
+                        {
+                            bFirst = false;
+                            os << " ";
+                        }
+                        else os << ", ";
+                        os << "pybind11::cast< " << strParamType << " >( args[ " << iIndex++ << " ] )";
+                    }
+                    os << ");\n";
+                    os << strIndent << "Py_INCREF( Py_None );\n";
+                    os << strIndent << "pEvaluation->m_result = pybind11::reinterpret_borrow< pybind11::object >( Py_None );\n";
+                }
+                else
+                {
+                    os << strIndent << "pEvaluation->m_result = pybind11::cast< " << pContext->getReturnType() << " >( ref(";
+                    bool bFirst = true;
+                    int iIndex = 0;
+                    for( const std::string& strParamType : parameters )
+                    {
+                        if( bFirst ) 
+                        {
+                            bFirst = false;
+                            os << " ";
+                        }
+                        else os << ", ";
+                        os << "pybind11::cast< " << strParamType << " >( args[ " << iIndex++ << " ] )";
+                    }
+                    os << ") );\n";
+                }
+            }
+            else
+            {
+                const eg::interface::Action*    pActionContext  = dynamic_cast< const eg::interface::Action* >( pStaticType );
+                const eg::interface::Object*    pObjectContext  = dynamic_cast< const eg::interface::Object* >( pStaticType );
+                const eg::interface::Link*      pLinkContext    = dynamic_cast< const eg::interface::Link* >( pStaticType );
+                
+                if( pActionContext || pObjectContext || pLinkContext )
+                {
+                    os << strIndent << eg::getStaticType( pStaticType ) << " ref = " << pAction->getName() << "_starter( reference.instance );\n";
+                        
+                    if( pStaticType->hasDefinition() )
+                    {
+                        os << strIndent << "if( ref )\n";
+                        os << strIndent << "{\n";
+                        if( bContextIsWithinComponent )
+                        {
+                        os << strIndent << "    ::eg::Scheduler::call( ref, &" << pAction->getName() << "_stopper );\n";
+                        }
+                        os << strIndent << "}\n";
+                        os << strIndent << "else\n";
+                        os << strIndent << "{\n";
+                        os << strIndent << "    ERR( \"Failed to allocate action: " << pAction->getName() << "\" );\n";
+                        os << strIndent << "}\n";
+                        os << strIndent << "pEvaluation->m_result = pybind11::reinterpret_borrow< pybind11::object >( g_pEGRefType->create( ref.data ) );\n";
+                    }
+                    else
+                    {
+                        os << strIndent << "if( ref )\n";
+                        os << strIndent << "{\n";
+                        if( bContextIsWithinComponent )
+                        {
+                        os << strIndent << "    ::eg::Scheduler::allocated_ref( ref.data, &" << pAction->getName() << "_stopper );\n";
+                        }
+                        os << strIndent << "}\n";
+                        os << strIndent << "else\n";
+                        os << strIndent << "{\n";
+                        os << strIndent << "    ERR( \"Failed to allocate action: " << pAction->getName() << "\" );\n";
+                        os << strIndent << "}\n";
+                        os << strIndent << "pEvaluation->m_result = pybind11::reinterpret_borrow< pybind11::object >( g_pEGRefType->create( ref.data ) );\n";
+                    }
+                }
+                else
+                {
+                    THROW_RTE( "Unknown abstract type" );
+                }
+            }
+            
     os << "                }\n";
     os << "                break;\n";
         }
@@ -754,14 +894,16 @@ void generatePythonBindings( std::ostream& os, const eg::ReadSession& session,
     os << "#include \"" << projectTree.getStructuresInclude() << "\"\n";
     os << "#include \"" << projectTree.getNetStateSourceInclude() << "\"\n";
     
-    os << "\n";
+    /*os << "\n";
     os << "PYBIND11_MODULE( " << projectTree.getComponentFileName( true ) << ", pythonModule )\n";
     os << "{\n";
     os << "    pythonModule.doc() = \"Python bindings for megastructure project\";\n";
     os << "}\n";
-    os << "\n";
+    os << "\n";*/
 
     generateRuntimeExterns( os, session, environment, projectTree, pPrinterFactory );
+    
+    eg::generateMemberFunctions( os, *pPrinterFactory, session );
     
     generateTypeCasters( os, session, environment, projectTree );
     
