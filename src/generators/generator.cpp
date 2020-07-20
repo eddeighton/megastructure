@@ -22,12 +22,33 @@
 #include <iostream>
 
 #include "eg_compiler/codegen/codegen.hpp"
+#include "eg_compiler/allocator.hpp"
 #include "eg_compiler/translation_unit.hpp"
 
 #include "schema/projectTree.hpp"
 
 namespace megastructure
 {
+void generateRuntimeExterns( std::ostream& os, const eg::ReadSession& session )
+{
+    const eg::IndexedObject::Array& objects = 
+        session.getObjects( eg::IndexedObject::MASTER_FILE );
+    std::vector< const eg::concrete::Action* > actions = 
+        eg::many_cst< eg::concrete::Action >( objects );
+    
+    for( const eg::concrete::Action* pAction : actions )
+    {
+        if( pAction->getParent() )
+        {
+            os << "extern " << getStaticType( pAction->getContext() ) << " " << pAction->getName() << "_starter( " << eg::EG_INSTANCE << " );\n";
+            os << "extern void " << pAction->getName() << "_stopper( " << eg::EG_INSTANCE << " );\n";
+        }
+        if( dynamic_cast< const eg::interface::Link* >( pAction->getContext() ) )
+        {
+            os << "extern void " << pAction->getName() << "_breaker( " << eg::EG_INSTANCE << " );\n";
+        }
+    }
+}
     
 static const char* g_NetworkAnalysisRelationTypes[ NetworkAnalysis::TOTAL_RELATION_TYPES ] = 
 {
@@ -207,11 +228,6 @@ void NetworkAnalysis::getHostStructures()
                             std::ostringstream os;
                             os << "g_" << pCoordinator->name() << '_' << pHostName->name() << "_writes";
                             structures.strWriteSetName = os.str();
-                        }
-                        {
-                            std::ostringstream os;
-                            os << "g_" << pCoordinator->name() << '_' << pHostName->name() << "_activations";
-                            structures.strActivationSetName = os.str();
                         }
                         
                         //determine root Run time type
@@ -411,9 +427,6 @@ protected:
                     }
                     else
                     {
-                        const std::string& strSet = m_pDataMember->isActivationState() ? 
-                            hostStructures.strActivationSetName : hostStructures.strWriteSetName;
-                        
                         const eg::TypeID dimensionTypeID = m_pDataMember->getInstanceDimension()->getIndex();
                         os << "eg::writelock< ";
                         eg::generateDataMemberType( os, m_pDataMember ); 
@@ -421,7 +434,7 @@ protected:
                             hostStructures.pRoot->getIndex() << ", " << 
                             dimensionTypeID << " >( " << 
                                 m_pszIndex << ", " <<
-                                strSet << ", " <<
+                                hostStructures.strWriteSetName << ", " <<
                                 m_pDataMember->getBuffer()->getVariableName() << "[ " << m_pszIndex << " ]." << m_pDataMember->getName() << " )";
                     }
                 }
@@ -431,9 +444,6 @@ protected:
                     const NetworkAnalysis::HostStructures& hostStructures =
                         m_networkAnalysis.getHostStructures( pBuffer );
                         
-                    const std::string& strSet = m_pDataMember->isActivationState() ? 
-                        hostStructures.strActivationSetName : hostStructures.strWriteSetName;
-                        
                     const eg::TypeID dimensionTypeID = m_pDataMember->getInstanceDimension()->getIndex();
                     os << "eg::writelock< ";
                     eg::generateDataMemberType( os, m_pDataMember ); 
@@ -441,7 +451,7 @@ protected:
                         hostStructures.pRoot->getIndex() << ", " << 
                         dimensionTypeID << " >( " << 
                             m_pszIndex << ", " <<
-                            strSet << ", " <<
+                            hostStructures.strWriteSetName << ", " <<
                             m_pDataMember->getBuffer()->getVariableName() << "[ " << m_pszIndex << " ]." << m_pDataMember->getName() << " )";
                 }
                 break;
@@ -548,6 +558,178 @@ void recurseDecode( const eg::Layout& layout, const ::eg::concrete::Action* pAct
     }
 }
 
+void recurseWriteRequest( const NetworkAnalysis& networkAnalysis, const eg::Layout& layout, const ::eg::concrete::Action* pAction, std::ostream& os )
+{            
+    static const std::string strIndent = "            ";
+            
+    const std::vector< eg::concrete::Element* >& children = pAction->getChildren();
+    for( const eg::concrete::Element* pElement : children )
+    {
+        if( const eg::concrete::Action* pNestedAction = 
+            dynamic_cast< const eg::concrete::Action* >( pElement ) )
+        {
+            recurseWriteRequest( networkAnalysis, layout, pNestedAction, os );
+        }
+        else if( const eg::concrete::Dimension* pDimension =
+            dynamic_cast< const eg::concrete::Dimension* >( pElement ) )
+        {
+            if( const eg::concrete::Dimension_Generated* pStateDimension = 
+                dynamic_cast< const eg::concrete::Dimension_Generated* >( pDimension ) )
+            {
+                if( pStateDimension->getDimensionType() == 
+                        eg::concrete::Dimension_Generated::eActionState )
+                {
+                    VERIFY_RTE( pAction == pStateDimension->getAction() );
+                    if( pAction->getContext()->isExecutable() && !pAction->getContext()->isMainExecutable() )
+                    {
+                        
+                        const eg::concrete::Dimension_Generated* pReferenceDimension = pAction->getReference();
+                        VERIFY_RTE( pReferenceDimension );
+                        const eg::concrete::Action* pParent = dynamic_cast< const eg::concrete::Action* >( pAction->getParent() );
+                        VERIFY_RTE( pParent );
+                        const eg::concrete::Allocator* pAllocator = pParent->getAllocator( pAction );
+                        VERIFY_RTE( pAllocator );
+                        const eg::interface::Context* pStaticType = pAction->getContext();
+                        VERIFY_RTE( pStaticType );
+                        
+                        const eg::DataMember* pStateDataMember = layout.getDataMember( pStateDimension );
+                        const eg::DataMember* pRefDataMember   = layout.getDataMember( pReferenceDimension );
+                        eg::Printer::Ptr pStatePrinter  = eg::getDefaultPrinterFactory()->getPrinter( pStateDataMember, "typeInstance.instance" );
+                        eg::Printer::Ptr pRefPrinter    = eg::getDefaultPrinterFactory()->getPrinter( pRefDataMember,   "typeInstance.instance" );
+                        
+                        if( networkAnalysis.isBufferForThisComponent( pStateDataMember->getBuffer() ) )
+                        {
+            os << strIndent << "case " << pElement->getIndex() << ":\n";
+            os << strIndent << "    {\n";
+                        
+            os << strIndent << "        const auto previousState = " << *pStatePrinter << ";\n";
+            os << strIndent << "        decode( typeInstance.type, typeInstance.instance, decoder );\n";
+            
+                            if( const eg::interface::Abstract* pContext = dynamic_cast< const eg::interface::Abstract* >( pStaticType ) )
+                            {
+                                THROW_RTE( "Invalid attempt to invoke abstract" );
+                            }
+                            else if( const eg::interface::Event* pContext = dynamic_cast< const eg::interface::Event* >( pStaticType ) )
+                            {
+                                const eg::concrete::SingletonAllocator* pSingletonAllocator =
+                                    dynamic_cast< const eg::concrete::SingletonAllocator* >( pAllocator );
+                                const eg::concrete::RangeAllocator* pRangeAllocator =
+                                    dynamic_cast< const eg::concrete::RangeAllocator* >( pAllocator );
+                                    
+                                if( const eg::concrete::NothingAllocator* pNothingAllocator =
+                                    dynamic_cast< const eg::concrete::NothingAllocator* >( pAllocator ) )
+                                {
+                                    THROW_RTE( "Unreachable" );
+                                }
+                                else if( pSingletonAllocator || pRangeAllocator )
+                                {
+                                    THROW_RTE( "TODO - events not supported yet" );
+                                    //os << "::eg::Scheduler::signal_ref( ref );";
+                                    //os << strIndent << eg::getStaticType( pStaticType ) << " ref = " << pAction->getName() << "_starter( reference.instance );\n";
+                                }
+                                else
+                                {
+                                    THROW_RTE( "Unknown allocator type" );
+                                }
+                            }
+                            else if( const eg::interface::Function* pContext = dynamic_cast< const eg::interface::Function* >( pStaticType ) )
+                            {
+                                THROW_RTE( "Unreachable" );
+                            }
+                            else
+                            {
+                                const eg::concrete::SingletonAllocator* pSingletonAllocator =
+                                    dynamic_cast< const eg::concrete::SingletonAllocator* >( pAllocator );
+                                const eg::concrete::RangeAllocator* pRangeAllocator =
+                                    dynamic_cast< const eg::concrete::RangeAllocator* >( pAllocator );
+                                    
+                                if( const eg::concrete::NothingAllocator* pNothingAllocator =
+                                    dynamic_cast< const eg::concrete::NothingAllocator* >( pAllocator ) )
+                                {
+                                    THROW_RTE( "Unreachable" );
+                                }
+                                else if( pSingletonAllocator || pRangeAllocator )
+                                {
+                                    const eg::interface::Action*    pActionContext  = dynamic_cast< const eg::interface::Action* >( pStaticType );
+                                    const eg::interface::Object*    pObjectContext  = dynamic_cast< const eg::interface::Object* >( pStaticType );
+                                    const eg::interface::Link*      pLinkContext    = dynamic_cast< const eg::interface::Link* >( pStaticType );
+                                    
+                                    if( pActionContext || pObjectContext || pLinkContext )
+                                    {
+                                        os << strIndent << "        switch( previousState )\n";
+                                        os << strIndent << "        {\n";
+                                        os << strIndent << "            case eg::action_stopped: \n";
+                                        os << strIndent << "                switch( " << *pStatePrinter << " )\n";
+                                        os << strIndent << "                {\n";
+                                        os << strIndent << "                    case eg::action_stopped:      break;\n";
+                                        if( pStaticType->hasDefinition() )
+                                        {
+                                        os << strIndent << "                    case eg::action_running:      ::eg::Scheduler::call( " << *pRefPrinter << ", &" << pAction->getName() << "_stopper ); break;\n";
+                                        os << strIndent << "                    case eg::action_paused:       ::eg::Scheduler::call( " << *pRefPrinter << ", &" << pAction->getName() << "_stopper );\n";
+                                        os << strIndent << "                                                  ::eg::Scheduler::pause_ref( " << *pRefPrinter << ".data ); break;\n";
+                                        }
+                                        else
+                                        {
+                                        os << strIndent << "                    case eg::action_running:      ::eg::Scheduler::allocated_ref( " << *pRefPrinter << ".data, &" << pAction->getName() << "_stopper ); break;\n";
+                                        os << strIndent << "                    case eg::action_paused:       ::eg::Scheduler::allocated_ref( " << *pRefPrinter << ".data, &" << pAction->getName() << "_stopper );\n";
+                                        os << strIndent << "                                                  ::eg::Scheduler::pause_ref( " << *pRefPrinter << ".data ); break;\n";
+                                        }
+                                        os << strIndent << "                    case eg::TOTAL_ACTION_STATES:\n"; 
+                                        os << strIndent << "                        break;\n";
+                                        os << strIndent << "                }\n";
+                                        os << strIndent << "                break;\n";
+                                        os << strIndent << "            case eg::action_running: \n";
+                                        os << strIndent << "                switch( " << *pStatePrinter << " )\n";
+                                        os << strIndent << "                {\n";
+                                        os << strIndent << "                    case eg::action_stopped:      ::eg::Scheduler::stopperStopped( " << *pRefPrinter << ".data ); break;\n";
+                                        os << strIndent << "                    case eg::action_running:      break;\n";
+                                        os << strIndent << "                    case eg::action_paused:       ::eg::Scheduler::pause_ref( " << *pRefPrinter << ".data ); break;\n";
+                                        os << strIndent << "                    case eg::TOTAL_ACTION_STATES:\n";
+                                        os << strIndent << "                        break;\n";
+                                        os << strIndent << "                }\n";
+                                        os << strIndent << "                break;\n";
+                                        os << strIndent << "            case eg::action_paused:  \n";
+                                        os << strIndent << "                switch( " << *pStatePrinter << " )\n";
+                                        os << strIndent << "                {\n";
+                                        os << strIndent << "                    case eg::action_stopped:      ::eg::Scheduler::stopperStopped( " << *pRefPrinter << ".data ); break;\n";
+                                        os << strIndent << "                    case eg::action_running:      ::eg::Scheduler::unpause_ref( " << *pRefPrinter << ".data ); break;\n";
+                                        os << strIndent << "                    case eg::action_paused:       break;\n";
+                                        os << strIndent << "                    case eg::TOTAL_ACTION_STATES:\n"; 
+                                        os << strIndent << "                        break;\n";
+                                        os << strIndent << "                }\n";
+                                        os << strIndent << "                break;\n";
+                                        os << strIndent << "            case eg::TOTAL_ACTION_STATES:\n"; 
+                                        os << strIndent << "                break;\n";
+                                        os << strIndent << "        }\n";
+                                    }
+                                    else
+                                    {
+                                        THROW_RTE( "Unknown abstract type" );
+                                    }
+                                }
+                                else
+                                {
+                                    THROW_RTE( "Unknown allocator type" );
+                                }
+                            }
+                        }
+                        else
+                        {
+            os << strIndent << "case " << pElement->getIndex() << ":\n";
+            os << strIndent << "    {\n";
+            os << strIndent << "        ERR( \"Write request contained type not owned by this component\" );\n";
+                        }
+            os << strIndent << "    }\n";
+            os << strIndent << "    break;\n";
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+
 void generate_eg_component( std::ostream& os, 
         const ProjectTree& project,
         const eg::ReadSession& session,
@@ -566,7 +748,7 @@ void generate_eg_component( std::ostream& os,
     os << "#include \"egcomponent/egcomponent.hpp\"\n";
     os << "#include \"egcomponent/traits.hpp\"\n";
     os << "#include \"" << project.getStructuresInclude() << "\"\n";
-    os << "#include \"" << project.getNetStateSourceInclude() << "\"\n";
+    os << "#include \"" << project.getNetStateSourceInclude() << "\"\n\n";
     
     const eg::Layout& layout = session.getLayout();
     const eg::IndexedObject::Array& objects = session.getObjects( eg::IndexedObject::MASTER_FILE );
@@ -575,6 +757,7 @@ void generate_eg_component( std::ostream& os,
     const eg::TranslationUnitAnalysis& translationUnitAnalysis =
         session.getTranslationUnitAnalysis();
         
+    generateRuntimeExterns( os, session );
         
     os << "\n//network state\n";
     os << "std::bitset< " << networkAnalysis.getReadBitSetSize() << " > g_reads;\n";
@@ -586,7 +769,6 @@ void generate_eg_component( std::ostream& os,
     for( const auto& i : hostStructures )
     {
         os << "std::set< eg::TypeInstance > " << i.second.strWriteSetName << ";\n";
-        os << "std::set< eg::TypeInstance > " << i.second.strActivationSetName << ";\n";
     }
     
     os << "\n//buffers\n";
@@ -713,7 +895,6 @@ void generate_eg_component( std::ostream& os,
     for( const auto& i : hostStructures )
     {
         os << "    " << i.second.strWriteSetName << ".clear();\n";
-        os << "    " << i.second.strActivationSetName << ".clear();\n";
     }
     os << "}\n";
     
@@ -725,7 +906,13 @@ void generate_eg_component( std::ostream& os,
     os << "    {\n";
     os << "        objectHandle.get().convert( typeInstance.type );\n";
     os << "        eg::decode( decoder, typeInstance.instance );\n";
-    os << "        decode( typeInstance.type, typeInstance.instance, decoder );\n";
+    os << "        switch( typeInstance.type )\n";
+    os << "        {\n";
+    recurseWriteRequest( networkAnalysis, layout, pRoot, os );
+    os << "            default:\n";
+    os << "               decode( typeInstance.type, typeInstance.instance, decoder );\n";
+    os << "               break;\n";
+    os << "        }\n";
     os << "    }\n";
     os << "}\n";
     

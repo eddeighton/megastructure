@@ -514,7 +514,6 @@ void generateMegaStructureNetStateHeader( std::ostream& os, const eg::ReadSessio
     for( const auto& i : hostStructures )
     {
         os << "extern std::set< eg::TypeInstance > " << i.second.strWriteSetName << ";\n";
-        os << "extern std::set< eg::TypeInstance > " << i.second.strActivationSetName << ";\n";
     }
         
     os << "\n" << eg::pszLine << eg::pszLine;
@@ -541,6 +540,10 @@ void build_component( const eg::ReadSession& session, const Environment& environ
         instructionCodeGenFactory( networkAnalysis, translationUnits, projectTree );
 	
 	std::vector< boost::filesystem::path > sourceFiles;
+    
+    sourceFiles.push_back( projectTree.getCoroutineFrameSourceFilePath( environment ) );
+    sourceFiles.push_back( projectTree.getBasicSchedulerFilePath( environment ) );
+    sourceFiles.push_back( projectTree.getBasicClockFilePath( environment ) );
 	
 	//generate the structures
 	{

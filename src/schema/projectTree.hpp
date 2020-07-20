@@ -210,7 +210,25 @@ public:
 			boost::filesystem::absolute( 
 				getInterfaceFolder() / os.str() ) );
 	}
-	
+    
+	boost::filesystem::path getCoroutineFrameSourceFilePath( const Environment& environment ) const
+    {
+		return boost::filesystem::edsCannonicalise(
+			boost::filesystem::absolute( 
+				environment.expand( "${EG}/include/eg/frame.cpp" ) ) );
+    }
+	boost::filesystem::path getBasicSchedulerFilePath( const Environment& environment ) const
+    {
+		return boost::filesystem::edsCannonicalise(
+			boost::filesystem::absolute( 
+				environment.expand( "${EG}/include/eg/basic_scheduler.cpp" ) ) );
+    }
+	boost::filesystem::path getBasicClockFilePath( const Environment& environment ) const
+    {
+		return boost::filesystem::edsCannonicalise(
+			boost::filesystem::absolute( 
+				environment.expand( "${EG}/include/eg/clock.cpp" ) ) );
+    }
 		
 	static void collateIncludeDirectories( 
 		const Environment& environment,

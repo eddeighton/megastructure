@@ -55,7 +55,7 @@ namespace megastructure
         
         struct HostStructures
         {
-            std::string strWriteSetName, strActivationSetName, strIdentityEnumName;
+            std::string strWriteSetName, strIdentityEnumName;
             const eg::concrete::Action* pRoot;
         };
         using HostStructureMap = std::map< std::shared_ptr< HostName >, HostStructures >;

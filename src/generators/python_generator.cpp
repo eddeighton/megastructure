@@ -19,28 +19,10 @@
 
 #include <boost/filesystem.hpp>
 
-void generateRuntimeExterns( std::ostream& os, const eg::ReadSession& session, 
-        const Environment& environment, const ProjectTree& projectTree, eg::PrinterFactory::Ptr pPrinterFactory )
+namespace megastructure
 {
-    const eg::IndexedObject::Array& objects = 
-        session.getObjects( eg::IndexedObject::MASTER_FILE );
-    std::vector< const eg::concrete::Action* > actions = 
-        eg::many_cst< eg::concrete::Action >( objects );
-    
-    for( const eg::concrete::Action* pAction : actions )
-    {
-        if( pAction->getParent() )
-        {
-            os << "extern " << getStaticType( pAction->getContext() ) << " " << pAction->getName() << "_starter( " << eg::EG_INSTANCE << " );\n";
-            os << "extern void " << pAction->getName() << "_stopper( " << eg::EG_INSTANCE << " );\n";
-        }
-        if( dynamic_cast< const eg::interface::Link* >( pAction->getContext() ) )
-        {
-            os << "extern void " << pAction->getName() << "_breaker( " << eg::EG_INSTANCE << " );\n";
-        }
-    }
+extern void generateRuntimeExterns( std::ostream& os, const eg::ReadSession& session );
 }
-
 
 void generateTypeCasters( std::ostream& os, const eg::ReadSession& session, 
         const Environment& environment, const ProjectTree& projectTree )
@@ -901,7 +883,7 @@ void generatePythonBindings( std::ostream& os, const eg::ReadSession& session,
     os << "}\n";
     os << "\n";*/
 
-    generateRuntimeExterns( os, session, environment, projectTree, pPrinterFactory );
+    megastructure::generateRuntimeExterns( os, session );
     
     eg::generateMemberFunctions( os, *pPrinterFactory, session );
     
