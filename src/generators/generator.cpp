@@ -427,11 +427,12 @@ protected:
                     }
                     else
                     {
+                        const int iHashBash = m_networkAnalysis.getDataMemberReadHashBase( m_pDataMember );
                         const eg::TypeID dimensionTypeID = m_pDataMember->getInstanceDimension()->getIndex();
                         os << "eg::writelock< ";
                         eg::generateDataMemberType( os, m_pDataMember ); 
                         os << ", " << hostStructures.strIdentityEnumName << "_write, " << 
-                            hostStructures.pRoot->getIndex() << ", " << 
+                            hostStructures.pRoot->getIndex() << ", " << iHashBash << ", " <<
                             dimensionTypeID << " >( " << 
                                 m_pszIndex << ", " <<
                                 hostStructures.strWriteSetName << ", " <<
@@ -443,12 +444,12 @@ protected:
                 {
                     const NetworkAnalysis::HostStructures& hostStructures =
                         m_networkAnalysis.getHostStructures( pBuffer );
-                        
+                    const int iHashBash = m_networkAnalysis.getDataMemberReadHashBase( m_pDataMember );
                     const eg::TypeID dimensionTypeID = m_pDataMember->getInstanceDimension()->getIndex();
                     os << "eg::writelock< ";
                     eg::generateDataMemberType( os, m_pDataMember ); 
                     os << ", " << hostStructures.strIdentityEnumName << "_write, " << 
-                        hostStructures.pRoot->getIndex() << ", " << 
+                        hostStructures.pRoot->getIndex() << ", " << iHashBash << ", " <<
                         dimensionTypeID << " >( " << 
                             m_pszIndex << ", " <<
                             hostStructures.strWriteSetName << ", " <<

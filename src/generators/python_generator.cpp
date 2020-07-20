@@ -416,7 +416,7 @@ eg::ComponentInterop& getPythonInterop()
                 
             if( const eg::interface::Abstract* pContext = dynamic_cast< const eg::interface::Abstract* >( pStaticType ) )
             {
-                THROW_RTE( "Invalid attempt to invoke abstract" );
+                os << strIndent << "ERR( \"Attempt to call abstract type\" );\n";
             }
             else if( const eg::interface::Event* pContext = dynamic_cast< const eg::interface::Event* >( pStaticType ) )
             {
@@ -428,8 +428,6 @@ eg::ComponentInterop& getPythonInterop()
                 if( const eg::concrete::NothingAllocator* pNothingAllocator =
                     dynamic_cast< const eg::concrete::NothingAllocator* >( pAllocator ) )
                 {
-                    //*pPrinterFactory->write( pDataMember, "reference.instance" )
-                    
                     os << strIndent << eg::getStaticType( pStaticType ) << " ref = " << eg::EG_REFERENCE_TYPE << "{ reference.instance, " << pAction->getIndex() << ", clock::cycle() };\n";
                     if( bContextIsWithinComponent )
                     {
@@ -437,7 +435,7 @@ eg::ComponentInterop& getPythonInterop()
                     }  
                     else
                     {
-                        //TODO
+                    os << strIndent << "ERR( \"Attempt to call event from wrong component\" );\n";
                     }
                     os << strIndent << "pEvaluation->m_result = pybind11::reinterpret_borrow< pybind11::object >( g_pEGRefType->create( ref.data ) );\n";
                 }
@@ -451,8 +449,11 @@ eg::ComponentInterop& getPythonInterop()
                     {
                     os << strIndent << "    ::eg::Scheduler::signal_ref( ref );\n";
                     }
+                    else
+                    {
+                    os << strIndent << "    ERR( \"Attempt to call event from wrong component\" );\n";
+                    }
                     os << strIndent << "    " << pAction->getName() << "_stopper( ref.data.instance );\n";
-                    
                     os << strIndent << "}\n";
                     os << strIndent << "else\n";
                     os << strIndent << "{\n";
@@ -572,28 +573,7 @@ eg::ComponentInterop& getPythonInterop()
     //virtual void doStart( const eg::reference& reference, eg::TypeID actionType );
     os << "void PythonInterop::doStart( const " << eg::EG_REFERENCE_TYPE << "& reference, " << eg::EG_TYPE_ID << " actionType )\n";
     os << "{\n";
-    os << "    if( Evaluation::SharedPtr pEvaluation = m_pEvaluation.lock() )\n";
-    os << "    {\n";
-    os << "        pybind11::args args = pybind11::reinterpret_borrow< pybind11::args >( pEvaluation->args );\n";
-    os << "        switch( actionType )\n";
-    os << "        {\n";
-    for( const eg::concrete::Action* pAction : actions )
-    {
-        if( pAction->getContext()->isExecutable() && !pAction->getContext()->isMainExecutable() )
-        {
-			VERIFY_RTE( pAction->getParent() && pAction->getParent()->getParent() );
-    os << "            case " << pAction->getIndex() << ":\n";
-    os << "                {\n";
-    os << "                    " << getStaticType( pAction->getContext() ) << " ref;//" << pAction->getName() << "_starter( reference.instance );\n";
-    os << "                    pEvaluation->m_result = pybind11::reinterpret_borrow< pybind11::object >( g_pEGRefType->create( ref.data ) );\n";
-    os << "                }\n";
-    os << "                break;\n";
-        }
-    }
-    os << "            default:\n";
-    os << "                break;\n";
-    os << "        }\n";
-    os << "    }\n";
+    os << "    ERR( \"Start used\" );\n";
     os << "}\n";
     
     //virtual void doStop( const eg::reference& reference );
@@ -605,10 +585,57 @@ eg::ComponentInterop& getPythonInterop()
     os << "        {\n";
     for( const eg::concrete::Action* pAction : actions )
     {
-        if( pAction->getContext()->isExecutable() )
+        if( pAction->getContext()->isExecutable() && !pAction->getContext()->isMainExecutable() )
         {
+			VERIFY_RTE( pAction->getParent() && pAction->getParent()->getParent() );
     os << "            case " << pAction->getIndex() << ":\n";
-    //os << "                " << pAction->getName() << "_stopper( reference.instance );\n";
+    os << "                {\n";
+            const eg::concrete::Action* pParent = dynamic_cast< const eg::concrete::Action* >( pAction->getParent() );
+            VERIFY_RTE( pParent );
+            const eg::concrete::Allocator* pAllocator = pParent->getAllocator( pAction );
+            VERIFY_RTE( pAllocator );
+            const eg::interface::Context* pStaticType = pAction->getContext();
+            VERIFY_RTE( pStaticType );
+            
+            const bool bContextIsWithinComponent = 
+                isContextWithinComponent( projectTree, translationUnitAnalysis, pStaticType );
+                
+            if( const eg::interface::Abstract* pContext = dynamic_cast< const eg::interface::Abstract* >( pStaticType ) )
+            {
+                os << strIndent << "ERR( \"Attempted to stop abstract: " << pAction->getName() << "\" );\n";
+            }
+            else if( const eg::interface::Event* pContext = dynamic_cast< const eg::interface::Event* >( pStaticType ) )
+            {
+                os << strIndent << "ERR( \"Attempted to stop event: " << pAction->getName() << "\" );\n";
+            }
+            else if( const eg::interface::Function* pContext = dynamic_cast< const eg::interface::Function* >( pStaticType ) )
+            {
+                VERIFY_RTE( dynamic_cast< const eg::concrete::NothingAllocator* >( pAllocator ) );
+                os << strIndent << "ERR( \"Attempted to stop function: " << pAction->getName() << "\" );\n";
+            }
+            else
+            {
+                const eg::interface::Action*    pActionContext  = dynamic_cast< const eg::interface::Action* >( pStaticType );
+                const eg::interface::Object*    pObjectContext  = dynamic_cast< const eg::interface::Object* >( pStaticType );
+                const eg::interface::Link*      pLinkContext    = dynamic_cast< const eg::interface::Link* >( pStaticType );
+                
+                if( pActionContext || pObjectContext || pLinkContext )
+                {
+                    if( bContextIsWithinComponent )
+                    {
+                        os << strIndent << "::eg::Scheduler::stop_ref( reference );\n";
+                    }
+                    else
+                    {
+                        os << strIndent << pAction->getName() << "_stopper( reference.instance );\n";
+                    }
+                }
+                else
+                {
+                    THROW_RTE( "Unknown abstract type" );
+                }
+            }
+    os << "                }\n";
     os << "                break;\n";
         }
     }
@@ -627,10 +654,66 @@ eg::ComponentInterop& getPythonInterop()
     os << "        {\n";
     for( const eg::concrete::Action* pAction : actions )
     {
-        if( pAction->getContext()->isExecutable() )
+        if( pAction->getContext()->isExecutable() && !pAction->getContext()->isMainExecutable() )
         {
+			VERIFY_RTE( pAction->getParent() && pAction->getParent()->getParent() );
     os << "            case " << pAction->getIndex() << ":\n";
-    //os << "                " << getFuncName( pAction, "pause" ) << "( reference.instance );\n";
+    os << "                {\n";
+            const eg::concrete::Action* pParent = dynamic_cast< const eg::concrete::Action* >( pAction->getParent() );
+            VERIFY_RTE( pParent );
+            const eg::concrete::Allocator* pAllocator = pParent->getAllocator( pAction );
+            VERIFY_RTE( pAllocator );
+            const eg::interface::Context* pStaticType = pAction->getContext();
+            VERIFY_RTE( pStaticType );
+            
+            const bool bContextIsWithinComponent = 
+                isContextWithinComponent( projectTree, translationUnitAnalysis, pStaticType );
+                
+            if( const eg::interface::Abstract* pContext = dynamic_cast< const eg::interface::Abstract* >( pStaticType ) )
+            {
+                os << strIndent << "ERR( \"Attempted to pause abstract: " << pAction->getName() << "\" );\n";
+            }
+            else if( const eg::interface::Event* pContext = dynamic_cast< const eg::interface::Event* >( pStaticType ) )
+            {
+                os << strIndent << "ERR( \"Attempted to pause event: " << pAction->getName() << "\" );\n";
+            }
+            else if( const eg::interface::Function* pContext = dynamic_cast< const eg::interface::Function* >( pStaticType ) )
+            {
+                VERIFY_RTE( dynamic_cast< const eg::concrete::NothingAllocator* >( pAllocator ) );
+                os << strIndent << "ERR( \"Attempted to pause function: " << pAction->getName() << "\" );\n";
+            }
+            else
+            {
+                const eg::interface::Action*    pActionContext  = dynamic_cast< const eg::interface::Action* >( pStaticType );
+                const eg::interface::Object*    pObjectContext  = dynamic_cast< const eg::interface::Object* >( pStaticType );
+                const eg::interface::Link*      pLinkContext    = dynamic_cast< const eg::interface::Link* >( pStaticType );
+                
+                if( pActionContext || pObjectContext || pLinkContext )
+                {
+                    const const eg::concrete::Dimension_Generated* pStateDim = pAction->getState();
+                    VERIFY_RTE( pStateDim );
+                    
+                    const eg::DataMember* pStateDataMember = layout.getDataMember( pStateDim );
+                    VERIFY_RTE( pStateDataMember );
+                    
+                    os << strIndent << "if( " << *pPrinterFactory->read( pStateDataMember, "reference.instance" ) << 
+                        " == " << eg::getActionState( eg::action_running ) << " )\n";
+                    os << strIndent << "{\n";
+                    
+                    if( bContextIsWithinComponent )
+                    {
+                        os << strIndent << "    ::eg::Scheduler::pause_ref( reference );\n";
+                    }
+                    os << strIndent << "    " << *pPrinterFactory->write( pStateDataMember, "reference.instance" ) << 
+                        " = " << eg::getActionState( eg::action_paused ) << ";\n";
+                    os << strIndent << "}\n";
+                }
+                else
+                {
+                    THROW_RTE( "Unknown abstract type" );
+                }
+            }
+    os << "                }\n";
     os << "                break;\n";
         }
     }
@@ -649,10 +732,66 @@ eg::ComponentInterop& getPythonInterop()
     os << "        {\n";
     for( const eg::concrete::Action* pAction : actions )
     {
-        if( pAction->getContext()->isExecutable() )
+        if( pAction->getContext()->isExecutable() && !pAction->getContext()->isMainExecutable() )
         {
+			VERIFY_RTE( pAction->getParent() && pAction->getParent()->getParent() );
     os << "            case " << pAction->getIndex() << ":\n";
-    //os << "                " << getFuncName( pAction, "resume" ) << "( reference.instance );\n";
+    os << "                {\n";
+            const eg::concrete::Action* pParent = dynamic_cast< const eg::concrete::Action* >( pAction->getParent() );
+            VERIFY_RTE( pParent );
+            const eg::concrete::Allocator* pAllocator = pParent->getAllocator( pAction );
+            VERIFY_RTE( pAllocator );
+            const eg::interface::Context* pStaticType = pAction->getContext();
+            VERIFY_RTE( pStaticType );
+            
+            const bool bContextIsWithinComponent = 
+                isContextWithinComponent( projectTree, translationUnitAnalysis, pStaticType );
+                
+            if( const eg::interface::Abstract* pContext = dynamic_cast< const eg::interface::Abstract* >( pStaticType ) )
+            {
+                os << strIndent << "ERR( \"Attempted to pause abstract: " << pAction->getName() << "\" );\n";
+            }
+            else if( const eg::interface::Event* pContext = dynamic_cast< const eg::interface::Event* >( pStaticType ) )
+            {
+                os << strIndent << "ERR( \"Attempted to pause event: " << pAction->getName() << "\" );\n";
+            }
+            else if( const eg::interface::Function* pContext = dynamic_cast< const eg::interface::Function* >( pStaticType ) )
+            {
+                VERIFY_RTE( dynamic_cast< const eg::concrete::NothingAllocator* >( pAllocator ) );
+                os << strIndent << "ERR( \"Attempted to pause function: " << pAction->getName() << "\" );\n";
+            }
+            else
+            {
+                const eg::interface::Action*    pActionContext  = dynamic_cast< const eg::interface::Action* >( pStaticType );
+                const eg::interface::Object*    pObjectContext  = dynamic_cast< const eg::interface::Object* >( pStaticType );
+                const eg::interface::Link*      pLinkContext    = dynamic_cast< const eg::interface::Link* >( pStaticType );
+                
+                if( pActionContext || pObjectContext || pLinkContext )
+                {
+                    const const eg::concrete::Dimension_Generated* pStateDim = pAction->getState();
+                    VERIFY_RTE( pStateDim );
+                    
+                    const eg::DataMember* pStateDataMember = layout.getDataMember( pStateDim );
+                    VERIFY_RTE( pStateDataMember );
+                    
+                    os << strIndent << "if( " << *pPrinterFactory->read( pStateDataMember, "reference.instance" ) << 
+                        " == " << eg::getActionState( eg::action_paused ) << " )\n";
+                    os << strIndent << "{\n";
+                    
+                    if( bContextIsWithinComponent )
+                    {
+                        os << strIndent << "    ::eg::Scheduler::unpause_ref( reference );\n";
+                    }
+                    os << strIndent << "    " << *pPrinterFactory->write( pStateDataMember, "reference.instance" ) << 
+                        " = " << eg::getActionState( eg::action_running ) << ";\n";
+                    os << strIndent << "}\n";
+                }
+                else
+                {
+                    THROW_RTE( "Unknown abstract type" );
+                }
+            }
+    os << "                }\n";
     os << "                break;\n";
         }
     }
@@ -665,57 +804,19 @@ eg::ComponentInterop& getPythonInterop()
     //virtual void doDone( const eg::reference& reference );
     os << "void PythonInterop::doDone( const " << eg::EG_REFERENCE_TYPE << "& reference )\n";
     os << "{\n";
-    os << "    if( Evaluation::SharedPtr pEvaluation = m_pEvaluation.lock() )\n";
-    os << "    {\n";
-    os << "        switch( reference.type )\n";
-    os << "        {\n";
-    for( const eg::concrete::Action* pAction : actions )
-    {
-        if( pAction->getContext()->isExecutable() )
-        {
-    os << "            case " << pAction->getIndex() << ":\n";
-    //os << "                pEvaluation->m_result = pybind11::cast( " << getFuncName( pAction, "done" ) << "( reference.instance ) );\n";
-    os << "                break;\n";
-        }
-    }
-    os << "            default:\n";
-    os << "                break;\n";
-    os << "        }\n";
-    os << "    }\n";
+    os << "    ERR( \"Done used\" );\n";
     os << "}\n";
     
     //virtual void doWaitAction( const eg::reference& reference );
     os << "void PythonInterop::doWaitAction( const " << eg::EG_REFERENCE_TYPE << "& reference )\n";
     os << "{\n";
-    os << "    if( Evaluation::SharedPtr pEvaluation = m_pEvaluation.lock() )\n";
-    os << "    {\n";
-    //os << "        pEvaluation->m_result = pybind11::reinterpret_borrow< pybind11::object >( g_pEGRefType->create( reference ) );\n";
-    os << "    }\n";
+    os << "    ERR( \"Wait used\" );\n";
     os << "}\n";
     
     //virtual void doWaitDimension( const eg::reference& reference, eg::TypeID dimensionType );
     os << "void PythonInterop::doWaitDimension( const " << eg::EG_REFERENCE_TYPE << "& reference, " << eg::EG_TYPE_ID << " dimensionType )\n";
     os << "{\n";
-    os << "    if( Evaluation::SharedPtr pEvaluation = m_pEvaluation.lock() )\n";
-    os << "    {\n";
-    os << "        switch( dimensionType )\n";
-    os << "        {\n";
-    
-    for( const eg::DataMember* pDataMember : dataMembers )
-    {
-        if( const eg::concrete::Dimension_User* pDimension = 
-            dynamic_cast< const eg::concrete::Dimension_User* >( pDataMember->getInstanceDimension() ) )
-        {
-    os << "            case " << pDimension->getIndex() << ":\n";
-    //os << "                pEvaluation->m_result = m_module_eg.attr( \"" << getFuncName( pDataMember, "read" ) << "\" )( reference.instance );\n";
-    os << "                break;\n";
-        }
-    }
-    
-    os << "            default:\n";
-    os << "                break;\n";
-    os << "        }\n";
-    os << "    }\n";
+    os << "    ERR( \"Wait used\" );\n";
     os << "}\n";
     
     //virtual void doGetAction( const eg::reference& reference );
@@ -764,9 +865,7 @@ eg::ComponentInterop& getPythonInterop()
     //virtual void doLink( const reference& linkeeRef, TypeID linkeeDimension, const reference& linkValue );
     os << "void PythonInterop::doLink( const eg::reference& linkeeRef, eg::TypeID linkeeDimension, const eg::reference& linkValue )\n";
     os << "{\n";
-    os << "    if( Evaluation::SharedPtr pEvaluation = m_pEvaluation.lock() )\n";
-    os << "    {\n";
-    os << "    }\n";
+    os << "    ERR( \"Link used\" );\n";
     os << "}\n";
     
 }
