@@ -114,6 +114,22 @@ namespace megaxml
   {
   }
 
+  // Defaults_sskel
+  //
+
+  Defaults_sskel::
+  Defaults_sskel ()
+  : Defaults_impl_ (0)
+  {
+  }
+
+  Defaults_sskel::
+  Defaults_sskel (Defaults_sskel* impl, void*)
+  : ::xsde::cxx::serializer::validating::complex_content (impl, 0),
+    Defaults_impl_ (impl)
+  {
+  }
+
   // Build_sskel
   //
 
@@ -161,22 +177,6 @@ namespace megaxml
     Name_serializer_ (0),
     CompilerFlags_serializer_ (0),
     LinkerFlags_serializer_ (0)
-  {
-  }
-
-  // Defaults_sskel
-  //
-
-  Defaults_sskel::
-  Defaults_sskel ()
-  : Defaults_impl_ (0)
-  {
-  }
-
-  Defaults_sskel::
-  Defaults_sskel (Defaults_sskel* impl, void*)
-  : ::xsde::cxx::serializer::validating::complex_content (impl, 0),
-    Defaults_impl_ (impl)
   {
   }
 
@@ -570,6 +570,9 @@ namespace megaxml
     return this->Package_impl_->Command ();
   }
 
+  // Defaults_sskel
+  //
+
   // Build_sskel
   //
 
@@ -595,9 +598,6 @@ namespace megaxml
 
     this->resetting_ = false;
   }
-
-  // Defaults_sskel
-  //
 
   // Project_sskel
   //

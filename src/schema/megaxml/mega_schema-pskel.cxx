@@ -116,6 +116,22 @@ namespace megaxml
   {
   }
 
+  // Defaults_pskel
+  //
+
+  Defaults_pskel::
+  Defaults_pskel ()
+  : Defaults_impl_ (0)
+  {
+  }
+
+  Defaults_pskel::
+  Defaults_pskel (Defaults_pskel* impl, void*)
+  : ::xsde::cxx::parser::validating::complex_content (impl, 0),
+    Defaults_impl_ (impl)
+  {
+  }
+
   // Build_pskel
   //
 
@@ -165,22 +181,6 @@ namespace megaxml
     CompilerFlags_parser_ (0),
     LinkerFlags_parser_ (0),
     v_state_stack_ (sizeof (v_state_), &v_state_first_)
-  {
-  }
-
-  // Defaults_pskel
-  //
-
-  Defaults_pskel::
-  Defaults_pskel ()
-  : Defaults_impl_ (0)
-  {
-  }
-
-  Defaults_pskel::
-  Defaults_pskel (Defaults_pskel* impl, void*)
-  : ::xsde::cxx::parser::validating::complex_content (impl, 0),
-    Defaults_impl_ (impl)
   {
   }
 

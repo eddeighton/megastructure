@@ -6,10 +6,10 @@ include( ${MEGA_THIRD_PARTY_DIR}/protobuf/install/cmake/protobuf-targets.cmake )
 
 find_package( Protobuf REQUIRED  )
 
-#message("   --> PROTOBUF LIB: ${PROTOBUF_LIBRARIES}")
-#message("   --> PROTOBUF INCLUDE: ${PROTOBUF_INCLUDE_DIRS}")
-#message("   --> PROTOBUF VERSION: ${Protobuf_VERSION}")
-#message("   --> PROTOBUF Found: ${Protobuf_FOUND}")
+message("   --> PROTOBUF LIB: ${PROTOBUF_LIBRARIES}")
+message("   --> PROTOBUF INCLUDE: ${PROTOBUF_INCLUDE_DIRS}")
+message("   --> PROTOBUF VERSION: ${Protobuf_VERSION}")
+message("   --> PROTOBUF Found: ${Protobuf_FOUND}")
 
 function( link_protobuf targetname )
 	target_include_directories( ${targetname} PUBLIC ${PROTOBUF_INCLUDE_DIR} )

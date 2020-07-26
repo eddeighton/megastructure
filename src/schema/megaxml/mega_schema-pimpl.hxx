@@ -119,6 +119,24 @@ namespace megaxml
     bool Host_pimpl_base_;
   };
 
+  class Defaults_pimpl: public Defaults_pskel
+  {
+    public:
+    virtual void
+    pre ();
+
+    virtual ::megaxml::Defaults
+    post_Defaults ();
+
+    public:
+    struct Defaults_pimpl_state
+    {
+      ::megaxml::Defaults Defaults_;
+    };
+
+    Defaults_pimpl_state Defaults_pimpl_state_;
+  };
+
   class Build_pimpl: public Build_pskel
   {
     public:
@@ -146,24 +164,6 @@ namespace megaxml
     };
 
     Build_pimpl_state Build_pimpl_state_;
-  };
-
-  class Defaults_pimpl: public Defaults_pskel
-  {
-    public:
-    virtual void
-    pre ();
-
-    virtual ::megaxml::Defaults
-    post_Defaults ();
-
-    public:
-    struct Defaults_pimpl_state
-    {
-      ::megaxml::Defaults Defaults_;
-    };
-
-    Defaults_pimpl_state Defaults_pimpl_state_;
   };
 
   class Project_pimpl: public Project_pskel
@@ -434,15 +434,15 @@ namespace megaxml
 
     public:
     ::xml_schema::string_pimpl string_p_;
-    ::megaxml::EG_pimpl EG_p_;
-    ::megaxml::Host_pimpl Host_p_;
-    ::megaxml::Project_pimpl Project_p_;
-    ::megaxml::Build_pimpl Build_p_;
     ::megaxml::Run_pimpl Run_p_;
     ::megaxml::Defaults_pimpl Defaults_p_;
     ::megaxml::Files_pimpl Files_p_;
+    ::megaxml::Host_pimpl Host_p_;
+    ::megaxml::EG_pimpl EG_p_;
     ::megaxml::Package_pimpl Package_p_;
     ::megaxml::Directories_pimpl Directories_p_;
+    ::megaxml::Project_pimpl Project_p_;
+    ::megaxml::Build_pimpl Build_p_;
   };
 }
 

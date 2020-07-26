@@ -50,7 +50,7 @@ void command_create( bool bHelp, const std::vector< std::string >& args )
     po::variables_map vm;
     po::store( po::command_line_parser( args ).options( commandOptions ).run(), vm );
     po::notify( vm );
-    
+
     if( bHelp )
     {
         std::cout << commandOptions << "\n";

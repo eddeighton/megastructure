@@ -23,7 +23,7 @@ set( MEGA_API_DIR ${MEGA_ROOT_DIR}/api )
 set( MEGA_SRC_DIR ${MEGA_ROOT_DIR}/src )
 
 #helper path if third party libs are in parent folder
-set( MEGA_THIRD_PARTY_DIR ${MEGA_ROOT_DIR}/../../thirdparty )
+set( MEGA_THIRD_PARTY_DIR ${MEGA_ROOT_DIR}/../../thirdparty_x64 )
 
 include_directories( ${MEGA_API_DIR} )
 include_directories( ${MEGA_SRC_DIR} )

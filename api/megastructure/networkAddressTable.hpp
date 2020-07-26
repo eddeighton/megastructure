@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <memory>
 #include <limits>
+#include <string>
 
 class ProjectTree;
 

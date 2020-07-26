@@ -133,6 +133,9 @@ namespace megaxml
   // Host
   //
 
+  // Defaults
+  //
+
   // Build
   //
 
@@ -189,9 +192,6 @@ namespace megaxml
   {
     this->LinkerFlags_ = x;
   }
-
-  // Defaults
-  //
 
   // Project
   //
@@ -586,6 +586,32 @@ namespace megaxml
   {
   }
 
+  // Defaults
+  //
+
+  Defaults::
+  Defaults ()
+  {
+  }
+
+  Defaults::
+  ~Defaults ()
+  {
+  }
+
+  Defaults::
+  Defaults (const Defaults& x)
+  {
+    XSDE_UNUSED (x);
+  }
+
+  Defaults& Defaults::
+  operator= (const Defaults& x)
+  {
+    XSDE_UNUSED (x);
+    return *this;
+  }
+
   // Build
   //
 
@@ -615,32 +641,6 @@ namespace megaxml
     this->Name_ = x.Name_;
     this->CompilerFlags_ = x.CompilerFlags_;
     this->LinkerFlags_ = x.LinkerFlags_;
-    return *this;
-  }
-
-  // Defaults
-  //
-
-  Defaults::
-  Defaults ()
-  {
-  }
-
-  Defaults::
-  ~Defaults ()
-  {
-  }
-
-  Defaults::
-  Defaults (const Defaults& x)
-  {
-    XSDE_UNUSED (x);
-  }
-
-  Defaults& Defaults::
-  operator= (const Defaults& x)
-  {
-    XSDE_UNUSED (x);
     return *this;
   }
 
