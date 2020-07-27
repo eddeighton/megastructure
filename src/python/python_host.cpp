@@ -68,6 +68,23 @@ private:
   
 };
 
+std::shared_ptr< Host > g_theHost;
+
+std::shared_ptr< Host > NewHost( const std::string& strProjectDirectory, 
+                                        const std::string& strMegaPort, 
+                                        const std::string& strEGPort, 
+                                        const std::string& strHostProgramName )
+{
+    g_theHost.reset();
+    g_theHost = std::make_shared< Host >( strProjectDirectory, strMegaPort, strEGPort, strHostProgramName );
+    return g_theHost;
+}
+
+std::shared_ptr< Host > GetHost()
+{
+    return g_theHost;
+}
+
 }
 
 #ifdef _DEBUG
@@ -105,12 +122,12 @@ PYBIND11_MODULE( python_host, phModule )
         
     pybind11::class_< megastructure::Host, std::shared_ptr< megastructure::Host > >( phModule, "Host" )
         
-       .def( pybind11::init<
-            const std::string& , 
-            const std::string& ,
-            const std::string& ,
-            const std::string& 
-            >(), "Construct a mega structure host with the provided: Project Directory, Coordinator Mega Port, Coordinator EG Port and Host Program Name" )
+       //.def( pybind11::init<
+       //     const std::string& , 
+       //     const std::string& ,
+       //     const std::string& ,
+       //     const std::string& 
+       //     >(), "Construct a mega structure host with the provided: Project Directory, Coordinator Mega Port, Coordinator EG Port and Host Program Name" )
        
        .def( "getHostProgramName",      &megastructure::Host::getHostProgramName )
        .def( "getSlaveName",            &megastructure::Host::getSlaveName )
@@ -118,6 +135,11 @@ PYBIND11_MODULE( python_host, phModule )
        
        .def( "getProgram",              &megastructure::Host::getProgram )
        .def( "runCycle",                &megastructure::Host::runCycle )
-       
        ;
+       
+       
+   phModule.def( "NewHost", &megastructure::NewHost, "Construct a new host" );
+   
+   phModule.def( "GetHost", &megastructure::GetHost, "Get the host" );
+   
 }

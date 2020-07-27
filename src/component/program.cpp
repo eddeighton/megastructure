@@ -66,7 +66,7 @@ Program::Program( Component& component, const std::string& strHostName, const st
 	
     const boost::filesystem::path binDirectory = 
         getBinFolderForProject( m_component.getSlaveWorkspacePath(), m_strProjectName );
-    m_strComponentName = m_pProjectTree->getComponentFileNameExt( true );
+    m_strComponentName = m_pProjectTree->getComponentFileNameExt( false );
 
 	m_componentPath = binDirectory / m_strComponentName;
     SPDLOG_INFO( "Loading component: {}", m_componentPath.string() );

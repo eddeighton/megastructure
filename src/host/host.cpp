@@ -50,7 +50,7 @@ IMegaHost::~IMegaHost()
 
 IMegaHost* createMegaHost( void* pEngineInterface )
 {
-    return new HostImpl( "1001", "1002", "test_host_dlld.exe" );
+    return new HostImpl( "1001", "1002", "test_host_dll.exe" );
 }
 
 void destroyMegaHost( const IMegaHost* pHost )

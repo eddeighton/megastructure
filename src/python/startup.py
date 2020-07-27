@@ -5,7 +5,7 @@ from IPython.external.qt_for_kernel import QtCore, QtGui
 
 sys.path.append( "w:/root/megastructure/install/bin" )
 
-import python_hostd
+import python_host
 
 # If we create a QApplication, keep a reference to it so that it doesn't get
 # garbage collected.
@@ -67,7 +67,7 @@ IPython.terminal.pt_inputhooks.register( "qt", mega_input_hook )
 
 os.chdir( "w:/megatest/" )
 
-host = python_hostd.Host( "w:/megatest/", "1001", "1002", "python_hostd.exe" )
+host = python_host.Host( "w:/megatest/", "1001", "1002", "python_host.exe" )
 
 cycle = 0
 def runMegaCycle():
@@ -82,3 +82,5 @@ _mega_callback = runMegaCycle
 #%gui qt
 #prog = host.getProgram()
 #root = prog.getRoot()
+
+#C:\Users\eddeighton\AppData\Roaming\jupyter\runtime

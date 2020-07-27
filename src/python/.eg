@@ -3,6 +3,6 @@
 	<Host>
 		<Name>pythonhost</Name>
         <Type>python</Type>
-		<Command>${MEGA}/bin/python_hostd.exe</Command>
+		<Command>${MEGA}/bin/python_host.exe</Command>
 	</Host>
 </EG>

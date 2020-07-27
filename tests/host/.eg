@@ -3,6 +3,6 @@
 	<Host>
 		<Name>testhost</Name>
         <Type>basic</Type>
-		<Command>${MEGA}/bin/test_hostd.exe</Command>
+		<Command>${MEGA}/bin/test_host.exe</Command>
 	</Host>
 </EG>

@@ -259,3 +259,313 @@ const Project& ProjectTree::getProject() const
 	}
     THROW_RTE( "Failed to locate project" );
 }
+
+
+std::string ProjectTree::getComponentFileName( bool bDebug ) const
+{
+    std::ostringstream os;
+    if( bDebug )
+        os << getCoordinatorName() << '_' << getHostName() << '_' << getProjectName() << "d";
+    else
+        os << getCoordinatorName() << '_' << getHostName() << '_' << getProjectName();
+    return os.str();
+}
+std::string ProjectTree::getComponentFileNameExt( bool bDebug ) const
+{
+    std::ostringstream os;
+    if( bDebug )
+        os << getCoordinatorName() << '_' << getHostName() << '_' << getProjectName() << "d.dll";
+    else
+        os << getCoordinatorName() << '_' << getHostName() << '_' << getProjectName() << ".dll";
+    return os.str();
+}
+
+std::vector< boost::filesystem::path > ProjectTree::getSystemIncludes() const
+{
+    std::vector< boost::filesystem::path > includes;
+    
+    return includes;
+}
+std::vector< boost::filesystem::path > ProjectTree::getUserIncludes( const Environment& environment ) const
+{
+    std::vector< boost::filesystem::path > includes;
+    
+    includes.push_back( "boost/filesystem.hpp" );
+    
+    includes.push_back( "pybind11/pybind11.h" );
+    includes.push_back( "pybind11/stl.h" );
+    includes.push_back( "pybind11/stl_bind.h" );
+    includes.push_back( environment.expand( "egcomponent/traits.hpp" ) );
+    
+    includes.push_back( "eg/include.hpp" );
+    includes.push_back( "eg_runtime/eg_runtime.hpp" );
+
+    return includes;
+}
+
+boost::filesystem::path ProjectTree::getSourceFolder() const
+{
+    return m_path / "src";
+}
+
+boost::filesystem::path ProjectTree::getInterfaceFolder() const
+{
+    return m_path / "interface" / m_projectName;
+}
+
+boost::filesystem::path ProjectTree::getImplFolder() const
+{
+    return m_path / "impl";
+}
+
+boost::filesystem::path ProjectTree::getBuildFolder() const
+{
+    return m_path / "build" / m_projectName;
+}
+
+boost::filesystem::path ProjectTree::getParserDatabaseFile() const
+{
+    return getInterfaceFolder() / "parser.db";
+}
+boost::filesystem::path ProjectTree::getInterfaceDatabaseFile() const
+{
+    return getInterfaceFolder() / "interface.db";
+}
+boost::filesystem::path ProjectTree::getInterfacePCH() const
+{
+    return getInterfaceFolder() / "interface.pch";
+}
+boost::filesystem::path ProjectTree::getInterfaceHeader() const
+{
+    return getInterfaceFolder() / "interface.hpp";
+}
+
+boost::filesystem::path ProjectTree::getIncludeHeader() const
+{
+    return getInterfaceFolder() / "include.hpp";
+}
+
+boost::filesystem::path ProjectTree::getIncludePCH() const
+{
+    return getInterfaceFolder() / "include.pch";
+}
+
+boost::filesystem::path ProjectTree::getTUDBName( const std::string& strTUName ) const
+{
+    std::ostringstream os;
+    os << "tu_" << strTUName << ".db";
+    return boost::filesystem::edsCannonicalise(
+        boost::filesystem::absolute( 
+            getInterfaceFolder() / os.str() ) );
+}
+
+boost::filesystem::path ProjectTree::getCoroutineFrameSourceFilePath( const Environment& environment ) const
+{
+    return boost::filesystem::edsCannonicalise(
+        boost::filesystem::absolute( 
+            environment.expand( "${EG}/include/eg/frame.cpp" ) ) );
+}
+boost::filesystem::path ProjectTree::getBasicSchedulerFilePath( const Environment& environment ) const
+{
+    return boost::filesystem::edsCannonicalise(
+        boost::filesystem::absolute( 
+            environment.expand( "${EG}/include/eg/basic_scheduler.cpp" ) ) );
+}
+boost::filesystem::path ProjectTree::getBasicClockFilePath( const Environment& environment ) const
+{
+    return boost::filesystem::edsCannonicalise(
+        boost::filesystem::absolute( 
+            environment.expand( "${EG}/include/eg/clock.cpp" ) ) );
+}
+
+void ProjectTree::collateIncludeDirectories( 
+    const Environment& environment,
+    std::set< boost::filesystem::path >& uniquified, 
+    std::vector< boost::filesystem::path >& directories,
+    const std::string& strDirectory )
+{
+    const boost::filesystem::path absPath =
+        boost::filesystem::edsCannonicalise(
+            boost::filesystem::absolute( 
+                environment.expand( strDirectory ) ) );
+            
+    if( 0 == uniquified.count( absPath ) )
+    {
+        uniquified.insert( absPath );
+        directories.push_back( absPath );
+    }
+}
+
+std::vector< boost::filesystem::path > ProjectTree::getIncludeDirectories( const Environment& environment ) const
+{
+    std::set< boost::filesystem::path > uniquified;
+    std::vector< boost::filesystem::path > directories;
+    
+    collateIncludeDirectories( environment, uniquified, directories, "${BOOST}/include/boost-1_73" );
+    collateIncludeDirectories( environment, uniquified, directories, "${PYBIND}/include" );
+    collateIncludeDirectories( environment, uniquified, directories, "${PYTHONHOME}/include" );
+    collateIncludeDirectories( environment, uniquified, directories, "${EG}/include" );
+    collateIncludeDirectories( environment, uniquified, directories, "${MEGA}/include" );
+    collateIncludeDirectories( environment, uniquified, directories, "${PROTOBUF}/include" );
+    collateIncludeDirectories( environment, uniquified, directories, "${MESSAGEPACK}/include" );
+    
+    directories.push_back( 
+        boost::filesystem::edsCannonicalise(
+            boost::filesystem::absolute( 
+                getInterfaceFolder() ) ) );
+    
+    /*if( m_host.Directories_present() )
+        collateIncludeDirectories( m_environment, uniquified, directories, m_host.Directories() );
+    
+    for( const megaxml::Package& package : m_packages )
+    {
+        if( package.Directories_present() )
+            collateIncludeDirectories( m_environment, uniquified, directories, package.Directories() );
+    }*/
+    
+    return directories;
+}
+
+std::vector< boost::filesystem::path > ProjectTree::getImplIncludeDirectories( const Environment& environment ) const
+{
+    std::set< boost::filesystem::path > uniquified;
+    std::vector< boost::filesystem::path > directories;
+    
+    //collateIncludeDirectories( environment, uniquified, directories, "${BOOST}/include/boost-1_73" );
+    //collateIncludeDirectories( environment, uniquified, directories, "${PYBIND}/include" );
+    //collateIncludeDirectories( environment, uniquified, directories, "${PYTHONHOME}/include" );
+    //collateIncludeDirectories( environment, uniquified, directories, "${EG}/include" );
+    //collateIncludeDirectories( environment, uniquified, directories, "${MEGA}/include" );
+    //collateIncludeDirectories( environment, uniquified, directories, "${PROTOBUF}/include" );
+    //collateIncludeDirectories( environment, uniquified, directories, "${MESSAGEPACK}/include" );
+    
+    directories.push_back( 
+        boost::filesystem::edsCannonicalise(
+            boost::filesystem::absolute( 
+                getInterfaceFolder() ) ) );
+    
+    /*if( m_host.Directories_present() )
+        collateIncludeDirectories( m_environment, uniquified, directories, m_host.Directories() );
+    
+    for( const megaxml::Package& package : m_packages )
+    {
+        if( package.Directories_present() )
+            collateIncludeDirectories( m_environment, uniquified, directories, package.Directories() );
+    }*/
+    
+    return directories;
+}
+
+boost::filesystem::path ProjectTree::getOperationsHeader( const std::string& strTUName ) const
+{
+    std::ostringstream os;
+    os << strTUName << "_operations.hpp";
+    return boost::filesystem::edsCannonicalise(
+        boost::filesystem::absolute( 
+            getInterfaceFolder() / os.str() ) );
+}
+
+boost::filesystem::path ProjectTree::getOperationsPCH( const std::string& strTUName ) const
+{
+    std::ostringstream os;
+    os << strTUName << "_operations.pch";
+    return boost::filesystem::edsCannonicalise(
+        boost::filesystem::absolute( 
+            getInterfaceFolder() / os.str() ) );
+}
+
+boost::filesystem::path ProjectTree::getImplementationSource( const std::string& strTUName ) const
+{
+    VERIFY_RTE( m_coordinatorName && m_hostName );
+    std::ostringstream os;
+    os << strTUName << "_operations.cpp";
+    
+    return boost::filesystem::edsCannonicalise(
+        boost::filesystem::absolute( 
+            getImplFolder() / m_coordinatorName.get() / m_hostName.get() / m_projectName / os.str() ) );
+}
+
+std::string ProjectTree::getStructuresInclude() const
+{
+    std::ostringstream os;
+    os << "structures.hpp";
+    return os.str();
+}
+
+boost::filesystem::path ProjectTree::getDataStructureSource() const
+{
+    return boost::filesystem::edsCannonicalise(
+        boost::filesystem::absolute( 
+            getInterfaceFolder() / getStructuresInclude() ) );
+}
+
+boost::filesystem::path ProjectTree::getAnalysisFileName() const
+{
+    std::ostringstream os;
+    os << "database.db";
+    return boost::filesystem::edsCannonicalise(
+        boost::filesystem::absolute( 
+            getInterfaceFolder() / os.str() ) );
+}
+
+std::string ProjectTree::getNetStateSourceInclude() const
+{
+    VERIFY_RTE( m_coordinatorName && m_hostName );
+    std::ostringstream os;
+    os << "netstate.hpp";
+    return os.str();
+}
+
+boost::filesystem::path ProjectTree::getNetStateSource() const
+{
+    VERIFY_RTE( m_coordinatorName && m_hostName );
+    return boost::filesystem::edsCannonicalise(
+        boost::filesystem::absolute( 
+            getImplFolder() / m_coordinatorName.get() / m_hostName.get() / m_projectName / getNetStateSourceInclude() ) );
+            
+}
+
+boost::filesystem::path ProjectTree::getRuntimeSource() const
+{
+    VERIFY_RTE( m_coordinatorName && m_hostName );
+    return boost::filesystem::edsCannonicalise(
+        boost::filesystem::absolute( 
+            getImplFolder() / m_coordinatorName.get() / m_hostName.get() / m_projectName / "runtime.cpp" ) );
+}
+
+boost::filesystem::path ProjectTree::getPythonSource() const
+{
+    VERIFY_RTE( m_coordinatorName && m_hostName );
+    return boost::filesystem::edsCannonicalise(
+        boost::filesystem::absolute( 
+            getImplFolder() / m_coordinatorName.get() / m_hostName.get() / m_projectName / "python.cpp" ) );
+}
+
+boost::filesystem::path ProjectTree::getObjectName( const std::string& strTUName, const boost::filesystem::path& binPath ) const
+{
+    VERIFY_RTE( m_coordinatorName && m_hostName );
+    std::ostringstream os;
+    os << strTUName << "_object.obj";
+    return boost::filesystem::edsCannonicalise(
+                boost::filesystem::absolute( 
+                    binPath / os.str() ) );
+}
+
+boost::filesystem::path ProjectTree::getObjectFile( const boost::filesystem::path& sourceFile, const boost::filesystem::path& binPath ) const
+{
+    VERIFY_RTE( m_coordinatorName && m_hostName );
+    std::ostringstream os;
+    os << sourceFile.stem().string() << "_object.obj";
+    return boost::filesystem::edsCannonicalise(
+                boost::filesystem::absolute( 
+                    binPath / os.str() ) );
+}
+
+
+boost::filesystem::path ProjectTree::getEGComponentSource() const
+{
+    VERIFY_RTE( m_coordinatorName && m_hostName );
+    return boost::filesystem::edsCannonicalise(
+        boost::filesystem::absolute( 
+            getImplFolder() / m_coordinatorName.get() / m_hostName.get() / m_projectName / "component.cpp" ) );
+}

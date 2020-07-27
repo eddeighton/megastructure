@@ -48,10 +48,12 @@ namespace megastructure
             ePlanet,
             TOTAL_RELATION_TYPES
         };
+        
+        using HashInt = std::int32_t;
 
         using HostNameBufferMap = std::map< const eg::Buffer*, std::shared_ptr< HostName > >;
         using BufferTypes = std::map< const eg::Buffer*, BufferRelation >;
-        using DataTypeHashBases = std::map< const eg::DataMember*, int >;
+        using DataTypeHashBases = std::map< const eg::DataMember*, HashInt >;
         
         struct HostStructures
         {
@@ -77,7 +79,7 @@ namespace megastructure
             return iFind->second == eComponent;
         }
         
-        int getDataMemberReadHashBase( const eg::DataMember* pDataMember ) const
+        HashInt getDataMemberReadHashBase( const eg::DataMember* pDataMember ) const
         {
             DataTypeHashBases::const_iterator iFind = m_hashBases.find( pDataMember );
             VERIFY_RTE( iFind != m_hashBases.end() );
@@ -107,7 +109,7 @@ namespace megastructure
         HostNameBufferMap m_bufferHostNames;
         BufferTypes m_bufferTypes;
         DataTypeHashBases m_hashBases;
-        std::size_t m_hashTotal;
+        HashInt m_hashTotal;
         HostStructureMap m_hostStructures;
     };
 

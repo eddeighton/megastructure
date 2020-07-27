@@ -3,6 +3,6 @@
 	<Host>
 		<Name>testhost</Name>
         <Type>basic</Type>
-		<Command>${MEGA}/bin/test_host_dlld.exe</Command>
+		<Command>${MEGA}/bin/test_host_dll.exe</Command>
 	</Host>
 </EG>
