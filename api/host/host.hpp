@@ -18,10 +18,15 @@ struct MEGAHOST_API IMegaHost
     virtual void runCycle() = 0;
 };
 
-MEGAHOST_API IMegaHost* createMegaHost( void* pEngineInterface );
-MEGAHOST_API void destroyMegaHost( const IMegaHost* );
+typedef IMegaHost* (*CreateMegaHostFPtr)( void* );
+typedef void (*DestroyMegaHostFPtr)( IMegaHost* );
 
 }
 
+extern "C"
+{
+    MEGAHOST_API megastructure::IMegaHost* createMegaHost( void* pEngineInterface );
+    MEGAHOST_API void destroyMegaHost( const megastructure::IMegaHost* );
+}
 
 #endif //MEGASRUCTURE_HOST_24_JULY_2020

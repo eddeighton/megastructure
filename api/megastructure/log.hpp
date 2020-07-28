@@ -9,12 +9,14 @@
 
 #include "common/processID.hpp"
 
+#include "boost/filesystem.hpp"
+
 #include <chrono>
 #include <sstream>
 
 namespace megastructure
 {
-    inline auto configureLog( const std::string& strLogName )
+    inline auto configureLog( const boost::filesystem::path& logFolderPath, const std::string& strLogName )
     {
         spdlog::drop( strLogName );
         
@@ -22,13 +24,14 @@ namespace megastructure
         {
             console_sink->set_level( spdlog::level::info );
             console_sink->set_pattern( "%l [%^%l%$] %v");
-        
         }
         
         std::ostringstream osLogFileName;
-        osLogFileName << "logs/" << strLogName << "_" << Common::getProcessID() << ".log";
+        osLogFileName << strLogName << "_" << Common::getProcessID() << ".log";
         
-        auto file_sink = std::make_shared< spdlog::sinks::daily_file_sink_st >( osLogFileName.str(), 23, 59 );
+        const boost::filesystem::path logFilePath = logFolderPath / osLogFileName.str();
+        
+        auto file_sink = std::make_shared< spdlog::sinks::daily_file_sink_st >( logFilePath.string(), 23, 59 );
         {
             file_sink->set_level( spdlog::level::trace );
         }

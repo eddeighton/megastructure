@@ -61,6 +61,8 @@ const boost::filesystem::path Environment::WIZARD_FILE = std::string( "wizard.xm
 const boost::filesystem::path Environment::PYTHON_FILE_EXTENSION = std::string( ".py" );
 
 const std::string Environment::ENV_KEY_EG_INSTALLATION = "EG";
+const std::string Environment::ENV_KEY_LOG_FOLDER = "MEGALOG";
+
 /*
 const std::string Environment::ENV_KEY_WINDOWS_10_SDK = "WINDOWS_10_SDK";
 const std::string Environment::ENV_KEY_VISUALSTUDIO = "EG_VISUAL_STUDIO";
@@ -271,6 +273,16 @@ const boost::filesystem::path& Environment::getEGLibraryInclude() const
 std::string Environment::expand( const std::string& strPath ) const
 {
     return ::expand( strPath, [ this ]( const std::string& strKey ){ return get( strKey ); } );
+}
+
+const boost::filesystem::path& Environment::getLogFolderPath() const
+{
+    static boost::filesystem::path LOG_FOLDER_PATH;
+    if( LOG_FOLDER_PATH.empty() )
+    {
+        LOG_FOLDER_PATH = boost::filesystem::path( get( ENV_KEY_LOG_FOLDER ) );
+    }
+    return LOG_FOLDER_PATH;
 }
 
 const megaxml::Host& Environment::getHost( const std::string& strHost ) const

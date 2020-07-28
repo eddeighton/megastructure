@@ -48,14 +48,14 @@ IMegaHost::~IMegaHost()
 
 }
 
-IMegaHost* createMegaHost( void* pEngineInterface )
+}
+
+megastructure::IMegaHost* createMegaHost( void* pEngineInterface )
 {
     return new HostImpl( "1001", "1002", "test_host_dll.exe" );
 }
 
-void destroyMegaHost( const IMegaHost* pHost )
+void destroyMegaHost( const megastructure::IMegaHost* pHost )
 {
     delete pHost;
-}
-
 }

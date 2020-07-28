@@ -113,7 +113,7 @@ int main( int argc, const char* argv[] )
 		slave::getWorkspaceAndSlaveNameFromPath( 
 			args.slave_path, workspacePath, strSlaveName );
             
-        auto logThreadPool = megastructure::configureLog( strSlaveName );
+        auto logThreadPool = megastructure::configureLog( environment.getLogFolderPath(), strSlaveName );
 		
 		slave::Slave slave( 
 			environment,

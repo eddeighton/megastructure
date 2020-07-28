@@ -76,8 +76,8 @@ int main( int argc, const char* argv[] )
 			std::async( std::launch::async, readInput );
             
         std::shared_ptr< megastructure::IMegaHost > pMegaHost( 
-            megastructure::createMegaHost( nullptr ),
-            []( const megastructure::IMegaHost* pMegaHost ){ megastructure::destroyMegaHost( pMegaHost ); } );
+            createMegaHost( nullptr ),
+            []( const megastructure::IMegaHost* pMegaHost ){ destroyMegaHost( pMegaHost ); } );
 			
         //SPDLOG_INFO( "Host: {} pid: {}", args.programName, Common::getProcessID() );
 			

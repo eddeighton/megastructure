@@ -44,6 +44,7 @@ public:
     static const boost::filesystem::path PYTHON_FILE_EXTENSION;
     static const std::string ENV_KEY_EG_INSTALLATION;
     static const std::string ENV_KEY_CURRENT_PROJECT;
+    static const std::string ENV_KEY_LOG_FOLDER;
     //static const std::string ENV_KEY_WINDOWS_10_SDK;
     //static const std::string ENV_KEY_VISUALSTUDIO;
     //static const std::string ENV_KEY_PYTHONHOME;
@@ -60,6 +61,7 @@ public:
     void startDriverCommand( std::ostream& os ) const;
     const boost::filesystem::path& getEGLibraryInclude() const;
     const boost::filesystem::path& getClangPluginDll() const;
+    const boost::filesystem::path& getLogFolderPath() const;
     
     std::string expand( const std::string& strPath ) const;
     

@@ -79,12 +79,13 @@ int main( int argc, const char* argv[] )
 	
     try 
     {
+        Environment environment;
+            
         //configure log
-        auto logThreadPool = megastructure::configureLog( "master" );
+        auto logThreadPool = megastructure::configureLog( environment.getLogFolderPath(), "master" );
     
         {
             spdlog::info( "Master started with pid:{}", Common::getProcessID() );
-            Environment environment;
             
             master::Master master( environment, args.master_path, args.port );
             

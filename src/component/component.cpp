@@ -32,7 +32,7 @@ namespace megastructure
 			m_egClient( TCPRemoteSocketName( "localhost", strEGPort ) ),
             m_bCurrentLockReleased( false )
 	{
-        m_logThreadPool = megastructure::configureLog( strProgramName );
+        m_logThreadPool = megastructure::configureLog( m_environment.getLogFolderPath(), strProgramName );
         
         SPDLOG_INFO( "Created megastructure component with mega port:{} eg port:{} program name:{}", strMegaPort, strEGPort, strProgramName );
         
@@ -52,6 +52,9 @@ namespace megastructure
 		m_client.stop();
 		m_egClient.stop();
 		m_zeromq1.join();
+        
+        spdlog::drop( m_strHostProgram );
+        m_logThreadPool.reset();
 	}
 	
     
