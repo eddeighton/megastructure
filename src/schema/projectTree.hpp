@@ -155,6 +155,9 @@ public:
 	boost::filesystem::path getNetStateSource() const;
 	boost::filesystem::path getRuntimeSource() const;
 	boost::filesystem::path getPythonSource() const;
+	std::string getUnrealInterfaceInclude() const;
+	boost::filesystem::path getUnrealInterface() const;
+	boost::filesystem::path getUnrealSource() const;
 	boost::filesystem::path getObjectName( const std::string& strTUName, const boost::filesystem::path& binPath ) const;
 	boost::filesystem::path getObjectFile( const boost::filesystem::path& sourceFile, const boost::filesystem::path& binPath ) const;
 	boost::filesystem::path getEGComponentSource() const;

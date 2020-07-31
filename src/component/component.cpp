@@ -24,10 +24,15 @@ namespace megastructure
 		return filename.string();
 	}
 	
-	Component::Component( Environment& environment, const std::string& strMegaPort, const std::string& strEGPort, const std::string& strProgramName )
+	Component::Component( Environment& environment, 
+                            const std::string& strMegaPort, 
+                            const std::string& strEGPort, 
+                            const std::string& strProgramName,
+                            void* pHostInterface )
 		:	m_environment( environment ),
 			m_strHostProgram( strProgramName ),
-			m_queue(),
+			m_pHostInterface( pHostInterface ),
+            m_queue(),
 			m_client( TCPRemoteSocketName( "localhost", strMegaPort ) ),
 			m_egClient( TCPRemoteSocketName( "localhost", strEGPort ) ),
             m_bCurrentLockReleased( false )
@@ -48,6 +53,8 @@ namespace megastructure
 	
 	Component::~Component()
 	{
+        SPDLOG_INFO( "Megastructure component shutdown {}", m_strHostProgram );
+        
 		m_queue.stop();
 		m_client.stop();
 		m_egClient.stop();
@@ -114,6 +121,11 @@ namespace megastructure
         for( Job::Ptr pJob : temp )
             pJob->run();
 	}
+    
+    void* Component::getRoot()
+    {
+        return m_pProgram ? m_pProgram->getRoot() : nullptr;
+    }
 	
 	void Component::runCycle()
 	{

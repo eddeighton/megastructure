@@ -76,9 +76,10 @@ Program::Program( Component& component, const std::string& strHostName, const st
             "g_pluginSymbol",                                       // name of the symbol to import
             boost::dll::load_mode::append_decorations               // makes `libmy_plugin_sum.so` or `my_plugin_sum.dll` from `my_plugin_sum`
         );
-    
-	//initialise the programs memory
-	m_pPlugin->Initialise( m_pEncodeDecode, this, this, 
+        
+    //initialise the program
+    m_pPlugin->Initialise( m_component.getHostInterface(), 
+        m_pEncodeDecode, this, this, 
         m_pProjectTree->getAnalysisFileName().string().c_str() );
 	
 	VERIFY_RTE_MSG( m_pEncodeDecode, "Did not get encode decode interface from program: " << m_componentPath.string() );

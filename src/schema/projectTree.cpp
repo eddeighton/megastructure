@@ -297,6 +297,8 @@ std::vector< boost::filesystem::path > ProjectTree::getUserIncludes( const Envir
     includes.push_back( "pybind11/stl_bind.h" );
     includes.push_back( environment.expand( "egcomponent/traits.hpp" ) );
     
+    includes.push_back( "unreal/unreal.hpp" );
+    
     includes.push_back( "eg/include.hpp" );
     includes.push_back( "eg_runtime/eg_runtime.hpp" );
 
@@ -539,6 +541,29 @@ boost::filesystem::path ProjectTree::getPythonSource() const
     return boost::filesystem::edsCannonicalise(
         boost::filesystem::absolute( 
             getImplFolder() / m_coordinatorName.get() / m_hostName.get() / m_projectName / "python.cpp" ) );
+}
+
+std::string ProjectTree::getUnrealInterfaceInclude() const
+{
+    VERIFY_RTE( m_coordinatorName && m_hostName );
+    std::ostringstream os;
+    os << "unreal.hpp";
+    return os.str();
+}
+boost::filesystem::path ProjectTree::getUnrealInterface() const
+{
+    VERIFY_RTE( m_coordinatorName && m_hostName );
+    return boost::filesystem::edsCannonicalise(
+        boost::filesystem::absolute( 
+            getImplFolder() / m_coordinatorName.get() / m_hostName.get() / m_projectName / getUnrealInterfaceInclude() ) );
+}
+
+boost::filesystem::path ProjectTree::getUnrealSource() const
+{
+    VERIFY_RTE( m_coordinatorName && m_hostName );
+    return boost::filesystem::edsCannonicalise(
+        boost::filesystem::absolute( 
+            getImplFolder() / m_coordinatorName.get() / m_hostName.get() / m_projectName / "unreal.cpp" ) );
 }
 
 boost::filesystem::path ProjectTree::getObjectName( const std::string& strTUName, const boost::filesystem::path& binPath ) const

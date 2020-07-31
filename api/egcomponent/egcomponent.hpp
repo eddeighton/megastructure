@@ -65,7 +65,10 @@ namespace megastructure
 	class BOOST_SYMBOL_VISIBLE EGComponent
 	{
 	public:
-		virtual void Initialise( EncodeDecode*& pEncodeDecode, MemorySystem* pMemorySystem, MegaProtocol* pMegaProtocol, 
+		virtual void Initialise( void* pHostInterface, 
+            EncodeDecode*& pEncodeDecode, 
+            MemorySystem* pMemorySystem, 
+            MegaProtocol* pMegaProtocol, 
             const char* pszDataBasePath ) = 0;
 		virtual void Uninitialise() = 0 ;
 		virtual void Cycle() = 0;

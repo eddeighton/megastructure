@@ -2,7 +2,7 @@
 <EG xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="file:///W:/workspace/eg/src/driver/schema.xsd">
 	<Host>
 		<Name>testhost</Name>
-        <Type>basic</Type>
+        <Type>unreal</Type>
 		<Command>${MEGA}/bin/test_host_dll.exe</Command>
 	</Host>
 </EG>

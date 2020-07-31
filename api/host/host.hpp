@@ -11,11 +11,12 @@
 
 namespace megastructure
 {
-
+    
 struct MEGAHOST_API IMegaHost
 {
     virtual ~IMegaHost();
     virtual void runCycle() = 0;
+    virtual void* getRoot() = 0;
 };
 
 typedef IMegaHost* (*CreateMegaHostFPtr)( void* );

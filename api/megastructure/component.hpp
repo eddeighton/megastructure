@@ -184,10 +184,16 @@ namespace megastructure
 		friend class SimThreadManager;
 		
 	public:
-		Component( Environment& environment, const std::string& strMegaPort, const std::string& strEGPort, const std::string& strProgramName );
+		Component( Environment& environment, 
+                    const std::string& strMegaPort, 
+                    const std::string& strEGPort, 
+                    const std::string& strProgramName,
+                    void* pHostInterface );
+                    
 		virtual ~Component();
 		
 		Environment& getEnvironment() { return m_environment; }
+        void* getHostInterface() const { return m_pHostInterface; }
 		
 		const std::string& getHostProgramName() const { return m_strHostProgram; }
 		const std::string& getSlaveName() const { return m_strSlaveName; }
@@ -195,6 +201,7 @@ namespace megastructure
 		std::shared_ptr< Program > getProgram() { return m_pProgram; }
 		
 		void runCycle();
+        void* getRoot();
         
 	private:
 		void setSlaveName( const std::string& strSlaveName ) { m_strSlaveName = strSlaveName; }
@@ -274,6 +281,7 @@ namespace megastructure
 	private:
 		Environment m_environment;
 		std::string m_strHostProgram;
+        void* m_pHostInterface;
 		std::string m_strSlaveName;
 		boost::filesystem::path m_slaveWorkspacePath;
 		megastructure::Queue m_queue;

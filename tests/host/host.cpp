@@ -94,7 +94,8 @@ int main( int argc, const char* argv[] )
 			environment,
 			args.slave_mega_port,
 			args.slave_eg_port,
-			args.programName );
+			args.programName,
+            nullptr );
             
         SPDLOG_INFO( "Host: {} pid: {}", args.programName, Common::getProcessID() );
 			

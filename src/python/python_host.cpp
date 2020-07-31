@@ -49,7 +49,7 @@ public:
         const std::string& strEGPort, 
         const std::string& strHostProgramName )
         :   m_environment( strProjectDirectory ),
-            m_component( m_environment, strMegaPort, strEGPort, strHostProgramName )
+            m_component( m_environment, strMegaPort, strEGPort, strHostProgramName, nullptr )
     {
         
     }

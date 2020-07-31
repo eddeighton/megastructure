@@ -22,8 +22,9 @@ namespace
     public:
         HostImpl(   const std::string& strMegaPort, 
                     const std::string& strEGPort, 
-                    const std::string& strProgramName )
-            :   m_component( m_environment, strMegaPort, strEGPort, strProgramName )
+                    const std::string& strProgramName,
+                    void* pEngineInterface )
+            :   m_component( m_environment, strMegaPort, strEGPort, strProgramName, pEngineInterface )
         {
         }
         
@@ -35,6 +36,11 @@ namespace
         virtual void runCycle()
         {
             m_component.runCycle();
+        }
+        
+        virtual void* getRoot()
+        {
+            return m_component.getRoot();
         }
         
     };
@@ -52,7 +58,7 @@ IMegaHost::~IMegaHost()
 
 megastructure::IMegaHost* createMegaHost( void* pEngineInterface )
 {
-    return new HostImpl( "1001", "1002", "test_host_dll.exe" );
+    return new HostImpl( "1001", "1002", "test_host_dll.exe", pEngineInterface );
 }
 
 void destroyMegaHost( const megastructure::IMegaHost* pHost )

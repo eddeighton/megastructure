@@ -113,12 +113,26 @@ namespace megastructure
         HostStructureMap m_hostStructures;
     };
 
+    enum ComponentType
+    {
+        eComponent_Basic,
+        eComponent_Python,
+        eComponent_Unreal,
+        TOTAL_COMPONENT_TYPES
+    };
+    
+    static const char* szComponentTypeNames[] = 
+    {
+        "basic",
+        "python",
+        "unreal"
+    };
 
     void generate_eg_component( std::ostream& os, 
             const ProjectTree& project,
             const eg::ReadSession& session,
             const NetworkAnalysis& networkAnalysis,
-            bool bPythonBindings );
+            ComponentType componentType );
 
     class InstructionCodeGeneratorFactoryImpl : public eg::InstructionCodeGeneratorFactory
     {

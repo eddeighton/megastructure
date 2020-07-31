@@ -735,7 +735,7 @@ void generate_eg_component( std::ostream& os,
         const ProjectTree& project,
         const eg::ReadSession& session,
         const NetworkAnalysis& networkAnalysis,
-        bool bPythonBindings )
+        ComponentType componentType )
 {
     
     os << "//ed was here\n";
@@ -917,11 +917,15 @@ void generate_eg_component( std::ostream& os,
     os << "    }\n";
     os << "}\n";
     
-    if( bPythonBindings )
+    if( eComponent_Python == componentType )
     {
     os << "extern eg::ComponentInterop& getPythonInterop();\n";
     os << "extern void setEGRuntime( eg::EGRuntime& egRuntime );\n";
     os << "extern void* getPythonRoot();\n";
+    }
+    else if( eComponent_Unreal == componentType )
+    {
+    os << "extern void* getUnrealRoot();\n";
     }
 
     const char szComponentPart1[] = R"(
@@ -934,6 +938,7 @@ class EGComponentImpl : public EGComponent, public EncodeDecode
     MemorySystem* m_pMemorySystem = nullptr;
     MegaProtocol* m_pMegaProtocol = nullptr;
     eg::EGRuntimePtr m_pEGRuntime;
+    void* m_pHostInterface = nullptr;
 public:
     virtual ~EGComponentImpl()
     {
@@ -942,18 +947,23 @@ public:
 )";
     os << szComponentPart1 << "\n";
     
-    os << "    virtual void Initialise( EncodeDecode*& pEncodeDecode, MemorySystem* pMemorySystem, MegaProtocol* pMegaProtocol, const char* pszDataBasePath )\n";
+    os << "    virtual void Initialise( void* pHostInterface, EncodeDecode*& pEncodeDecode, MemorySystem* pMemorySystem, MegaProtocol* pMegaProtocol, const char* pszDataBasePath )\n";
     os << "    {\n";
     os << "        pEncodeDecode = this;\n";
     os << "        \n";
     os << "        m_pMemorySystem = pMemorySystem;\n";
     os << "        m_pMegaProtocol = pMegaProtocol;\n";
     
-    if( bPythonBindings )
+    if( eComponent_Python == componentType )
     {
     os << "        eg::ComponentInterop& interop = getPythonInterop();\n";
     os << "        m_pEGRuntime = eg::constructRuntime( interop, pszDataBasePath );\n";
     os << "        setEGRuntime( *m_pEGRuntime );\n";
+    }
+    
+    if( eComponent_Unreal == componentType )
+    {
+    os << "        m_pHostInterface = pHostInterface;\n";
     }
     
     os << "\n";
@@ -961,11 +971,18 @@ public:
     os << "    }\n";
     
     
-    if( bPythonBindings )
+    if( eComponent_Python == componentType )
     {
     os << "    virtual void* GetRoot()\n";
     os << "    {\n";
     os << "        return getPythonRoot();\n";
+    os << "    }\n";
+    }
+    else if( eComponent_Unreal == componentType )
+    {
+    os << "    virtual void* GetRoot()\n";
+    os << "    {\n";
+    os << "        return getUnrealRoot();\n";
     os << "    }\n";
     }
     else
@@ -1024,6 +1041,10 @@ const char szComponentPart2[] = R"(
         m_pMegaProtocol->writelock( component, clock::cycle() );
     }
 
+    void* getHostInterface() const
+    {
+        return m_pHostInterface;
+    }
 
 };
 
@@ -1078,6 +1099,49 @@ namespace eg
 
     )";
     os << szEventRoutines << "\n";
+    
+    if( eComponent_Unreal == componentType )
+    {
+        
+    const char szUnrealStuff[] = R"(
+    
+namespace Unreal
+{
+    struct IEngineInterface
+    {
+        virtual ~IEngineInterface(){}
+        virtual void log( const wchar_t* msg ) = 0;
+    };
+    
+    void log( const wchar_t* msg )
+    {
+        IEngineInterface* pUnreal = reinterpret_cast< IEngineInterface* >( 
+            megastructure::g_pluginSymbol.getHostInterface() );
+        pUnreal->log( msg );
+    }
+}
+    
+    )";
+    os << szUnrealStuff << "\n";
+    }
+    else
+    {
+        //fake it
+    const char szUnrealStuff[] = R"(
+    
+namespace Unreal
+{
+    void log( const wchar_t* msg )
+    {
+        ERR( "Unreal interface used outside unreal component" );
+    }
+}
+    
+    )";
+    os << szUnrealStuff << "\n";
+    }
+        
+    
 }
 
 } //namespace megastructure

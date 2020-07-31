@@ -521,6 +521,8 @@ void generateMegaStructureNetStateHeader( std::ostream& os, const eg::ReadSessio
 }
 
 extern void generatePythonBindings( std::ostream&, const eg::ReadSession&, const Environment&, const ProjectTree&, eg::PrinterFactory::Ptr );
+extern void generateUnrealInterface( std::ostream&, const eg::ReadSession&, const Environment&, const ProjectTree&, eg::PrinterFactory::Ptr );
+extern void generateUnrealCode( std::ostream&, const eg::ReadSession&, const Environment&, const ProjectTree&, eg::PrinterFactory::Ptr );
 
 void build_component( const eg::ReadSession& session, const Environment& environment,
     const ProjectTree& projectTree, const boost::filesystem::path& binPath, 
@@ -575,7 +577,7 @@ void build_component( const eg::ReadSession& session, const Environment& environ
     const std::string& strProjectType = project.getHost().Type();
     
 	//generate the eg component interface implementation
-    if( strProjectType == "basic" )
+    if( strProjectType == megastructure::szComponentTypeNames[ megastructure::eComponent_Basic ] )
     {
 		std::ostringstream osEGComponent;
 		megastructure::generate_eg_component( 
@@ -583,13 +585,12 @@ void build_component( const eg::ReadSession& session, const Environment& environ
             projectTree, 
             session,
             networkAnalysis,
-            false );
+            megastructure::eComponent_Basic );
 		const boost::filesystem::path egComponentSourceFilePath = projectTree.getEGComponentSource();
 		boost::filesystem::updateFileIfChanged( egComponentSourceFilePath, osEGComponent.str() );
 		sourceFiles.push_back( egComponentSourceFilePath );
-        
     }
-    else if( strProjectType == "python" )
+    else if( strProjectType == megastructure::szComponentTypeNames[ megastructure::eComponent_Python ] )
     {
         //generate python bindings
 		std::ostringstream osPython;
@@ -603,7 +604,31 @@ void build_component( const eg::ReadSession& session, const Environment& environ
             projectTree, 
             session,
             networkAnalysis,
-            true );
+            megastructure::eComponent_Python );
+		const boost::filesystem::path egComponentSourceFilePath = projectTree.getEGComponentSource();
+		boost::filesystem::updateFileIfChanged( egComponentSourceFilePath, osEGComponent.str() );
+		sourceFiles.push_back( egComponentSourceFilePath );
+    }
+    else if( strProjectType == megastructure::szComponentTypeNames[ megastructure::eComponent_Unreal ] )
+    {
+        //generate the unreal interface
+		std::ostringstream osUnrealInterface;
+        generateUnrealInterface( osUnrealInterface, session, environment, projectTree, pPrinterFactory );
+		boost::filesystem::updateFileIfChanged( projectTree.getUnrealInterface(), osUnrealInterface.str() );
+        
+        //generate the unreal implementation
+		std::ostringstream osUnreal;
+        generateUnrealCode( osUnreal, session, environment, projectTree, pPrinterFactory );
+		boost::filesystem::updateFileIfChanged( projectTree.getUnrealSource(), osUnreal.str() );
+		sourceFiles.push_back( projectTree.getUnrealSource() );
+        
+		std::ostringstream osEGComponent;
+		megastructure::generate_eg_component( 
+            osEGComponent, 
+            projectTree, 
+            session,
+            networkAnalysis,
+            megastructure::eComponent_Unreal );
 		const boost::filesystem::path egComponentSourceFilePath = projectTree.getEGComponentSource();
 		boost::filesystem::updateFileIfChanged( egComponentSourceFilePath, osEGComponent.str() );
 		sourceFiles.push_back( egComponentSourceFilePath );
