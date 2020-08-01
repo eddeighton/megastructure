@@ -598,7 +598,7 @@ void recurseWriteRequest( const NetworkAnalysis& networkAnalysis, const eg::Layo
                         eg::Printer::Ptr pStatePrinter  = eg::getDefaultPrinterFactory()->getPrinter( pStateDataMember, "typeInstance.instance" );
                         eg::Printer::Ptr pRefPrinter    = eg::getDefaultPrinterFactory()->getPrinter( pRefDataMember,   "typeInstance.instance" );
                         
-                        if( networkAnalysis.isBufferForThisComponent( pStateDataMember->getBuffer() ) )
+                        if( networkAnalysis.isBufferInProcess( pStateDataMember->getBuffer() ) )
                         {
             os << strIndent << "case " << pElement->getIndex() << ":\n";
             os << strIndent << "    {\n";
@@ -775,7 +775,7 @@ void generate_eg_component( std::ostream& os,
     os << "\n//buffers\n";
     for( const eg::Buffer* pBuffer : layout.getBuffers() )
     {
-        if( networkAnalysis.isBufferForThisComponent( pBuffer ) )
+        if( networkAnalysis.isBufferInProcess( pBuffer ) )
         {
             os << "megastructure::SharedBuffer* " << pBuffer->getVariableName() << "_mega;\n";
         }
@@ -791,7 +791,7 @@ void generate_eg_component( std::ostream& os,
     os << "{\n";
     for( const eg::Buffer* pBuffer : layout.getBuffers() )
     {
-        if( networkAnalysis.isBufferForThisComponent( pBuffer ) )
+        if( networkAnalysis.isBufferInProcess( pBuffer ) )
         {
             os << "    " << pBuffer->getVariableName() << "_mega = pMemorySystem->getSharedBuffer( \"" << 
                 pBuffer->getVariableName() << "\" , " <<  pBuffer->getSize() << " * sizeof( " << pBuffer->getTypeName() << " ) );\n";

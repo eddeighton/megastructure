@@ -56,3 +56,8 @@ def loop_asyncio(kernel):
         break
         
 #C:\Users\eddeighton\AppData\Roaming\jupyter\runtime
+
+import python_host
+host = python_host.GetHost()
+prog = host.getProgram()
+root = prog.getRoot()

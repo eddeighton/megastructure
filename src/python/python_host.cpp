@@ -38,6 +38,81 @@ namespace pybind11
 
 namespace megastructure
 {
+    
+class ProgramWrapper
+{
+public:
+    ProgramWrapper( std::shared_ptr< Program > pProgram )
+        : m_pProgram( pProgram )
+    {
+        
+    }
+
+    const std::string& getHostName() const
+    {
+        if( std::shared_ptr< Program > pProgram = m_pProgram.lock() )
+        {
+            return pProgram->getHostName();
+        }
+        else
+        {
+            return m_dummyString;
+        }
+    }
+    
+    const std::string& getProjectName() const
+    {
+        if( std::shared_ptr< Program > pProgram = m_pProgram.lock() )
+        {
+            return pProgram->getProjectName();
+        }
+        else
+        {
+            return m_dummyString;
+        }
+    }
+    const std::string& getComponentName() const
+    {
+        if( std::shared_ptr< Program > pProgram = m_pProgram.lock() )
+        {
+            return pProgram->getComponentName();
+        }
+        else
+        {
+            return m_dummyString;
+        }
+    }
+    
+    const boost::filesystem::path& getComponentPath() const
+    {
+        if( std::shared_ptr< Program > pProgram = m_pProgram.lock() )
+        {
+            return pProgram->getComponentPath();
+        }
+        else
+        {
+            return m_dummyPath;
+        }
+    }
+    
+    void* getRoot() const
+    {
+        if( std::shared_ptr< Program > pProgram = m_pProgram.lock() )
+        {
+            return pProgram->getRoot();
+        }
+        else
+        {
+            return nullptr;
+        }
+    }
+    
+
+private:
+    std::weak_ptr< Program > m_pProgram;
+    std::string m_dummyString;
+    boost::filesystem::path m_dummyPath;
+};
 
 class Host
 {
@@ -58,7 +133,10 @@ public:
     const std::string& getSlaveName()          const { return m_component.getSlaveName(); }
     const boost::filesystem::path& getSlaveWorkspacePath()  const { return m_component.getSlaveWorkspacePath(); }
 
-    std::shared_ptr< Program > getProgram() { return m_component.getProgram(); }
+    std::shared_ptr< ProgramWrapper > getProgram() 
+    { 
+        return std::make_shared< ProgramWrapper >( m_component.getProgram() ); 
+    }
     
     void runCycle() { m_component.runCycle(); }
     
@@ -95,15 +173,15 @@ PYBIND11_MODULE( python_host, phModule )
 {
     phModule.doc() = "Python Host Module for Megastructure";
 
-    pybind11::class_< megastructure::Program, std::shared_ptr< megastructure::Program > >( phModule, "Program" )
+    pybind11::class_< megastructure::ProgramWrapper, std::shared_ptr< megastructure::ProgramWrapper > >( phModule, "Program" )
         
-       .def( "getHostName",         &megastructure::Program::getHostName )
-       .def( "getProjectName",      &megastructure::Program::getProjectName )
-       .def( "getComponentName",    &megastructure::Program::getComponentName )
-       .def( "getComponentPath",    &megastructure::Program::getComponentPath )
+       .def( "getHostName",         &megastructure::ProgramWrapper::getHostName )
+       .def( "getProjectName",      &megastructure::ProgramWrapper::getProjectName )
+       .def( "getComponentName",    &megastructure::ProgramWrapper::getComponentName )
+       .def( "getComponentPath",    &megastructure::ProgramWrapper::getComponentPath )
        
        .def( "getRoot", 
-               []( const megastructure::Program& program )
+               []( const megastructure::ProgramWrapper& program )
                {
                    if( void* pRoot = program.getRoot() )
                    {

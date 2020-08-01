@@ -72,10 +72,25 @@ namespace megastructure
             VERIFY_RTE( iFind != m_bufferTypes.end() );
             return iFind->second;
         }
-        inline bool isBufferForThisComponent( const eg::Buffer* pBuffer ) const
+        
+        bool isBufferInProcess( const eg::Buffer* pBuffer ) const
         {
             BufferTypes::const_iterator iFind = m_bufferTypes.find( pBuffer );
             VERIFY_RTE( iFind != m_bufferTypes.end() );
+            switch( iFind->second )
+            {
+                case eComponent           : return true;
+                case eProcess             : 
+                    if( pBuffer->isSimple() )
+                        return true;
+                    else
+                        return false;
+                case ePlanet              : return false;
+                case TOTAL_RELATION_TYPES :
+                default:
+                    THROW_RTE( "Unknown buffer type" );
+                    
+            }
             return iFind->second == eComponent;
         }
         

@@ -16,6 +16,8 @@
 
 #include "host/host.hpp"
 
+#include "W:\megatest\impl\reddwarf\unreal\testproject\unreal.hpp"
+
 struct Args
 {
 };
@@ -78,6 +80,8 @@ int main( int argc, const char* argv[] )
         std::shared_ptr< megastructure::IMegaHost > pMegaHost( 
             createMegaHost( nullptr ),
             []( const megastructure::IMegaHost* pMegaHost ){ destroyMegaHost( pMegaHost ); } );
+            
+        
 			
         //SPDLOG_INFO( "Host: {} pid: {}", args.programName, Common::getProcessID() );
 			
@@ -97,6 +101,33 @@ int main( int argc, const char* argv[] )
                 else if( strInput == "" )
                 {
                     //do nothing
+                }
+                else if( strInput == "help" )
+                {
+                    std::cout << "help - this message\n";
+                    std::cout << "test - attempt to get sim root and log stuff\n";
+                    std::cout << "quit - quit this host\n";
+                }
+                else if( strInput == "test" )
+                {
+                    using TestProject = Iroot::Ireddwarf::Iunreal::Itestproject;
+                    const Iroot* pRoot = (const Iroot*)pMegaHost->getRoot();
+                    if( const Iroot::Ireddwarf* pRedDwarf = pRoot->reddwarf( 0 ) )
+                    {
+                        if( const Iroot::Ireddwarf::Iunreal* pUnreal = pRedDwarf->unreal( 0 ) )
+                        {
+                            if( const TestProject* pTestProject = pUnreal->testproject( 0 ) )
+                            {
+                                size_t iSim = pTestProject->Tank_begin();
+                                while( const TestProject::ITank* pSimTank = pTestProject->Tank( iSim ) )
+                                {
+                                    std::cout << "Tank: " << pSimTank->getInstance() << " x: " << pSimTank->x() << " y: " << pSimTank->y() << " angle: " <<pSimTank->angle() << "\n";
+                                    iSim = pTestProject->Tank_next( iSim );
+                                }
+                            }
+                        }
+                    }
+                    
                 }
 				else
 				{

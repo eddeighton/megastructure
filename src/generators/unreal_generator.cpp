@@ -68,12 +68,12 @@ namespace eg
         }
     }
 
-    struct InterfaceVisitor
+    struct StaticInterfaceVisitor
     {
         std::ostream& os;
         std::string strIndent;
 
-        InterfaceVisitor( std::ostream& os ) : os( os ) {}
+        StaticInterfaceVisitor( std::ostream& os ) : os( os ) {}
         
         void pushIndent()
         {
@@ -189,10 +189,12 @@ namespace eg
             if( bIsContext )
             {
                 os << strIndent << "};\n";
-                if( pContext->isExecutable() )
+                //if( pContext->isExecutable() )
+                if( pContext->getParent() && pContext->getParent()->getParent() )
                 {
-                    //os << strIndent << "virtual " << interfaceName( pContext ) << "* " << pNode->getIdentifier() << "( std::size_t szIndex ) const = 0;\n";
-                    //os << strIndent << "virtual std::size_t " << pNode->getIdentifier() << "_size() const = 0;\n";
+                    os << strIndent << "virtual const " << interfaceName( pContext ) << "* " << pNode->getIdentifier() << "( std::size_t iterator ) const = 0;\n";
+                    os << strIndent << "virtual std::size_t " << pNode->getIdentifier() << "_begin() const = 0;\n";
+                    os << strIndent << "virtual std::size_t " << pNode->getIdentifier() << "_next( std::size_t iterator ) const = 0;\n";
                 }
             }
         }
@@ -212,8 +214,8 @@ void generateUnrealInterface( std::ostream& os, const eg::ReadSession& session,
     os << "struct IObject;\n";
     os << "struct IContext\n";
     os << "{\n";
-    //os << "    virtual IObject* getObject() = 0;\n";
-    //os << "    virtual IContext* getParent() = 0;\n";
+    os << "    virtual std::size_t getInstance() const = 0;\n";
+    //os << "    virtual std::size_t getRTTI() const = 0;\n";
     os << "};\n";
     
     os << "struct IObject : public IContext\n";
@@ -222,7 +224,7 @@ void generateUnrealInterface( std::ostream& os, const eg::ReadSession& session,
     
     {
         os << "\n//Object Interface\n";
-        eg::InterfaceVisitor interfaceVisitor( os );
+        eg::StaticInterfaceVisitor interfaceVisitor( os );
         pInterfaceRoot->pushpop( interfaceVisitor );
         os << "\n";
     }
@@ -264,8 +266,14 @@ inline std::string implName( const eg::concrete::Action* pNode )
     os << "C" << pNode->getName();
     return os.str();
 }
+inline std::string arrayName( const eg::concrete::Action* pNode )
+{
+    std::ostringstream os;
+    os << "u_" << pNode->getName();
+    return os.str();
+}
 
-void generateImplementation( std::ostream& os, const eg::Layout& layout, const eg::concrete::Action* pContext, eg::PrinterFactory::Ptr pPrinterFactory )
+void generateImplementationDeclarations( std::ostream& os, const eg::Layout& layout, const eg::concrete::Action* pContext, eg::PrinterFactory::Ptr pPrinterFactory )
 {
     const std::vector< eg::concrete::Element* >& children = pContext->getChildren();
     
@@ -273,8 +281,10 @@ void generateImplementation( std::ostream& os, const eg::Layout& layout, const e
     {
         os << "struct " << implName( pContext ) << " : public " << fullInterfaceType( pContext->getContext() ) << "\n";
         os << "{\n";
-        os << "  " << implName( pContext ) << "( const eg::reference& egRef ) : ref( egRef ) {}\n";
-        os << "  eg::reference ref;\n";
+        os << "  " << implName( pContext ) << "( const eg::TypeInstance& egRef ) : ref( egRef ) {}\n";
+        os << "  eg::TypeInstance ref;\n";
+        os << "  std::size_t getInstance() const { return ref.instance; };\n";
+        //os << "  virtual std::size_t getRTTI() const { return ref.type; };\n";
         
         for( eg::concrete::Element* pChildElement : children )
         {
@@ -287,7 +297,20 @@ void generateImplementation( std::ostream& os, const eg::Layout& layout, const e
             }
             else if( const eg::concrete::Action* pChildContext = dynamic_cast< const eg::concrete::Action* >( pChildElement ) )
             {
+                bool bIsContext = false;
+                bool bIsObject = false;
                 
+                contextInclusion( pChildContext->getContext(), bIsContext, bIsObject );
+                
+                if( bIsContext )
+                {
+                    if( pContext->getParent() )
+                    {
+                        os << "  const " << interfaceName( pChildContext->getContext() ) << "* " << pChildContext->getContext()->getIdentifier() << "( std::size_t iterator ) const;\n";
+                        os << "  std::size_t " << pChildContext->getContext()->getIdentifier() << "_begin() const;\n";
+                        os << "  std::size_t " << pChildContext->getContext()->getIdentifier() << "_next( std::size_t iterator ) const;\n";
+                    }
+                }
             }
         }
         
@@ -315,7 +338,7 @@ void generateImplementation( std::ostream& os, const eg::Layout& layout, const e
             
             if( bIsContext )
             {
-                generateImplementation( os, layout, pChildContext, pPrinterFactory );
+                generateImplementationDeclarations( os, layout, pChildContext, pPrinterFactory );
             }
         }
     }
@@ -324,25 +347,24 @@ void generateImplementation( std::ostream& os, const eg::Layout& layout, const e
 
 void generateAllocations( std::ostream& os, const eg::concrete::Action* pContext )
 {
-    if( pContext->getParent() )
+    VERIFY_RTE( pContext->getParent() );
+    
+    std::ostringstream osInit;
+    const auto iTotal = pContext->getTotalDomainSize();
+    bool bFirst = true;
+    for( int i = 0; i < iTotal; ++i )
     {
-        std::ostringstream osInit;
-        const auto iTotal = pContext->getTotalDomainSize();
-        bool bFirst = true;
-        for( int i = 0; i < iTotal; ++i )
+        if( bFirst )
         {
-            if( bFirst )
-            {
-                osInit << "R{ " << i << ", " << pContext->getIndex() << ", 0 }";
-                bFirst = false;
-            }
-            else
-            {
-                osInit << ",R{ " << i << ", " << pContext->getIndex() << ", 0 }";
-            }
+            osInit << "R{ " << i << ", " << pContext->getIndex() << " }";
+            bFirst = false;
         }
-        os << "const std::array< " << implName( pContext ) << ", " << iTotal << " > g_" << implName( pContext ) << " = { " << osInit.str() << " };\n";
+        else
+        {
+            osInit << ",R{ " << i << ", " << pContext->getIndex() << " }";
+        }
     }
+    os << "const std::array< " << implName( pContext ) << ", " << iTotal << " > " << arrayName( pContext ) << " = { " << osInit.str() << " };\n";
     
     const std::vector< eg::concrete::Element* >& children = pContext->getChildren();
     for( const eg::concrete::Element* pChildElement : children )
@@ -366,6 +388,95 @@ void generateAllocations( std::ostream& os, const eg::concrete::Action* pContext
     }
 }
 
+void generateImplementationDefinitions( std::ostream& os, const eg::Layout& layout, const eg::concrete::Action* pContext, eg::PrinterFactory::Ptr pPrinterFactory )
+{
+    const std::vector< eg::concrete::Element* >& children = pContext->getChildren();
+    
+    if( pContext->getParent() )
+    {
+        for( eg::concrete::Element* pChildElement : children )
+        {
+            if( const eg::concrete::Dimension_User* pUserDimension = dynamic_cast< const eg::concrete::Dimension_User* >( pChildElement ) )
+            {
+                //const eg::interface::Dimension* pInterfaceDimension = pUserDimension->getDimension();
+                //os << "  const " << pInterfaceDimension->getCanonicalType() << "& " << 
+                //    pInterfaceDimension->getIdentifier() << "() const { return " << 
+                //        *pPrinterFactory->read( layout.getDataMember( pUserDimension ), "ref.instance" ) << "; }\n";
+            }
+            else if( const eg::concrete::Action* pChildContext = dynamic_cast< const eg::concrete::Action* >( pChildElement ) )
+            {
+                bool bIsContext = false;
+                bool bIsObject = false;
+                
+                contextInclusion( pChildContext->getContext(), bIsContext, bIsObject );
+                
+                if( bIsContext )
+                {
+                    if( pContext->getParent() )
+                    {
+                        os << "const " << fullInterfaceType( pChildContext->getContext() ) << "* " << 
+                                implName( pContext ) << "::" << pChildContext->getContext()->getIdentifier() << "( std::size_t iterator ) const\n";
+                        os << "{\n";
+                        os << "    const std::size_t _end = ( ref.instance + 1 ) * " << pChildContext->getLocalDomainSize() << ";\n";
+                        os << "    return ( iterator != _end ) ? &" << arrayName( pChildContext ) << "[ iterator ] : nullptr;\n";
+                        os << "}\n";
+                        
+                        os << "std::size_t " << implName( pContext ) << "::" << pChildContext->getContext()->getIdentifier() << "_begin() const\n";
+                        os << "{\n"; 
+                        os << "    const std::size_t _end = ( ref.instance + 1 ) * " << pChildContext->getLocalDomainSize() << ";\n";
+                        os << "    std::size_t iterator = ref.instance * " << pChildContext->getLocalDomainSize() << ";\n";
+                        os << "    for( ; iterator != _end; ++iterator )\n";
+                        os << "    {\n";
+                        os << "        if( isActionActive< " << getStaticType( pChildContext->getContext() ) << " >( " << pChildContext->getIndex() << ", iterator )  )\n";
+                        os << "            break;\n";
+                        os << "    }\n";
+                        os << "    return iterator;\n";
+                        os << "}\n";
+                        
+                        os << "std::size_t " << implName( pContext ) << "::" << pChildContext->getContext()->getIdentifier() << "_next( std::size_t iterator ) const\n";
+                        os << "{\n";
+                        os << "    const std::size_t _end = ( ref.instance + 1 ) * " << pChildContext->getLocalDomainSize() << ";\n";
+                        os << "    for( ; iterator != _end;  )\n";
+                        os << "    {\n";
+                        os << "        ++iterator;\n";
+                        os << "        if( isActionActive< " << getStaticType( pChildContext->getContext() ) << " >( " << pChildContext->getIndex() << ", iterator )  )\n";
+                        os << "            break;\n";
+                        os << "    }\n";
+                        os << "    return iterator;\n";
+                        os << "}\n";
+                        
+                    }
+                }
+            }
+        }
+    }
+    
+    for( const eg::concrete::Element* pChildElement : children )
+    {
+        if( const eg::concrete::Dimension_User* pUserDimension = dynamic_cast< const eg::concrete::Dimension_User* >( pChildElement ) )
+        {
+            
+            
+        }
+        else if( const eg::concrete::Action* pChildContext = dynamic_cast< const eg::concrete::Action* >( pChildElement ) )
+        {
+            bool bIsContext = false;
+            bool bIsObject = false;
+            
+            const eg::interface::Context* pContext = 
+                dynamic_cast< const eg::interface::Context* >( pChildContext->getContext() );
+            VERIFY_RTE( pContext );
+            
+            contextInclusion( pChildContext->getContext(), bIsContext, bIsObject );
+            
+            if( bIsContext )
+            {
+                generateImplementationDefinitions( os, layout, pChildContext, pPrinterFactory );
+            }
+        }
+    }
+}
+
 void generateUnrealCode( std::ostream& os, const eg::ReadSession& session, 
         const Environment& environment, const ProjectTree& projectTree, eg::PrinterFactory::Ptr pPrinterFactory )
 {
@@ -379,19 +490,28 @@ void generateUnrealCode( std::ostream& os, const eg::ReadSession& session,
     const eg::concrete::Action* pConcreteRoot = session.getInstanceRoot();
     const eg::Layout& layout = session.getLayout();
     
-    generateImplementation( os, layout, pConcreteRoot, pPrinterFactory );
+    VERIFY_RTE( !pConcreteRoot->getParent() );
+    VERIFY_RTE( pConcreteRoot->getChildren().size() == 1U );
+    
+    const eg::concrete::Action* pActualRoot = 
+        dynamic_cast< const eg::concrete::Action* >( pConcreteRoot->getChildren().front() );
+        
+    eg::generateMemberFunctions( os, *pPrinterFactory, session );
+    
+    generateImplementationDeclarations( os, layout, pActualRoot, pPrinterFactory );
     
     os << "\n";
-    os << "using R = eg::reference;\n";
+    os << "using R = eg::TypeInstance;\n";
     
-    generateAllocations( os, pConcreteRoot );
+    generateAllocations( os, pActualRoot );
+    
+    generateImplementationDefinitions( os, layout, pActualRoot, pPrinterFactory );
     
     os << "\n";
 
     os << "void* getUnrealRoot()\n";
     os << "{\n";
-    os << "    return &g_Croot_100[ 0 ];\n";
+    os << "    return const_cast< void* >( reinterpret_cast< const void* >( &" << arrayName( pActualRoot ) << "[ 0 ] ) );\n";
     os << "}\n";
     
-    //megastructure::generateRuntimeExterns( os, session );
 }
