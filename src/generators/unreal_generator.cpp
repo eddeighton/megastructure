@@ -13,6 +13,8 @@
 #include "eg_compiler/codegen/dataAccessPrinter.hpp"
 #include "eg_compiler/input.hpp"
 #include "eg_compiler/allocator.hpp"
+#include "eg_compiler/layout.hpp"
+#include "eg_compiler/derivation.hpp"
 
 #include "common/assert_verify.hpp"
 #include "common/file.hpp"
@@ -67,6 +69,49 @@ namespace eg
             THROW_RTE( "Unknown context type" );
         }
     }
+    
+    bool dataTypeSupported( const interface::Dimension* pDimension )
+    {
+        if( pDimension->getContextTypes().empty() )
+        {
+            return true;
+        }
+        else if( pDimension->getContextTypes().size() == 1U )
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    std::string dataType( const interface::Dimension* pDimension )
+    {
+        std::ostringstream os;
+        if( pDimension->getContextTypes().empty() )
+        {
+            os << "const " << pDimension->getCanonicalType() << "&";
+        }
+        else if( pDimension->getContextTypes().size() == 1U )
+        {
+            const interface::Context* pAction = pDimension->getContextTypes().front();
+            
+            os << "const " << interfaceName( pAction ) << "*";
+        }
+        else
+        {
+            THROW_RTE( "Variants not supported in interface" );
+            /*os << EG_VARIANT_TYPE << "< ";
+            for( const interface::Context* pAction : pDimension->getContextTypes() )
+            {
+                if( pAction != pDimension->getContextTypes().front() )
+                    os << ", ";
+                os << getStaticType( pAction );
+            }
+            os << " >";*/
+        }
+        return os.str();
+    }
 
     struct StaticInterfaceVisitor
     {
@@ -92,8 +137,10 @@ namespace eg
         void push ( const input::Dimension* pElement, const interface::Element* pNode )
         {
             const interface::Dimension* pDimension = dynamic_cast< const interface::Dimension* >( pNode );
-            
-            os << strIndent << "virtual const " << pDimension->getCanonicalType() << "& " << pDimension->getIdentifier() << "() const = 0;\n";
+            if( dataTypeSupported( pDimension ) )
+            {
+                os << strIndent << "virtual " << dataType( pDimension ) << " " << pDimension->getIdentifier() << "() const = 0;\n";
+            }
         }
         void push ( const input::Include*   pElement, const interface::Element* pNode )
         {
@@ -121,34 +168,43 @@ namespace eg
             if( bIsContext )
             {
                 const std::vector< interface::Context* >& baseContexts = pContext->getBaseContexts();
-                if( !baseContexts.empty() )
+                
+                if( const interface::Link* pLink = dynamic_cast< const interface::Link* >( pContext ) )
                 {
-                    std::ostringstream osBaseList;
-                    bool bFirst = true;
-                    for( const interface::Context* pBaseContext: baseContexts )
-                    {
-                        if( bFirst )
-                        {
-                            osBaseList << interfaceName( pBaseContext ) << " ";
-                            bFirst = false;
-                        }
-                        else
-                        {
-                            osBaseList << ", " << interfaceName( pBaseContext ) << " ";
-                        }
-                    }
-                    os << strIndent << "struct " << interfaceName( pContext ) << " : public " << osBaseList.str() << "\n";
-                    os << strIndent << "{\n";
-                }
-                else if( bIsObject )
-                {
-                    os << strIndent << "struct " << interfaceName( pContext ) << " : public IObject\n";
+                    os << strIndent << "struct " << interfaceName( pContext ) << " : public IContext\n";
                     os << strIndent << "{\n";
                 }
                 else
                 {
-                    os << strIndent << "struct " << interfaceName( pContext ) << " : public IContext\n";
-                    os << strIndent << "{\n";
+                    if( !baseContexts.empty() )
+                    {
+                        std::ostringstream osBaseList;
+                        bool bFirst = true;
+                        for( const interface::Context* pBaseContext: baseContexts )
+                        {
+                            if( bFirst )
+                            {
+                                osBaseList << interfaceName( pBaseContext ) << " ";
+                                bFirst = false;
+                            }
+                            else
+                            {
+                                osBaseList << ", " << interfaceName( pBaseContext ) << " ";
+                            }
+                        }
+                        os << strIndent << "struct " << interfaceName( pContext ) << " : public " << osBaseList.str() << "\n";
+                        os << strIndent << "{\n";
+                    }
+                    else if( bIsObject )
+                    {
+                        os << strIndent << "struct " << interfaceName( pContext ) << " : public IObject\n";
+                        os << strIndent << "{\n";
+                    }
+                    else
+                    {
+                        os << strIndent << "struct " << interfaceName( pContext ) << " : public IContext\n";
+                        os << strIndent << "{\n";
+                    }
                 }
             }
                 
@@ -273,6 +329,25 @@ inline std::string arrayName( const eg::concrete::Action* pNode )
     return os.str();
 }
 
+std::string dataTypeFull( const eg::interface::Dimension* pDimension )
+{
+    std::ostringstream os;
+    if( pDimension->getContextTypes().empty() )
+    {
+        os << "const " << pDimension->getCanonicalType() << "&";
+    }
+    else if( pDimension->getContextTypes().size() == 1U )
+    {
+        const eg::interface::Context* pAction = pDimension->getContextTypes().front();
+        os << "const " << fullInterfaceType( pAction ) << "*";
+    }
+    else
+    {
+        THROW_RTE( "Variants not supported in interface" );
+    }
+    return os.str();
+}
+    
 void generateImplementationDeclarations( std::ostream& os, const eg::Layout& layout, const eg::concrete::Action* pContext, eg::PrinterFactory::Ptr pPrinterFactory )
 {
     const std::vector< eg::concrete::Element* >& children = pContext->getChildren();
@@ -290,10 +365,20 @@ void generateImplementationDeclarations( std::ostream& os, const eg::Layout& lay
         {
             if( const eg::concrete::Dimension_User* pUserDimension = dynamic_cast< const eg::concrete::Dimension_User* >( pChildElement ) )
             {
-                const eg::interface::Dimension* pInterfaceDimension = pUserDimension->getDimension();
-                os << "  const " << pInterfaceDimension->getCanonicalType() << "& " << 
-                    pInterfaceDimension->getIdentifier() << "() const { return " << 
-                        *pPrinterFactory->read( layout.getDataMember( pUserDimension ), "ref.instance" ) << "; }\n";
+                if( const eg::LinkGroup* pLinkGroup = pUserDimension->getLinkGroup() )
+                {
+                    //convert the link reference to the interface type
+                    const eg::interface::Dimension* pDimension = pUserDimension->getDimension();
+                    os << "  " << dataTypeFull( pDimension ) << " " << pDimension->getIdentifier() << "() const;\n";
+                }
+                else
+                {
+                    const eg::interface::Dimension* pDimension = pUserDimension->getDimension();
+                    if( dataTypeSupported( pDimension ) )
+                    {
+                        os << "  " << dataTypeFull( pDimension ) << " " << pDimension->getIdentifier() << "() const;\n";
+                    }
+                }
             }
             else if( const eg::concrete::Action* pChildContext = dynamic_cast< const eg::concrete::Action* >( pChildElement ) )
             {
@@ -388,7 +473,8 @@ void generateAllocations( std::ostream& os, const eg::concrete::Action* pContext
     }
 }
 
-void generateImplementationDefinitions( std::ostream& os, const eg::Layout& layout, const eg::concrete::Action* pContext, eg::PrinterFactory::Ptr pPrinterFactory )
+void generateImplementationDefinitions( std::ostream& os, const eg::Layout& layout, const eg::DerivationAnalysis& derivationAnalysis, 
+    const eg::concrete::Action* pContext, eg::PrinterFactory::Ptr pPrinterFactory )
 {
     const std::vector< eg::concrete::Element* >& children = pContext->getChildren();
     
@@ -398,10 +484,43 @@ void generateImplementationDefinitions( std::ostream& os, const eg::Layout& layo
         {
             if( const eg::concrete::Dimension_User* pUserDimension = dynamic_cast< const eg::concrete::Dimension_User* >( pChildElement ) )
             {
-                //const eg::interface::Dimension* pInterfaceDimension = pUserDimension->getDimension();
-                //os << "  const " << pInterfaceDimension->getCanonicalType() << "& " << 
-                //    pInterfaceDimension->getIdentifier() << "() const { return " << 
-                //        *pPrinterFactory->read( layout.getDataMember( pUserDimension ), "ref.instance" ) << "; }\n";
+                if( const eg::LinkGroup* pLinkGroup = pUserDimension->getLinkGroup() )
+                {
+                    //convert the link reference to the interface type
+                    const eg::interface::Dimension* pDimension = pUserDimension->getDimension();
+                    
+                    os << dataTypeFull( pDimension ) << " " << implName( pContext ) << "::" << pDimension->getIdentifier() << "() const\n";
+                    os << "{\n";
+                    os << "  const auto& linkRef = " << *pPrinterFactory->read( layout.getDataMember( pUserDimension ), "ref.instance" ) << ";\n";
+                    os << "  switch( linkRef.data.type )\n";
+                    os << "  {\n";
+                    
+                    const eg::interface::Context* pLinkTargetType = nullptr;
+                    if( pDimension->getContextTypes().size() == 1U )
+                        pLinkTargetType = pDimension->getContextTypes().front();
+                    VERIFY_RTE( pLinkTargetType );
+                    
+                    const eg::DerivationAnalysis::Compatibility& compatibility =
+                        derivationAnalysis.getCompatibility( pLinkTargetType );
+                    
+                    for( const eg::concrete::Action* pConcreteLinkType : compatibility.dynamicCompatibleTypes )
+                    {
+                    os << "      case " << pConcreteLinkType->getIndex() << ": return &" << arrayName( pConcreteLinkType ) << "[ linkRef.data.instance ];\n";
+                    }
+                    os << "      default: return nullptr;\n";
+                    os << "  }\n";
+                    os << "}\n";
+                }
+                else
+                {
+                    const eg::interface::Dimension* pDimension = pUserDimension->getDimension();
+                    if( dataTypeSupported( pDimension ) )
+                    {
+                        os << dataTypeFull( pDimension ) << " " << implName( pContext ) << "::" << pDimension->getIdentifier() << "() const { return " << 
+                                *pPrinterFactory->read( layout.getDataMember( pUserDimension ), "ref.instance" ) << "; }\n";
+                    }
+                }
+                
             }
             else if( const eg::concrete::Action* pChildContext = dynamic_cast< const eg::concrete::Action* >( pChildElement ) )
             {
@@ -471,7 +590,7 @@ void generateImplementationDefinitions( std::ostream& os, const eg::Layout& layo
             
             if( bIsContext )
             {
-                generateImplementationDefinitions( os, layout, pChildContext, pPrinterFactory );
+                generateImplementationDefinitions( os, layout, derivationAnalysis, pChildContext, pPrinterFactory );
             }
         }
     }
@@ -489,6 +608,7 @@ void generateUnrealCode( std::ostream& os, const eg::ReadSession& session,
     
     const eg::concrete::Action* pConcreteRoot = session.getInstanceRoot();
     const eg::Layout& layout = session.getLayout();
+    const eg::DerivationAnalysis& derivationAnalysis = session.getDerivationAnalysis();
     
     VERIFY_RTE( !pConcreteRoot->getParent() );
     VERIFY_RTE( pConcreteRoot->getChildren().size() == 1U );
@@ -505,7 +625,7 @@ void generateUnrealCode( std::ostream& os, const eg::ReadSession& session,
     
     generateAllocations( os, pActualRoot );
     
-    generateImplementationDefinitions( os, layout, pActualRoot, pPrinterFactory );
+    generateImplementationDefinitions( os, layout, derivationAnalysis, pActualRoot, pPrinterFactory );
     
     os << "\n";
 

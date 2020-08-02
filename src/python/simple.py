@@ -1,4 +1,6 @@
 
+#code is in W:\WinPython\WPy64-3771\python-3.7.7.amd64\Lib\site-packages\ipykernel\eventloops.py
+
 @register_integration('asyncio')
 def loop_asyncio(kernel):
 
@@ -61,3 +63,19 @@ import python_host
 host = python_host.GetHost()
 prog = host.getProgram()
 root = prog.getRoot()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

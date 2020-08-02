@@ -16,7 +16,7 @@
 
 #include "host/host.hpp"
 
-#include "W:\megatest\impl\reddwarf\unreal\testproject\unreal.hpp"
+//#include "W:\megatest\impl\reddwarf\unreal\testproject\unreal.hpp"
 
 struct Args
 {
@@ -110,7 +110,7 @@ int main( int argc, const char* argv[] )
                 }
                 else if( strInput == "test" )
                 {
-                    using TestProject = Iroot::Ireddwarf::Iunreal::Itestproject;
+                    /*using TestProject = Iroot::Ireddwarf::Iunreal::Itestproject;
                     const Iroot* pRoot = (const Iroot*)pMegaHost->getRoot();
                     if( const Iroot::Ireddwarf* pRedDwarf = pRoot->reddwarf( 0 ) )
                     {
@@ -126,7 +126,7 @@ int main( int argc, const char* argv[] )
                                 }
                             }
                         }
-                    }
+                    }*/
                     
                 }
 				else
