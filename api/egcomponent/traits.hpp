@@ -211,28 +211,28 @@ struct DimensionTraits< eg::RingAllocator< _Size > >
 class Component
 {
 public:
-    static void readlock( eg::TypeID component );
+    static eg::TimeStamp readlock( eg::TypeID component );
     static void read( eg::TypeID type, eg::Instance instance );
-    static void writelock( eg::TypeID component );
+    static eg::TimeStamp writelock( eg::TypeID component );
 };
 
-template< typename T, std::size_t szComponentBit, std::size_t szComponentRTT >
+template< typename T, std::size_t szComponentCycle, std::size_t szComponentBit, std::size_t szComponentRTT >
 inline T& readlock( T& value )
 {
     if( !g_hostLocks.test( szComponentBit ) )
     {
-        Component::readlock( szComponentRTT );
+        g_hostCycles[ szComponentCycle ] = Component::readlock( szComponentRTT );
         g_hostLocks.set( szComponentBit );
     }
     return value;
 }
 
-template< typename T, std::size_t szComponentBit, eg::TypeID szComponentRTT, std::size_t szHashBase, eg::TypeID szType >
+template< typename T, std::size_t szComponentCycle, std::size_t szComponentBit, eg::TypeID szComponentRTT, std::size_t szHashBase, eg::TypeID szType >
 inline T& readlock( eg::Instance instance, T& value )
 {
     if( !g_hostLocks.test( szComponentBit ) )
     {
-        Component::readlock( szComponentRTT );
+        g_hostCycles[ szComponentCycle ] = Component::readlock( szComponentRTT );
         g_hostLocks.set( szComponentBit );
         Component::read( szType, instance );
         g_reads.set( szHashBase + instance );
@@ -245,23 +245,23 @@ inline T& readlock( eg::Instance instance, T& value )
     return value;
 }
 
-template< typename T, std::size_t szComponentBit, eg::TypeID szComponentRTT >
+template< typename T, std::size_t szComponentCycle, std::size_t szComponentBit, eg::TypeID szComponentRTT >
 inline T& writelock( T& value )
 {
     if( !g_hostLocks.test( szComponentBit ) )
     {
-        Component::writelock( szComponentRTT );
+        g_hostCycles[ szComponentCycle ] = Component::writelock( szComponentRTT );
         g_hostLocks.set( szComponentBit );
     }
     return value;
 }
 
-template< typename T, std::size_t szComponentBit, eg::TypeID szComponentRTT, std::size_t szHashBase, eg::TypeID szTypeID >
+template< typename T, std::size_t szComponentCycle, std::size_t szComponentBit, eg::TypeID szComponentRTT, std::size_t szHashBase, eg::TypeID szTypeID >
 inline T& writelock( eg::Instance instance, std::set< eg::TypeInstance >& writeSet, T& value )
 {
     if( !g_hostLocks.test( szComponentBit ) )
     {
-        Component::writelock( szComponentRTT );
+        g_hostCycles[ szComponentCycle ] = Component::writelock( szComponentRTT );
         g_hostLocks.set( szComponentBit );
     }
     g_reads.set( szHashBase + instance );

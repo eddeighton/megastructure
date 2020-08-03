@@ -22,8 +22,6 @@ namespace megastructure
 		virtual void encode( std::int32_t iType, std::uint32_t uiInstance, eg::Encoder& encoder ) = 0;
 		virtual void decode( std::int32_t iType, std::uint32_t uiInstance, eg::Decoder& decoder ) = 0;
 		virtual void decode( eg::Decoder& decoder ) = 0;
-        
-        
 	};
 	
 	class BOOST_SYMBOL_VISIBLE Buffer
@@ -56,10 +54,16 @@ namespace megastructure
 	class BOOST_SYMBOL_VISIBLE MegaProtocol
 	{
 	public:
-        virtual void readlock( eg::TypeID component, std::uint32_t uiTimestamp ) = 0;
+        virtual eg::TimeStamp readlock( eg::TypeID component, std::uint32_t uiTimestamp ) = 0;
         virtual void read( eg::TypeID type, std::uint32_t& uiInstance, std::uint32_t uiTimestamp ) = 0;
-		virtual void writelock( eg::TypeID component, std::uint32_t uiTimestamp ) = 0;
+		virtual eg::TimeStamp writelock( eg::TypeID component, std::uint32_t uiTimestamp ) = 0;
 		virtual void write( eg::TypeID component, const char* pBuffer, std::size_t szSize, std::uint32_t uiTimestamp ) = 0;
+	};
+	
+	class BOOST_SYMBOL_VISIBLE EventLog
+	{
+	public:
+        virtual void put( const char* type, eg::TimeStamp timestamp, const void* value, std::size_t size ) = 0;
 	};
 	
 	class BOOST_SYMBOL_VISIBLE EGComponent
@@ -69,10 +73,12 @@ namespace megastructure
             EncodeDecode*& pEncodeDecode, 
             MemorySystem* pMemorySystem, 
             MegaProtocol* pMegaProtocol, 
+            EventLog* pEventLog,
             const char* pszDataBasePath ) = 0;
 		virtual void Uninitialise() = 0 ;
 		virtual void Cycle() = 0;
 		virtual void* GetRoot() = 0;
+        virtual eg::TimeStamp GetCurrentCycle() = 0;
 	};
 
 

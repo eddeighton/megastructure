@@ -373,12 +373,6 @@ boost::filesystem::path ProjectTree::getBasicSchedulerFilePath( const Environmen
         boost::filesystem::absolute( 
             environment.expand( "${EG}/include/eg/basic_scheduler.cpp" ) ) );
 }
-boost::filesystem::path ProjectTree::getBasicClockFilePath( const Environment& environment ) const
-{
-    return boost::filesystem::edsCannonicalise(
-        boost::filesystem::absolute( 
-            environment.expand( "${EG}/include/eg/clock.cpp" ) ) );
-}
 
 void ProjectTree::collateIncludeDirectories( 
     const Environment& environment,

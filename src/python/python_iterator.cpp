@@ -10,15 +10,15 @@ namespace megastructure
 {
 
 PythonIterator::PythonIterator( const PythonIterator& from ) : 
-    m_pythonType( from.m_pythonType ), 
+    m_pythonReferenceFactory( from.m_pythonReferenceFactory ), 
     m_pRange( from.m_pRange ),
     m_position( from.m_position ),
     m_subRange( from.m_subRange )
 {
 }
 
-PythonIterator::PythonIterator( PythonEGReferenceFactory& pythonType, eg::EGRangeDescriptionPtr pRange, bool bEnd ) 
-    :   m_pythonType( pythonType ), 
+PythonIterator::PythonIterator( PythonEGReferenceFactory& pythonReferenceFactory, eg::EGRangeDescriptionPtr pRange, bool bEnd ) 
+    :   m_pythonReferenceFactory( pythonReferenceFactory ), 
         m_pRange( pRange ),
         m_position( 0U ),
         m_subRange( 0U )
@@ -54,8 +54,9 @@ void PythonIterator::scanToNextOrEnd()
         //now actually see if the current position is valid
         if( !m_pRange->raw() )
         {
-            if( ( m_pythonType.getState( m_pRange->getType( m_subRange ), m_position ) != eg::action_stopped ) || 
-                ( m_pythonType.getStopCycle( m_pRange->getType( m_subRange ), m_position ) == m_pythonType.cycle() ) )
+			const eg::TypeID type = m_pRange->getType( m_subRange );
+            if( ( m_pythonReferenceFactory.getState( type, m_position ) != eg::action_stopped ) || 
+                ( m_pythonReferenceFactory.getStopCycle( type, m_position ) == m_pythonReferenceFactory.cycle( type ) ) )
                 break;
         }
         else
@@ -105,8 +106,8 @@ pybind11::object PythonIterator::operator*()
     else
     {
         const eg::TypeID typeID = m_pRange->getType( m_subRange );
-        ::eg::reference ref{ m_position, typeID, m_pythonType.getTimestamp( typeID, m_position ) };
-        return pybind11::reinterpret_borrow< pybind11::object >( m_pythonType.create( ref ) );
+        ::eg::reference ref{ m_position, typeID, m_pythonReferenceFactory.getTimestamp( typeID, m_position ) };
+        return pybind11::reinterpret_borrow< pybind11::object >( m_pythonReferenceFactory.create( ref ) );
     }
 }
 

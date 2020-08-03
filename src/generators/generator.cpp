@@ -292,7 +292,32 @@ void NetworkAnalysis::getHostStructures()
         }
             
     }
+}
     
+const NetworkAnalysis::HostStructures* NetworkAnalysis::getHostStructures( const eg::concrete::Action* pAction ) const
+{
+    
+    const eg::concrete::Action* pIter = pAction;
+    while( pIter )
+    {
+        if( const eg::interface::Root* pRoot = 
+                dynamic_cast< const eg::interface::Root* >( pIter->getContext() ) )
+        {
+            if( pRoot->getRootType() == eg::eHostName )
+            {
+                for( HostStructureMap::const_iterator i = m_hostStructures.begin(),
+                    iEnd = m_hostStructures.end(); i!=iEnd; ++i )
+                {
+                    if( i->second.pRoot == pIter )
+                    {
+                        return &i->second;
+                    }
+                }
+            }
+        }
+        pIter = dynamic_cast< const eg::concrete::Action* >( pIter->getParent() );
+    }
+    return nullptr;
 }
     
 
@@ -351,7 +376,7 @@ protected:
                     {
                         os << "eg::readlock< ";
                         eg::generateDataMemberType( os, m_pDataMember );
-                        os << ", " << hostStructures.strIdentityEnumName << "_read, " << hostStructures.pRoot->getIndex() << " >( " <<
+                        os << ", " << hostStructures.strIdentityEnumName << "_cycle , " << hostStructures.strIdentityEnumName << "_read, " << hostStructures.pRoot->getIndex() << " >( " <<
                             m_pDataMember->getBuffer()->getVariableName() << 
                             "[ " << m_pszIndex << " ]." << m_pDataMember->getName() << " )";
                     }
@@ -360,7 +385,7 @@ protected:
                         const int iHashBash = m_networkAnalysis.getDataMemberReadHashBase( m_pDataMember );
                         os << "eg::readlock< ";
                         eg::generateDataMemberType( os, m_pDataMember );
-                        os << ", " << hostStructures.strIdentityEnumName << "_read, " << hostStructures.pRoot->getIndex() << 
+                        os << ", " << hostStructures.strIdentityEnumName << "_cycle , " << hostStructures.strIdentityEnumName << "_read, " << hostStructures.pRoot->getIndex() << 
                                 ", " << iHashBash << ", " << m_pDataMember->getInstanceDimension()->getIndex() << " >( " << m_pszIndex << ", " <<
                             m_pDataMember->getBuffer()->getVariableName() << 
                             "[ " << m_pszIndex << " ]." << m_pDataMember->getName() << " )";
@@ -374,7 +399,7 @@ protected:
                     const int iHashBash = m_networkAnalysis.getDataMemberReadHashBase( m_pDataMember );
                     os << "eg::readlock< ";
                     eg::generateDataMemberType( os, m_pDataMember );
-                    os << ", " << hostStructures.strIdentityEnumName << "_read, " << hostStructures.pRoot->getIndex() << 
+                    os << ", " << hostStructures.strIdentityEnumName << "_cycle , " << hostStructures.strIdentityEnumName << "_read, " << hostStructures.pRoot->getIndex() << 
                             ", " << iHashBash << ", " << m_pDataMember->getInstanceDimension()->getIndex() << " >( " << m_pszIndex << ", " <<
                         m_pDataMember->getBuffer()->getVariableName() << 
                         "[ " << m_pszIndex << " ]." << m_pDataMember->getName() << " )";
@@ -421,7 +446,7 @@ protected:
                     {
                         os << "eg::writelock< ";
                         eg::generateDataMemberType( os, m_pDataMember );
-                        os << ", " << hostStructures.strIdentityEnumName << "_write, " << hostStructures.pRoot->getIndex() << " >( " <<
+                        os << ", " << hostStructures.strIdentityEnumName << "_cycle , " << hostStructures.strIdentityEnumName << "_write, " << hostStructures.pRoot->getIndex() << " >( " <<
                             m_pDataMember->getBuffer()->getVariableName() << 
                             "[ " << m_pszIndex << " ]." << m_pDataMember->getName() << " )";
                     }
@@ -431,7 +456,7 @@ protected:
                         const eg::TypeID dimensionTypeID = m_pDataMember->getInstanceDimension()->getIndex();
                         os << "eg::writelock< ";
                         eg::generateDataMemberType( os, m_pDataMember ); 
-                        os << ", " << hostStructures.strIdentityEnumName << "_write, " << 
+                        os << ", " << hostStructures.strIdentityEnumName << "_cycle , " << hostStructures.strIdentityEnumName << "_write, " << 
                             hostStructures.pRoot->getIndex() << ", " << iHashBash << ", " <<
                             dimensionTypeID << " >( " << 
                                 m_pszIndex << ", " <<
@@ -448,7 +473,7 @@ protected:
                     const eg::TypeID dimensionTypeID = m_pDataMember->getInstanceDimension()->getIndex();
                     os << "eg::writelock< ";
                     eg::generateDataMemberType( os, m_pDataMember ); 
-                    os << ", " << hostStructures.strIdentityEnumName << "_write, " << 
+                    os << ", " << hostStructures.strIdentityEnumName << "_cycle , " << hostStructures.strIdentityEnumName << "_write, " << 
                         hostStructures.pRoot->getIndex() << ", " << iHashBash << ", " <<
                         dimensionTypeID << " >( " << 
                             m_pszIndex << ", " <<
@@ -763,6 +788,7 @@ void generate_eg_component( std::ostream& os,
     os << "\n//network state\n";
     os << "std::bitset< " << networkAnalysis.getReadBitSetSize() << " > g_reads;\n";
     os << "std::bitset< g_TotalHostLocks > g_hostLocks;\n";
+    os << "std::array< eg::TimeStamp, g_TotalHostCycles > g_hostCycles;\n";
     
     const NetworkAnalysis::HostStructureMap& hostStructures = networkAnalysis.getHostStructures();
     
@@ -886,7 +912,7 @@ void generate_eg_component( std::ostream& os,
     os << "            eg::encode( encoder, typeInstance.instance );\n";
     os << "            encode( typeInstance.type, typeInstance.instance, encoder );\n";
     os << "        }\n";
-    os << "        pMegaProtocol->write( " << i.second.pRoot->getIndex() << ", buffer.data(), buffer.size(), clock::cycle() );\n";
+    os << "        pMegaProtocol->write( " << i.second.pRoot->getIndex() << ", buffer.data(), buffer.size(), clock::cycle( 0 ) );\n";
     os << "    }\n";
     }
     
@@ -937,6 +963,7 @@ class EGComponentImpl : public EGComponent, public EncodeDecode
 {
     MemorySystem* m_pMemorySystem = nullptr;
     MegaProtocol* m_pMegaProtocol = nullptr;
+    EventLog* m_pEventLog = nullptr;
     eg::EGRuntimePtr m_pEGRuntime;
     void* m_pHostInterface = nullptr;
 public:
@@ -947,12 +974,13 @@ public:
 )";
     os << szComponentPart1 << "\n";
     
-    os << "    virtual void Initialise( void* pHostInterface, EncodeDecode*& pEncodeDecode, MemorySystem* pMemorySystem, MegaProtocol* pMegaProtocol, const char* pszDataBasePath )\n";
+    os << "    virtual void Initialise( void* pHostInterface, EncodeDecode*& pEncodeDecode, MemorySystem* pMemorySystem, MegaProtocol* pMegaProtocol, EventLog* pEventLog, const char* pszDataBasePath )\n";
     os << "    {\n";
     os << "        pEncodeDecode = this;\n";
     os << "        \n";
     os << "        m_pMemorySystem = pMemorySystem;\n";
     os << "        m_pMegaProtocol = pMegaProtocol;\n";
+    os << "        m_pEventLog = pEventLog;\n";
     
     if( eComponent_Python == componentType )
     {
@@ -993,21 +1021,25 @@ public:
     os << "    }\n";
     }
     
+    os << "    virtual eg::TimeStamp GetCurrentCycle()\n";
+    os << "    {\n";
+    os << "        return clock::cycle( 0 );\n";
+    os << "    }\n";
+    
+    os << "    virtual void Uninitialise()\n";
+    os << "    {\n";
+    os << "        deallocate_buffers( m_pMemorySystem );\n";
+    os << "    }\n";
+    os << "\n";
+    os << "    virtual void Cycle()\n";
+    os << "    {\n";
+    os << "        eg::Scheduler::cycle();\n";
+    os << "        completeSimulationLocks( m_pMegaProtocol );\n";
+    os << "        clock::next();\n";
+    os << "    }\n";
     
     
 const char szComponentPart2[] = R"(
-    
-    virtual void Uninitialise()
-    {
-        deallocate_buffers( m_pMemorySystem );
-    }
-    
-    virtual void Cycle()
-    {
-        eg::Scheduler::cycle();
-        completeSimulationLocks( m_pMegaProtocol );
-        clock::next();
-    }
     
     virtual void encode( std::int32_t iType, std::uint32_t uiInstance, eg::Encoder& buffer )
     {
@@ -1026,24 +1058,33 @@ const char szComponentPart2[] = R"(
     
     
     //networking
-    void readlock( eg::TypeID component )
+    eg::TimeStamp readlock( eg::TypeID component )
     {
-        m_pMegaProtocol->readlock( component, clock::cycle() );
+        return m_pMegaProtocol->readlock( component, clock::cycle( 0 ) );
     }
     
     void read( eg::TypeID type, eg::Instance instance )
     {
-        m_pMegaProtocol->read( type, instance, clock::cycle() );
+        m_pMegaProtocol->read( type, instance, clock::cycle( 0 ) );
     }
 
-    void writelock( eg::TypeID component )
+    eg::TimeStamp writelock( eg::TypeID component )
     {
-        m_pMegaProtocol->writelock( component, clock::cycle() );
+        return m_pMegaProtocol->writelock( component, clock::cycle( 0 ) );
     }
 
     void* getHostInterface() const
     {
         return m_pHostInterface;
+    }
+    
+    //event log
+    void put( const char* type, eg::TimeStamp timestamp, const void* value, std::size_t size )
+    {
+        if( m_pEventLog )
+        {
+            m_pEventLog->put( type, timestamp, value, size );
+        }
     }
 
 };
@@ -1072,6 +1113,7 @@ bool events::get( eg::event_iterator& iterator, Event& event )
 
 void events::put( const char* type, eg::TimeStamp timestamp, const void* value, std::size_t size )
 {
+    megastructure::g_pluginSymbol.put( type, timestamp, value, size );
 }
     
 bool events::update()
@@ -1081,9 +1123,9 @@ bool events::update()
 
 namespace eg
 {
-    void Component::readlock( eg::TypeID component )
+    eg::TimeStamp Component::readlock( eg::TypeID component )
     {
-        megastructure::g_pluginSymbol.readlock( component );
+        return megastructure::g_pluginSymbol.readlock( component );
     }
 
     void Component::read( eg::TypeID type, eg::Instance instance )
@@ -1091,9 +1133,9 @@ namespace eg
         megastructure::g_pluginSymbol.read( type, instance );
     }
 
-    void Component::writelock( eg::TypeID component )
+    eg::TimeStamp Component::writelock( eg::TypeID component )
     {
-        megastructure::g_pluginSymbol.writelock( component );
+        return megastructure::g_pluginSymbol.writelock( component );
     }
 }
 

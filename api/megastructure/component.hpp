@@ -202,6 +202,7 @@ namespace megastructure
 		
 		void runCycle();
         void* getRoot();
+        eg::TimeStamp getCurrentCycle() const;
         
 	private:
 		void setSlaveName( const std::string& strSlaveName ) { m_strSlaveName = strSlaveName; }

@@ -3,6 +3,7 @@
 #include "python/python_reference.hpp"
 
 #include "common/assert_verify.hpp"
+#include "eg/macros.hpp"
 
 #include <pybind11/pybind11.h>
 
@@ -200,7 +201,7 @@ PyObject* PythonEGReferenceFactory::invoke( const eg::reference& reference, cons
     }
     else
     {
-        throw std::runtime_error( "Invalid reference used in invocation" );
+        ERR( "Invalid reference used in invocation" );
     }
     Py_INCREF( Py_None );
     return Py_None;
@@ -222,9 +223,9 @@ eg::TimeStamp PythonEGReferenceFactory::getStopCycle( eg::TypeID type, eg::Insta
     return m_runtimeInterop.getStopCycle( type, instance );
 }
     
-eg::TimeStamp PythonEGReferenceFactory::cycle()
+eg::TimeStamp PythonEGReferenceFactory::cycle( eg::TypeID type )
 {
-    return m_runtimeInterop.getClockCycle();
+    return m_runtimeInterop.getClockCycle( type );
 }
     
 }

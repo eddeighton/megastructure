@@ -6,6 +6,8 @@
 
 #include "schema/projectTree.hpp"
 
+#include "eg_compiler/sessions/implementation_session.hpp"
+
 #include "common/assert_verify.hpp"
 #include "common/file.hpp"
 
@@ -79,7 +81,7 @@ Program::Program( Component& component, const std::string& strHostName, const st
         
     //initialise the program
     m_pPlugin->Initialise( m_component.getHostInterface(), 
-        m_pEncodeDecode, this, this, 
+        m_pEncodeDecode, this, this, this,
         m_pProjectTree->getAnalysisFileName().string().c_str() );
 	
 	VERIFY_RTE_MSG( m_pEncodeDecode, "Did not get encode decode interface from program: " << m_componentPath.string() );
@@ -186,7 +188,7 @@ void Program::releaseLocks()
 }
 
 //MegaProtocol
-void Program::readlock( eg::TypeID iComponentType, std::uint32_t uiTimestamp )
+eg::TimeStamp Program::readlock( eg::TypeID iComponentType, std::uint32_t uiTimestamp )
 {
     {
         Message message;
@@ -218,7 +220,7 @@ void Program::readlock( eg::TypeID iComponentType, std::uint32_t uiTimestamp )
                     SPDLOG_TRACE( "Program received read lock response type: {} instance: {} timestamp: {}", 
                         egMsg.type(), egMsg.instance(), egMsg.cycle() );
                     m_componentLocks.insert( ComponentLockInfo{ iComponentType, uiTimestamp } );
-                    break;
+                    return egMsg.cycle();
                 }
                 else if( egMsg.has_error() )
                 {
@@ -237,6 +239,7 @@ void Program::readlock( eg::TypeID iComponentType, std::uint32_t uiTimestamp )
             }
         }
     }
+    return 0;
 }
 
 void Program::read( eg::TypeID type, std::uint32_t& uiInstance, std::uint32_t uiTimestamp )
@@ -290,7 +293,7 @@ void Program::read( eg::TypeID type, std::uint32_t& uiInstance, std::uint32_t ui
     }  
 }
 
-void Program::writelock( eg::TypeID iComponentType, std::uint32_t uiTimestamp )
+eg::TimeStamp Program::writelock( eg::TypeID iComponentType, std::uint32_t uiTimestamp )
 {
     {
         Message message;
@@ -322,7 +325,7 @@ void Program::writelock( eg::TypeID iComponentType, std::uint32_t uiTimestamp )
                     SPDLOG_TRACE( "Program received write lock response type: {} instance: {} timestamp: {}", 
                         egMsg.type(), egMsg.instance(), egMsg.cycle() );
                     m_componentLocks.insert( ComponentLockInfo{ iComponentType, uiTimestamp } );
-                    break;
+                    return egMsg.cycle();
                 }
                 else if( egMsg.has_error() )
                 {
@@ -341,6 +344,7 @@ void Program::writelock( eg::TypeID iComponentType, std::uint32_t uiTimestamp )
             }
         }
     }
+    return 0;
 }
         
 void Program::write( eg::TypeID component, const char* pBuffer, std::size_t szSize, std::uint32_t uiTimestamp )
@@ -365,10 +369,71 @@ void* Program::getRoot() const
     return m_pPlugin->GetRoot();
 }
         
+eg::TimeStamp Program::getCurrentCycle() const
+{
+    return m_pPlugin->GetCurrentCycle();
+}
+
 void Program::run()
 {
     m_pPlugin->Cycle();
     releaseLocks();
+}
+
+void Program::put( const char* type, eg::TimeStamp timestamp, const void* value, std::size_t size )
+{
+    eg::ReadSession* pDatabase = nullptr;
+    
+    if( 0 == strcmp( type, "start" ) )
+    {
+        VERIFY_RTE( sizeof( eg::reference ) == size );
+        const eg::reference* pRef = reinterpret_cast< const eg::reference* >( value );
+        
+        if( pDatabase )
+        {
+            const eg::concrete::Action* pAction = pDatabase->getConcreteAction( pRef->type );
+            SPDLOG_TRACE( "start instance {} timestamp {} type {}", pRef->instance, pRef->timestamp, pAction->getName() );
+        }
+        else
+        {
+            SPDLOG_TRACE( "start instance {} timestamp {} type {}", pRef->instance, pRef->timestamp, pRef->type );
+        }
+    }
+    else if( 0 == strcmp( type, "stop" ) )
+    {
+        VERIFY_RTE( sizeof( eg::reference ) == size );
+        const eg::reference* pRef = reinterpret_cast< const eg::reference* >( value );
+        if( pDatabase )
+        {
+            const eg::concrete::Action* pAction = pDatabase->getConcreteAction( pRef->type );
+            SPDLOG_TRACE( "stop instance {} timestamp {} type {}", pRef->instance, pRef->timestamp, pAction->getName() );
+        }
+        else
+        {
+            SPDLOG_TRACE( "stop instance {} timestamp {} type {}", pRef->instance, pRef->timestamp, pRef->type );
+        }
+    }
+    else if( 0 == strcmp( type, "log" ) )
+    {
+        SPDLOG_INFO( reinterpret_cast< const char* >( value ) );
+    }
+    else if( 0 == strcmp( type, "error" ) )
+    {
+        SPDLOG_ERROR( reinterpret_cast< const char* >( value ) );
+    }
+    else if( 0 == strcmp( type, "pass" ) )
+    {
+        SPDLOG_INFO( "pass : {}", reinterpret_cast< const char* >( value ) );
+    }
+    else if( 0 == strcmp( type, "fail" ) )
+    {
+        SPDLOG_ERROR( "fail : {}", reinterpret_cast< const char* >( value ) );
+    }
+    else
+    {
+        SPDLOG_ERROR( "unknown event : {}", type );
+    }
+    
 }
 
 }

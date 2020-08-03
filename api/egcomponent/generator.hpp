@@ -113,6 +113,8 @@ namespace megastructure
         
         const HostStructures& getHostStructures( const eg::Buffer* pBuffer ) const;
         
+        const HostStructures* getHostStructures( const eg::concrete::Action* pAction ) const;
+        
     private:
         void getBufferTypes();
         void getDataHashBases();

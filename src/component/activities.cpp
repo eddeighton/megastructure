@@ -558,6 +558,9 @@ void EGRequestManagerActivity::issueLockResponse( const SimulationLock::HostCycl
         Message::EG_Msg::Response* pResponse = pEGMsg->mutable_response();
         pResponse->set_coordinator( hcs.uiCoordinator );
         pResponse->set_host( hcs.uiHost );
+        
+        //all importand - get the current clock cycle for THIS component
+        pEGMsg->set_cycle( m_component.getCurrentCycle() );
     }
     SPDLOG_TRACE( "Sending eg lock response coordinator: {} host: {}", 
         hcs.uiCoordinator, hcs.uiHost );

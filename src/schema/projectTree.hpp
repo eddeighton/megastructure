@@ -131,7 +131,6 @@ public:
     
 	boost::filesystem::path getCoroutineFrameSourceFilePath( const Environment& environment ) const;
 	boost::filesystem::path getBasicSchedulerFilePath( const Environment& environment ) const;
-	boost::filesystem::path getBasicClockFilePath( const Environment& environment ) const;
 		
 	static void collateIncludeDirectories( 
 		const Environment& environment,

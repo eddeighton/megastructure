@@ -24,7 +24,7 @@ public:
     eg::TimeStamp getTimestamp( eg::TypeID type, eg::Instance instance );
     eg::ActionState getState( eg::TypeID type, eg::Instance instance );
     eg::TimeStamp getStopCycle( eg::TypeID type, eg::Instance instance );
-    eg::TimeStamp cycle();
+    eg::TimeStamp cycle( eg::TypeID type );
         
 private:
     eg::EGRuntime& m_egRuntime;

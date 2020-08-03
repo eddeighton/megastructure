@@ -66,7 +66,7 @@ namespace eg
                     dynamic_cast< const concrete::NothingAllocator* >( pAllocator ) )
                 {
                     os << generator.getIndent() << getStaticType( pStaticType ) << " ref = eg::reference{ " << generator.getVarExpr( ins.getInstance() ) << 
-                        ", " << ins.getConcreteType()->getIndex() << ", clock::cycle() };\n";
+                        ", " << ins.getConcreteType()->getIndex() << ", clock::cycle( " << ins.getConcreteType()->getIndex() << " ) };\n";
                     
                     if( bContextIsWithinComponent )
                     {
@@ -105,7 +105,7 @@ namespace eg
                 VERIFY_RTE( dynamic_cast< const concrete::NothingAllocator* >( pAllocator ) );
                 //directly invoke the function
                 os << generator.getIndent() << getStaticType( pStaticType ) << " ref = eg::reference{ " << generator.getVarExpr( ins.getInstance() ) << 
-                    ", " << ins.getConcreteType()->getIndex() << ", clock::cycle() };\n";
+                    ", " << ins.getConcreteType()->getIndex() << ", clock::cycle( " << ins.getConcreteType()->getIndex() << " ) };\n";
                 os << generator.getIndent() << "return ref( args... );\n";
             }
             else
@@ -178,7 +178,7 @@ namespace eg
             else
             {
                 //directly invoke the stopper
-                os << ins.getConcreteType()->getName() << "_stopper( " << ins.getInstance() << ".data.instance );\n";
+                os << generator.getIndent() << ins.getConcreteType()->getName() << "_stopper( " << generator.getVarExpr( ins.getInstance() ) << " );\n";
             }
         }
         void generate( const PauseOperation& ins )

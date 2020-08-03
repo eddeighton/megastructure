@@ -160,7 +160,8 @@ void build_include_header( const Environment& environment, const eg::interface::
 		
 		//if( bLogCommands )
 		//{
-			std::cout << "\n" << osCmd.str() << std::endl;
+            std::cout << environment.printPath( projectTree.getIncludePCH() ) << std::endl;
+			//std::cout << "\n" << osCmd.str() << std::endl;
 		//}
 		
 		{
@@ -212,7 +213,8 @@ void build_interface_header( const Environment& environment, eg::ParserSession* 
 		
 		//if( bLogCommands )
 		//{
-			std::cout << "\n" << osCmd.str() << std::endl;
+            std::cout << environment.printPath( projectTree.getInterfacePCH() ) << std::endl;
+			//std::cout << "\n" << osCmd.str() << std::endl;
 		//}
 		
 		{
@@ -334,7 +336,8 @@ void build_operations( eg::InterfaceSession& interfaceSession, const Environment
             
             //if( bLogCommands )
             //{
-                std::cout << "\n" << osCmd.str() << std::endl;
+                std::cout << environment.printPath( projectTree.getOperationsPCH( strTUName ) ) << std::endl;
+                //std::cout << "\n" << osCmd.str() << std::endl;
             //}
             
             {
@@ -508,7 +511,16 @@ void generateMegaStructureNetStateHeader( std::ostream& os, const eg::ReadSessio
     }
     os << "    g_TotalHostLocks\n";
     os << "};\n";
-    os << "extern std::bitset< g_TotalHostLocks > g_hostLocks;\n";
+    os << "extern std::bitset< g_TotalHostLocks > g_hostLocks;\n\n";
+    
+    os << "enum mega_HostCycleID\n{\n";
+    for( const auto& i : hostStructures )
+    {
+        os << "    " << i.second.strIdentityEnumName << "_cycle,\n";
+    }
+    os << "    g_TotalHostCycles\n";
+    os << "};\n";
+    os << "extern std::array< eg::TimeStamp, g_TotalHostCycles > g_hostCycles;\n\n";
     
     //generate all externs
     for( const auto& i : hostStructures )
@@ -520,7 +532,98 @@ void generateMegaStructureNetStateHeader( std::ostream& os, const eg::ReadSessio
     os << "#endif\n";
 }
 
-extern void generatePythonBindings( std::ostream&, const eg::ReadSession&, const Environment&, const ProjectTree&, eg::PrinterFactory::Ptr );
+void generateMegaStructureClockImpl( std::ostream& os, const eg::ReadSession& session, 
+        const ProjectTree& projectTree, const megastructure::NetworkAnalysis& networkAnalysis )
+{
+    
+    const char szClockSrc[] = R"(
+namespace
+{
+
+struct HostClock
+{
+public:
+    typedef std::chrono::steady_clock ClockType;
+    typedef ClockType::time_point Tick;
+    typedef ClockType::duration TickDuration;
+    typedef std::chrono::duration< float, std::ratio< 1 > > FloatTickDuration;
+    
+    HostClock()
+    {
+        m_lastTick = m_startTick = ClockType::now();
+        m_cycle = 1U;
+        m_ct    = m_dt = 0.0f;
+    }
+    
+    inline void nextCycle()
+    {
+        const Tick nowTick = ClockType::now();
+        m_dt = FloatTickDuration( nowTick - m_lastTick  ).count();
+        m_ct = FloatTickDuration( nowTick - m_startTick ).count();
+        m_lastTick = nowTick;
+        ++m_cycle;
+    }
+    
+    inline Tick actual()           const { return ClockType::now(); }
+    inline eg::TimeStamp cycle()   const { return m_cycle; }
+    inline float ct()              const { return m_ct; }
+    inline float dt()              const { return m_dt; }
+    
+private:
+    Tick m_lastTick, m_startTick;
+    eg::TimeStamp m_cycle;
+    float m_ct, m_dt;
+} 
+
+theClock;
+
+}
+
+float clock::ct()
+{
+    return theClock.ct();
+}
+float clock::dt()
+{
+    return theClock.dt();
+}
+void clock::next()
+{
+    theClock.nextCycle();
+}
+)";
+    os << szClockSrc;
+
+    os << "eg::TimeStamp clock::cycle( eg::TypeID type )\n";
+    os << "{\n";
+    
+    const eg::IndexedObject::Array& objects = 
+        session.getObjects( eg::IndexedObject::MASTER_FILE );
+    std::vector< const eg::concrete::Action* > actions = 
+        eg::many_cst< eg::concrete::Action >( objects );
+        
+    const megastructure::NetworkAnalysis::HostStructureMap& hostStructures = 
+        networkAnalysis.getHostStructures();
+    
+    os << "    switch( type )\n";
+    os << "    {\n";
+    for( const eg::concrete::Action* pAction : actions )
+    {
+        if( const megastructure::NetworkAnalysis::HostStructures* pHost = 
+            networkAnalysis.getHostStructures( pAction ) )
+        {
+    os << "        case " << pAction->getIndex() << ": return ";
+        os << "eg::readlock< eg::TimeStamp, " << pHost->strIdentityEnumName << "_cycle , " << pHost->strIdentityEnumName << "_read, " << pHost->pRoot->getIndex() << 
+            " >( g_hostCycles[ " << pHost->strIdentityEnumName << "_cycle ] );\n";
+        }
+    }
+    os << "        default: return theClock.cycle();\n";
+    os << "    }\n";
+    os << "}\n";
+
+}
+
+extern void generatePythonBindings( std::ostream&, const eg::ReadSession&, const megastructure::NetworkAnalysis&, const Environment&, const ProjectTree&, eg::PrinterFactory::Ptr );
 extern void generateUnrealInterface( std::ostream&, const eg::ReadSession&, const Environment&, const ProjectTree&, eg::PrinterFactory::Ptr );
 extern void generateUnrealCode( std::ostream&, const eg::ReadSession&, const Environment&, const ProjectTree&, eg::PrinterFactory::Ptr );
 
@@ -545,7 +648,6 @@ void build_component( const eg::ReadSession& session, const Environment& environ
     
     sourceFiles.push_back( projectTree.getCoroutineFrameSourceFilePath( environment ) );
     sourceFiles.push_back( projectTree.getBasicSchedulerFilePath( environment ) );
-    sourceFiles.push_back( projectTree.getBasicClockFilePath( environment ) );
 	
 	//generate the structures
 	{
@@ -567,8 +669,11 @@ void build_component( const eg::ReadSession& session, const Environment& environ
 		std::ostringstream osImpl;
 		osImpl << "#include \"" << projectTree.getStructuresInclude() << "\"\n";
         osImpl << "#include \"" << projectTree.getNetStateSourceInclude() << "\"\n";
-		//eg::generate_dynamic_interface( osImpl, *pPrinterFactory, session );
+        
 		eg::generateActionInstanceFunctions( osImpl, *pPrinterFactory, session );
+        
+        generateMegaStructureClockImpl( osImpl, session, projectTree, networkAnalysis );
+        
 		boost::filesystem::updateFileIfChanged( projectTree.getRuntimeSource(), osImpl.str() );
 		sourceFiles.push_back( projectTree.getRuntimeSource() );
 	}
@@ -594,7 +699,7 @@ void build_component( const eg::ReadSession& session, const Environment& environ
     {
         //generate python bindings
 		std::ostringstream osPython;
-        generatePythonBindings( osPython, session, environment, projectTree, pPrinterFactory );
+        generatePythonBindings( osPython, session, networkAnalysis, environment, projectTree, pPrinterFactory );
 		boost::filesystem::updateFileIfChanged( projectTree.getPythonSource(), osPython.str() );
 		sourceFiles.push_back( projectTree.getPythonSource() );
         
@@ -679,7 +784,8 @@ void build_component( const eg::ReadSession& session, const Environment& environ
 			
 		//if( bLogCommands )
 		//{
-			std::cout << "\n" << osCmd.str() << std::endl;
+            std::cout << environment.printPath( objectFilePath ) << std::endl;
+			//std::cout << "\n" << osCmd.str() << std::endl;
 		//}
 		
 		commands.push_back( std::bind( objectCompilationCommand, 
@@ -747,7 +853,8 @@ void build_component( const eg::ReadSession& session, const Environment& environ
 					
 				//if( bLogCommands )
 				//{
-					std::cout << "\n" << osCmd.str() << std::endl;
+                    std::cout << environment.printPath( objectFilePath ) << std::endl;
+					//std::cout << "\n" << osCmd.str() << std::endl;
 				//}
 				
 				commands.push_back( std::bind( objectCompilationCommand, 

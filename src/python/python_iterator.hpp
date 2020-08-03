@@ -13,7 +13,7 @@ class PythonIterator : public std::iterator< std::forward_iterator_tag, pybind11
 {
 public:
     PythonIterator( const PythonIterator& from );
-    PythonIterator( PythonEGReferenceFactory& pythonType, eg::EGRangeDescriptionPtr pRange, bool bEnd );
+    PythonIterator( PythonEGReferenceFactory& pythonReferenceFactory, eg::EGRangeDescriptionPtr pRange, bool bEnd );
     
     PythonIterator& operator++();
     PythonIterator operator++( int );
@@ -27,7 +27,7 @@ private:
     void scanToNextOrEnd();
     
 private:
-    PythonEGReferenceFactory& m_pythonType;
+    PythonEGReferenceFactory& m_pythonReferenceFactory;
     eg::EGRangeDescriptionPtr m_pRange;
     eg::Instance m_position, m_subRange;
 };

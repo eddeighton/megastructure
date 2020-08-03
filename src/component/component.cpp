@@ -126,6 +126,10 @@ namespace megastructure
     {
         return m_pProgram ? m_pProgram->getRoot() : nullptr;
     }
+    eg::TimeStamp Component::getCurrentCycle() const
+    {
+        return m_pProgram ? m_pProgram->getCurrentCycle() : 0;
+    }
 	
 	void Component::runCycle()
 	{

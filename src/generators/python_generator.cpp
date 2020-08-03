@@ -1,6 +1,8 @@
 
 #include <ostream>
 
+#include "egcomponent/generator.hpp"
+
 #include "schema/project.hpp"
 #include "schema/projectTree.hpp"
 
@@ -244,7 +246,7 @@ public:
     virtual eg::TimeStamp   getTimestamp( eg::TypeID type, eg::Instance instance );
     virtual eg::ActionState getState( eg::TypeID type, eg::Instance instance );
     virtual eg::TimeStamp   getStopCycle( eg::TypeID type, eg::Instance instance );
-    virtual eg::TimeStamp   getClockCycle();
+    virtual eg::TimeStamp   getClockCycle( eg::TypeID type );
 private:
     Evaluation::WeakPtr m_pEvaluation;
 };
@@ -428,7 +430,8 @@ eg::ComponentInterop& getPythonInterop()
                 if( const eg::concrete::NothingAllocator* pNothingAllocator =
                     dynamic_cast< const eg::concrete::NothingAllocator* >( pAllocator ) )
                 {
-                    os << strIndent << eg::getStaticType( pStaticType ) << " ref = " << eg::EG_REFERENCE_TYPE << "{ reference.instance, " << pAction->getIndex() << ", clock::cycle() };\n";
+                    os << strIndent << eg::getStaticType( pStaticType ) << " ref = " << eg::EG_REFERENCE_TYPE << 
+                        "{ reference.instance, " << pAction->getIndex() << ", clock::cycle( " << pAction->getIndex() << " ) };\n";
                     if( bContextIsWithinComponent )
                     {
                     os << strIndent << "::eg::Scheduler::signal_ref( ref );\n";
@@ -470,7 +473,8 @@ eg::ComponentInterop& getPythonInterop()
             {
                 VERIFY_RTE( dynamic_cast< const eg::concrete::NothingAllocator* >( pAllocator ) );
                 //directly invoke the function
-                os << strIndent << eg::getStaticType( pStaticType ) << " ref = " << eg::EG_REFERENCE_TYPE << "{ reference.instance, " << pAction->getIndex() << ", clock::cycle() };\n";
+                os << strIndent << eg::getStaticType( pStaticType ) << " ref = " << 
+                    eg::EG_REFERENCE_TYPE << "{ reference.instance, " << pAction->getIndex() << ", clock::cycle( " << pAction->getIndex() << " ) };\n";
                 
                 const std::vector< std::string >& parameters = pAction->getContext()->getParameters();
                 
@@ -870,7 +874,7 @@ eg::ComponentInterop& getPythonInterop()
     
 }
 
-void generateRuntimeTypeInterop( std::ostream& os, const eg::ReadSession& session, 
+void generateRuntimeTypeInterop( std::ostream& os, const eg::ReadSession& session, const megastructure::NetworkAnalysis& networkAnalysis, 
         const Environment& environment, const ProjectTree& projectTree, eg::PrinterFactory::Ptr pPrinterFactory )
 {
     const eg::interface::Root* pRoot = session.getTreeRoot();
@@ -881,8 +885,6 @@ void generateRuntimeTypeInterop( std::ostream& os, const eg::ReadSession& sessio
     std::vector< const eg::concrete::Action* > actions = 
         eg::many_cst< eg::concrete::Action >( objects );
     
-    
-    
     //virtual eg::TimeStamp   getTimestamp( eg::TypeID type, eg::Instance instance );
     os << "eg::TimeStamp PythonInterop::getTimestamp( " << eg::EG_TYPE_ID << " typeID, " << eg::EG_INSTANCE << " instance )\n";
     os << "{\n";
@@ -890,7 +892,7 @@ void generateRuntimeTypeInterop( std::ostream& os, const eg::ReadSession& sessio
     os << "    {\n";
     for( const eg::concrete::Action* pAction : actions )
     {
-        if( pAction->getParent() && pAction->getReference() )
+        if( pAction->getReference() )
         {
     os << "        case " << pAction->getIndex() << ": return " << 
             *pPrinterFactory->read( layout.getDataMember( pAction->getReference() ), "instance" ) << ".data.timestamp;\n";
@@ -907,10 +909,14 @@ void generateRuntimeTypeInterop( std::ostream& os, const eg::ReadSession& sessio
     os << "    {\n";
     for( const eg::concrete::Action* pAction : actions )
     {
-        if( pAction->getParent() && pAction->getState() )
+        if( pAction->getState() )
         {
     os << "        case " << pAction->getIndex() << ": return " << 
         *pPrinterFactory->read( layout.getDataMember( pAction->getState() ), "instance" ) << ";\n";
+        }
+        else
+        {
+    os << "        case " << pAction->getIndex() << ": return eg::action_running;\n";
         }
     }
     os << "        default: throw std::runtime_error( \"Invalid action instance\" );\n";
@@ -934,10 +940,10 @@ void generateRuntimeTypeInterop( std::ostream& os, const eg::ReadSession& sessio
     os << "    }\n";
     os << "}\n";
     
-    //virtual eg::TimeStamp cycle();
-    os << eg::EG_TIME_STAMP << " PythonInterop::getClockCycle()\n";
+    //virtual eg::TimeStamp getClockCycle( eg::TypeID typeID );
+    os << eg::EG_TIME_STAMP << " PythonInterop::getClockCycle( eg::TypeID typeID )\n";
     os << "{\n";
-    os << "    return clock::cycle();\n";
+    os << "    return clock::cycle( typeID );\n";
     os << "}\n\n";
     
     
@@ -963,7 +969,7 @@ void generateRuntimeTypeInterop( std::ostream& os, const eg::ReadSession& sessio
     os << "}\n";
 }
 
-void generatePythonBindings( std::ostream& os, const eg::ReadSession& session, 
+void generatePythonBindings( std::ostream& os, const eg::ReadSession& session, const megastructure::NetworkAnalysis& networkAnalysis, 
         const Environment& environment, const ProjectTree& projectTree, eg::PrinterFactory::Ptr pPrinterFactory )
 {
     os << "#include \"python_lib/python_reference.hpp\"\n";
@@ -990,5 +996,5 @@ void generatePythonBindings( std::ostream& os, const eg::ReadSession& session,
     
     generateRuntimeInterface( os, session, environment, projectTree, pPrinterFactory );
     
-    generateRuntimeTypeInterop( os, session, environment, projectTree, pPrinterFactory );
+    generateRuntimeTypeInterop( os, session, networkAnalysis, environment, projectTree, pPrinterFactory );
 }

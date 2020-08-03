@@ -3,6 +3,7 @@
 #include "python/python_reference_factory.hpp"
 
 #include "common/assert_verify.hpp"
+#include "eg/macros.hpp"
 
 #include <pybind11/pybind11.h>
 
@@ -27,10 +28,10 @@ PyObject* PythonEGReference::get( void* pClosure )
     {
         std::ostringstream os;
         os << "Invalid identity" << pszAttributeIdentity;
-        throw std::runtime_error( os.str() );
+        ERR( os.str() );
         
-        //Py_INCREF( Py_None );
-        //return Py_None;
+        Py_INCREF( Py_None );
+        return Py_None;
     }
     else
     {
@@ -65,12 +66,38 @@ PyObject* PythonEGReference::str() const
         }
         os << *i << " ";
     }
+    if( m_reference.type > 0 )
+        os << " state: " << eg::getActionState( m_pythonReferenceFactory.getState( m_reference.type, m_reference.instance ) );
+    else
+        os << " state: null";
     return Py_BuildValue( "s", os.str().c_str() );
 }
 
 PyObject* PythonEGReference::call( PyObject *args, PyObject *kwargs )
 {
-    return m_pythonReferenceFactory.invoke( m_reference, m_type_path, args, kwargs );
+    //test the state
+    //switch( m_pythonReferenceFactory.getState( m_reference.type, m_reference.instance ) )
+    //{
+    //    case action_stopped:
+    //    case action_running:
+    //    case action_paused:
+    //    case TOTAL_ACTION_STATES:
+    //    default:
+    //    break;
+    //}
+    if( m_reference.type > 0 )
+    {
+        return m_pythonReferenceFactory.invoke( m_reference, m_type_path, args, kwargs );
+    }
+    else
+    {
+        std::ostringstream os;
+        os << "Invocation on null reference";
+        ERR( os.str() );
+        
+        Py_INCREF( Py_None );
+        return Py_None;
+    }
 }
 
 

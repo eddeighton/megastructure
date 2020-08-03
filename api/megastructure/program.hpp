@@ -23,7 +23,7 @@ class ProjectTree;
 
 namespace megastructure
 {
-	class Program : public MemorySystem, public MegaProtocol, public std::enable_shared_from_this< Program >
+	class Program : public MemorySystem, public MegaProtocol, public EventLog, public std::enable_shared_from_this< Program >
 	{
         using CacheBufferMap = std::map< std::string, LocalBufferImpl::Ptr >;
         using SharedBufferMap = std::map< std::string, SharedBufferImpl::Ptr >;
@@ -43,6 +43,7 @@ namespace megastructure
         const boost::filesystem::path& getComponentPath() const { return m_componentPath; }
         
         void* getRoot() const;
+        eg::TimeStamp getCurrentCycle() const;
 		
 		void run();
         
@@ -51,9 +52,9 @@ namespace megastructure
 		virtual LocalBuffer* getLocalBuffer( const char* pszName, std::size_t szSize );
         
         //MegaProtocol
-        virtual void readlock( eg::TypeID component, std::uint32_t uiTimestamp );
+        virtual eg::TimeStamp readlock( eg::TypeID component, std::uint32_t uiTimestamp );
         virtual void read( eg::TypeID type, std::uint32_t& uiInstance, std::uint32_t uiTimestamp );
-		virtual void writelock( eg::TypeID component, std::uint32_t uiTimestamp );
+		virtual eg::TimeStamp writelock( eg::TypeID component, std::uint32_t uiTimestamp );
 		virtual void write( eg::TypeID component, const char* pBuffer, std::size_t szSize, std::uint32_t uiTimestamp );
 		
 		//request handling
@@ -61,6 +62,8 @@ namespace megastructure
         void readResponse( std::int32_t iType, std::uint32_t uiInstance, const std::string& strBuffer );
 		void writeRequest( const std::string& strBuffer );
         
+        //event log
+        virtual void put( const char* type, eg::TimeStamp timestamp, const void* value, std::size_t size );
     private:
         void releaseLocks();
 		
