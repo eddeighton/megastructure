@@ -336,3 +336,41 @@ Project::Project( const boost::filesystem::path& projectDir,
         m_host( m_environment.getHost( m_project.Host() ) )
 {
 }
+
+
+static void collateUserIncludeFiles( 
+    const Environment& environment,
+    std::set< boost::filesystem::path >& uniquified, 
+    std::vector< boost::filesystem::path >& directories,
+    const megaxml::Files& xmlFiles )
+{
+    for( const std::string& strFile : xmlFiles.Include() )
+    {
+        const boost::filesystem::path absPath =
+            boost::filesystem::edsCannonicalise(
+                environment.expand( strFile ) );
+                
+        if( 0 == uniquified.count( absPath ) )
+        {
+            uniquified.insert( absPath );
+            directories.push_back( absPath );
+        }
+    }
+}
+
+std::vector< boost::filesystem::path > Project::getHostIncludes() const
+{
+    std::set< boost::filesystem::path > uniquified;
+    std::vector< boost::filesystem::path > includes;
+    
+    if( m_host.Files_present() )
+        collateUserIncludeFiles( m_environment, uniquified, includes, m_host.Files() );
+    
+    //for( const megaxml::Package& package : m_packages )
+    //{
+    //    if( package.Files_present() )
+    //        collateUserIncludeFiles( m_environment, uniquified, includes, package.Files() );
+    //}
+    
+    return includes;
+}

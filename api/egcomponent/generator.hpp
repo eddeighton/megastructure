@@ -135,6 +135,7 @@ namespace megastructure
         eComponent_Basic,
         eComponent_Python,
         eComponent_Unreal,
+        eComponent_Geometry,
         TOTAL_COMPONENT_TYPES
     };
     
@@ -142,7 +143,8 @@ namespace megastructure
     {
         "basic",
         "python",
-        "unreal"
+        "unreal",
+        "geometry"
     };
 
     void generate_eg_component( std::ostream& os, 

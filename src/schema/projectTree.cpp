@@ -292,12 +292,7 @@ std::vector< boost::filesystem::path > ProjectTree::getUserIncludes( const Envir
     
     includes.push_back( "boost/filesystem.hpp" );
     
-    includes.push_back( "pybind11/pybind11.h" );
-    includes.push_back( "pybind11/stl.h" );
-    includes.push_back( "pybind11/stl_bind.h" );
     includes.push_back( environment.expand( "egcomponent/traits.hpp" ) );
-    
-    includes.push_back( "unreal/unreal.hpp" );
     
     includes.push_back( "eg/include.hpp" );
     includes.push_back( "eg_runtime/eg_runtime.hpp" );
@@ -350,15 +345,6 @@ boost::filesystem::path ProjectTree::getIncludeHeader() const
 boost::filesystem::path ProjectTree::getIncludePCH() const
 {
     return getInterfaceFolder() / "include.pch";
-}
-
-boost::filesystem::path ProjectTree::getTUDBName( const std::string& strTUName ) const
-{
-    std::ostringstream os;
-    os << "tu_" << strTUName << ".db";
-    return boost::filesystem::edsCannonicalise(
-        boost::filesystem::absolute( 
-            getInterfaceFolder() / os.str() ) );
 }
 
 boost::filesystem::path ProjectTree::getCoroutineFrameSourceFilePath( const Environment& environment ) const
@@ -452,6 +438,33 @@ std::vector< boost::filesystem::path > ProjectTree::getImplIncludeDirectories( c
     return directories;
 }
 
+boost::filesystem::path ProjectTree::getTUDBName( const std::string& strTUName ) const
+{
+    std::ostringstream os;
+    os << "tu_" << strTUName << ".db";
+    return boost::filesystem::edsCannonicalise(
+        boost::filesystem::absolute( 
+            getInterfaceFolder() / os.str() ) );
+}
+
+boost::filesystem::path ProjectTree::getOperationsIncludeHeader( const std::string& strTUName ) const
+{
+    std::ostringstream os;
+    os << strTUName << "_include.hpp";
+    return boost::filesystem::edsCannonicalise(
+        boost::filesystem::absolute( 
+            getInterfaceFolder() / os.str() ) );
+}
+
+boost::filesystem::path ProjectTree::getOperationsIncludePCH( const std::string& strTUName ) const
+{
+    std::ostringstream os;
+    os << strTUName << "_include.pch";
+    return boost::filesystem::edsCannonicalise(
+        boost::filesystem::absolute( 
+            getInterfaceFolder() / os.str() ) );
+}
+
 boost::filesystem::path ProjectTree::getOperationsHeader( const std::string& strTUName ) const
 {
     std::ostringstream os;
@@ -461,10 +474,19 @@ boost::filesystem::path ProjectTree::getOperationsHeader( const std::string& str
             getInterfaceFolder() / os.str() ) );
 }
 
-boost::filesystem::path ProjectTree::getOperationsPCH( const std::string& strTUName ) const
+boost::filesystem::path ProjectTree::getOperationsPublicPCH( const std::string& strTUName ) const
 {
     std::ostringstream os;
-    os << strTUName << "_operations.pch";
+    os << strTUName << "_public.pch";
+    return boost::filesystem::edsCannonicalise(
+        boost::filesystem::absolute( 
+            getInterfaceFolder() / os.str() ) );
+}
+
+boost::filesystem::path ProjectTree::getOperationsPrivatePCH( const std::string& strTUName ) const
+{
+    std::ostringstream os;
+    os << strTUName << "_private.pch";
     return boost::filesystem::edsCannonicalise(
         boost::filesystem::absolute( 
             getInterfaceFolder() / os.str() ) );

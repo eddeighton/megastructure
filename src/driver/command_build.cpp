@@ -287,6 +287,107 @@ void build_parser_session( const Environment& environment, const ProjectTree& pr
 	}
 }
 
+
+void build_operations_include_header( const Environment& environment, const eg::TranslationUnit* pTranslationUnit, 
+    const ProjectTree& projectTree, const std::string& strCompilationFlags )
+{
+    const eg::TranslationUnit::CoordinatorHostnameDefinitionFile& chd =
+        pTranslationUnit->getCoordinatorHostnameDefinitionFile();
+    
+    const std::string& strTUName = pTranslationUnit->getName();
+    const std::string strDefine = chd.getHostDefine();
+	
+    //generate the interface
+    {
+        //LogEntry log( std::cout, "Generating Interface", bBenchCommands );
+        std::ostringstream os;
+        
+        if( !strDefine.empty() )
+        {
+            //osOperations << "#ifdef " << strDefine << "\n";
+            //osOperations << "//Add private host include directives here\n";
+            
+            bool bFound = false;
+            for( Coordinator::Ptr pCoordinator : projectTree.getCoordinators() )
+            {
+                if( chd.isCoordinator( pCoordinator->name() ) )
+                {
+                    for( HostName::Ptr pHostName : pCoordinator->getHostNames() )
+                    {
+                        if( chd.isHost( pHostName->name() ) )
+                        {
+                            for( ProjectName::Ptr pProjectName : pHostName->getProjectNames() )
+                            {
+                                if( pProjectName->name() == projectTree.getProjectName() )
+                                {
+                                    //found it!
+                                    const Project& project = pProjectName->getProject();
+                                    const megaxml::Host& host = project.getHost();
+                                    
+                                    for( const boost::filesystem::path& includePath : project.getHostIncludes() )
+                                    {
+                                        os << "#include \"" << includePath.string() << "\"\n";
+                                    }
+                                    
+                                    bFound = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if( bFound )break;
+                    }
+                }
+                if( bFound )break;
+            }
+            
+            VERIFY_RTE_MSG( bFound, "Failed to locate coordinator hostname projectname" );
+            
+            //osOperations << "#endif\n";
+        }
+    
+        boost::filesystem::updateFileIfChanged( projectTree.getOperationsIncludeHeader( strTUName ), os.str() );
+    }
+	
+	{
+		//LogEntry log( std::cout, "Compiling interface to pch", bBenchCommands );
+		std::ostringstream osCmd;
+		environment.startCompilationCommand( osCmd );
+		osCmd << " " << strCompilationFlags << " ";
+		
+		osCmd << "-Xclang -include-pch ";
+		osCmd << "-Xclang " << environment.printPath( projectTree.getIncludePCH() ) << " ";
+            
+        osCmd << "-Xclang -include-pch ";
+        osCmd << "-Xclang " << environment.printPath( projectTree.getInterfacePCH() ) << " ";
+    
+		osCmd << "-Xclang -emit-pch -o " << environment.printPath( projectTree.getOperationsIncludePCH( strTUName ) ) << " ";
+		
+		osCmd << "-I " << environment.getEGLibraryInclude().generic_string() << " ";
+            
+        for( const boost::filesystem::path& includeDirectory : projectTree.getIncludeDirectories( environment ) )
+        {
+            osCmd << "-I " << environment.printPath( includeDirectory ) << " ";
+        }
+		
+		osCmd << environment.printPath( projectTree.getOperationsIncludeHeader( strTUName ) ) << " ";
+		
+		//if( bLogCommands )
+		//{
+            std::cout << environment.printPath( projectTree.getInterfacePCH() ) << std::endl;
+			//std::cout << "\n" << osCmd.str() << std::endl;
+		//}
+		
+		{
+			const int iResult = boost::process::system( osCmd.str() );
+			if( iResult )
+			{
+				THROW_RTE( "Error invoking clang++ " << iResult );
+			}
+		}
+	}
+}
+
+
 void build_operations( eg::InterfaceSession& interfaceSession, const Environment& environment, 
     const ProjectTree& projectTree, const std::string& strCompilationFlags )
 {
@@ -295,13 +396,21 @@ void build_operations( eg::InterfaceSession& interfaceSession, const Environment
     for( const eg::TranslationUnit* pTranslationUnit : tuAnalysis.getTranslationUnits() )
     {
         const std::string& strTUName = pTranslationUnit->getName();
+        const eg::TranslationUnit::CoordinatorHostnameDefinitionFile& chd =
+            pTranslationUnit->getCoordinatorHostnameDefinitionFile();
+        const std::string strDefine = chd.getHostDefine();
+        
+        build_operations_include_header( environment, pTranslationUnit, projectTree, strCompilationFlags );
         
         //generate the operation code
         {
             //LogEntry log( std::cout, "Generating operations: " + strTUName, bBenchCommands );
 			std::cout << "\nGenerating operations: " << strTUName << std::endl;
             std::ostringstream osOperations;
+            //eg::generateIncludeGuard( osOperations, "OPERATIONS" );
             eg::generateOperationSource( osOperations, interfaceSession.getTreeRoot(), *pTranslationUnit );
+            //osOperations << "\n" << eg::pszLine << eg::pszLine;
+            //osOperations << "#endif\n";
             boost::filesystem::updateFileIfChanged( projectTree.getOperationsHeader( strTUName ), osOperations.str() );
         }
             
@@ -312,7 +421,11 @@ void build_operations( eg::InterfaceSession& interfaceSession, const Environment
             fileTracker.isModified( projectTree.getOperationsHeader( strTUName ) ) ||
             //fileTracker.isModified( projectTree.getInterfaceDatabaseFile() ) || 
             fileTracker.isModified( projectTree.getTUDBName( strTUName ) ) )
-        {*/
+        */
+        
+        
+        //public stuff
+        {
             //LogEntry log( std::cout, "Compiling operations to pch: " + strTUName, bBenchCommands );
             
             std::ostringstream osCmd;
@@ -325,7 +438,7 @@ void build_operations( eg::InterfaceSession& interfaceSession, const Environment
             osCmd << "-Xclang -include-pch ";
             osCmd << "-Xclang " << environment.printPath( projectTree.getInterfacePCH() ) << " ";
             
-            osCmd << "-Xclang -emit-pch -o " << environment.printPath( projectTree.getOperationsPCH( strTUName ) ) << " ";
+            osCmd << "-Xclang -emit-pch -o " << environment.printPath( projectTree.getOperationsPublicPCH( strTUName ) ) << " ";
             osCmd << "-Xclang -egdb=" << environment.printPath( projectTree.getInterfaceDatabaseFile() ) << " ";
             osCmd << "-Xclang -egdll=" << environment.printPath( environment.getClangPluginDll() ) << " ";
             
@@ -336,7 +449,7 @@ void build_operations( eg::InterfaceSession& interfaceSession, const Environment
             
             //if( bLogCommands )
             //{
-                std::cout << environment.printPath( projectTree.getOperationsPCH( strTUName ) ) << std::endl;
+                std::cout << environment.printPath( projectTree.getOperationsPublicPCH( strTUName ) ) << std::endl;
                 //std::cout << "\n" << osCmd.str() << std::endl;
             //}
             
@@ -347,7 +460,57 @@ void build_operations( eg::InterfaceSession& interfaceSession, const Environment
                     THROW_RTE( "Error invoking clang++ " << iResult );
                 }
             }
-        //}
+        }
+        
+        {
+            //LogEntry log( std::cout, "Compiling operations to pch: " + strTUName, bBenchCommands );
+            
+            std::ostringstream osCmd;
+            environment.startCompilationCommand( osCmd );
+            osCmd << " " << strCompilationFlags << " ";
+            
+            if( !strDefine.empty() )
+            {
+                osCmd << "-D" << strDefine << " ";
+            }
+            
+            osCmd << "-Xclang -include-pch ";
+            osCmd << "-Xclang " << environment.printPath( projectTree.getIncludePCH() ) << " ";
+            
+            osCmd << "-Xclang -include-pch ";
+            osCmd << "-Xclang " << environment.printPath( projectTree.getInterfacePCH() ) << " ";
+            
+            osCmd << "-Xclang -include-pch ";
+            osCmd << "-Xclang " << environment.printPath( projectTree.getOperationsIncludePCH( strTUName ) ) << " ";
+            
+            osCmd << "-Xclang -emit-pch -o " << environment.printPath( projectTree.getOperationsPrivatePCH( strTUName ) ) << " ";
+            osCmd << "-Xclang -egdb=" << environment.printPath( projectTree.getInterfaceDatabaseFile() ) << " ";
+            osCmd << "-Xclang -egdll=" << environment.printPath( environment.getClangPluginDll() ) << " ";
+            
+            osCmd << "-Xclang -egtu=" << environment.printPath( projectTree.getTUDBName( strTUName ) ) << " ";
+            osCmd << "-Xclang -egtuid=" << pTranslationUnit->getDatabaseFileID() << " ";
+            
+            for( const boost::filesystem::path& includeDirectory : projectTree.getIncludeDirectories( environment ) )
+            {
+                osCmd << "-I " << environment.printPath( includeDirectory ) << " ";
+            }
+            
+            osCmd << environment.printPath( projectTree.getOperationsHeader( strTUName ) ) << " ";
+            
+            //if( bLogCommands )
+            //{
+                std::cout << environment.printPath( projectTree.getOperationsPrivatePCH( strTUName ) ) << std::endl;
+                //std::cout << "\n" << osCmd.str() << std::endl;
+            //}
+            
+            {
+                const int iResult = boost::process::system( osCmd.str() );
+                if( iResult )
+                {
+                    THROW_RTE( "Error invoking clang++ " << iResult );
+                }
+            }
+        }
     }
 }
 
@@ -377,51 +540,7 @@ void generate_objects( const eg::TranslationUnitAnalysis& translationUnits, cons
                 
         pImplementationSession->fullProgramAnalysis();
         pImplementationSession->store( projectTree.getAnalysisFileName() );
-        
     }
-    
-    
-    /*std::ostringstream osPackages;
-    bool bHasPackages = false;
-    {
-        const std::vector< std::string > packages = projectTree.getPackages();
-        std::copy( packages.begin(), packages.end(),
-            std::ostream_iterator< std::string >( osPackages, " " ) );
-        bHasPackages = !packages.empty();
-    }
-    
-    //executing all commands
-    std::vector< boost::filesystem::path > commands =  projectTree.getCommands();
-    for( const boost::filesystem::path& strCommand : commands )
-    {
-        std::ostringstream os;
-        os << "Executing command: " << strCommand;
-        LogEntry log( std::cout, os.str(), bBenchCommands );
-        
-        std::ostringstream osCmd;
-        osCmd << strCommand << " ";
-        
-        osCmd << "--name " << projectTree.getProject().Name() << " ";
-        osCmd << "--database " << projectTree.getAnalysisFileName() << " ";
-        osCmd << "--dir " << projectTree.getIntermediateFolder().generic_string() << " ";
-        if( bHasPackages )
-        {
-            osCmd << "--package " << osPackages.str() << " ";
-        }
-        
-        //if( bLogCommands )
-        //{
-        //    std::cout << "\n" << osCmd.str() << std::endl;
-        //}
-        
-        {
-            const int iResult = boost::process::system( osCmd.str() );
-            if( iResult )
-            {
-                THROW_RTE( "Error invoking host command " << iResult );
-            }
-        }
-    }*/
 }
 
 void objectCompilationCommand( std::string strMsg, std::string strCommand, 
@@ -738,6 +857,19 @@ void build_component( const eg::ReadSession& session, const Environment& environ
 		boost::filesystem::updateFileIfChanged( egComponentSourceFilePath, osEGComponent.str() );
 		sourceFiles.push_back( egComponentSourceFilePath );
     }
+    else if( strProjectType == megastructure::szComponentTypeNames[ megastructure::eComponent_Geometry ] )
+    {
+		std::ostringstream osEGComponent;
+		megastructure::generate_eg_component( 
+            osEGComponent, 
+            projectTree, 
+            session,
+            networkAnalysis,
+            megastructure::eComponent_Geometry );
+		const boost::filesystem::path egComponentSourceFilePath = projectTree.getEGComponentSource();
+		boost::filesystem::updateFileIfChanged( egComponentSourceFilePath, osEGComponent.str() );
+		sourceFiles.push_back( egComponentSourceFilePath );
+    }
     else
     {
         THROW_RTE( "Unknown project type: " << strProjectType );
@@ -745,6 +877,13 @@ void build_component( const eg::ReadSession& session, const Environment& environ
 	
     std::mutex logMutex;
     std::vector< std::function< void() > > commands;
+    
+    std::string strCoordinatorHostNameDefine;
+    {
+        std::ostringstream osCoordinatorHostNameDefine;
+        osCoordinatorHostNameDefine << projectTree.getCoordinatorName() << '_' << projectTree.getHostName();
+        strCoordinatorHostNameDefine = osCoordinatorHostNameDefine.str();
+    }
 	
 	for( const boost::filesystem::path& strSourceFile : sourceFiles )
     {
@@ -763,6 +902,8 @@ void build_component( const eg::ReadSession& session, const Environment& environ
 		std::ostringstream osCmd;
 		environment.startCompilationCommand( osCmd );
 		osCmd << " " << strCompilationFlags << " ";
+        
+        osCmd << "-D" << strCoordinatorHostNameDefine << " ";
 		
 		osCmd << "-c -o " << environment.printPath( objectFilePath ) << " ";
 		
@@ -832,6 +973,12 @@ void build_component( const eg::ReadSession& session, const Environment& environ
 				std::ostringstream osCmd;
 				environment.startCompilationCommand( osCmd );
 				osCmd << " " << strCompilationFlags << " ";
+                
+                const std::string strDefine = pTranslationUnit->getCoordinatorHostnameDefinitionFile().getHostDefine();
+                if( !strDefine.empty() )
+                {
+                    osCmd << "-D" << strDefine << " ";
+                }
 				
 				osCmd << "-c -o " << environment.printPath( objectFilePath ) << " ";
 					
@@ -842,7 +989,15 @@ void build_component( const eg::ReadSession& session, const Environment& environ
 				osCmd << "-Xclang " << environment.printPath( projectTree.getInterfacePCH() ) << " ";
 				
 				osCmd << "-Xclang -include-pch ";
-				osCmd << "-Xclang " << environment.printPath( projectTree.getOperationsPCH( pTranslationUnit->getName() ) ) << " ";
+                
+                if( strDefine == strCoordinatorHostNameDefine )
+                {
+                    osCmd << "-Xclang " << environment.printPath( projectTree.getOperationsPrivatePCH( pTranslationUnit->getName() ) ) << " ";
+                }
+                else
+                {
+                    osCmd << "-Xclang " << environment.printPath( projectTree.getOperationsPublicPCH( pTranslationUnit->getName() ) ) << " ";
+                }
 					
                 for( const boost::filesystem::path& includeDirectory : projectTree.getImplIncludeDirectories( environment ) )
                 {

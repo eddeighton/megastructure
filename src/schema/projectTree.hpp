@@ -140,8 +140,11 @@ public:
 
 	std::vector< boost::filesystem::path > getIncludeDirectories( const Environment& environment ) const;
 	std::vector< boost::filesystem::path > getImplIncludeDirectories( const Environment& environment ) const;
+	boost::filesystem::path getOperationsIncludeHeader( const std::string& strTUName ) const;
+	boost::filesystem::path getOperationsIncludePCH( const std::string& strTUName ) const;
 	boost::filesystem::path getOperationsHeader( const std::string& strTUName ) const;
-	boost::filesystem::path getOperationsPCH( const std::string& strTUName ) const;
+	boost::filesystem::path getOperationsPublicPCH( const std::string& strTUName ) const;
+	boost::filesystem::path getOperationsPrivatePCH( const std::string& strTUName ) const;
 	boost::filesystem::path getImplementationSource( const std::string& strTUName ) const;
     std::string getStructuresInclude() const;
 	boost::filesystem::path getDataStructureSource() const;

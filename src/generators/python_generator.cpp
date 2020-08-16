@@ -406,12 +406,26 @@ eg::ComponentInterop& getPythonInterop()
 			VERIFY_RTE( pAction->getParent() && pAction->getParent()->getParent() );
     os << "            case " << pAction->getIndex() << ":\n";
     os << "                {\n";
+    
+            
             const eg::concrete::Action* pParent = dynamic_cast< const eg::concrete::Action* >( pAction->getParent() );
             VERIFY_RTE( pParent );
             const eg::concrete::Allocator* pAllocator = pParent->getAllocator( pAction );
             VERIFY_RTE( pAllocator );
             const eg::interface::Context* pStaticType = pAction->getContext();
             VERIFY_RTE( pStaticType );
+            
+            bool bVisibilityGuard = false;
+            if( pStaticType->getVisibility() == eg::eVisPrivate )
+            {
+                const std::string strDefine = 
+                    translationUnitAnalysis.getActionTU( pStaticType )->getCoordinatorHostnameDefinitionFile().getHostDefine();
+                if( !strDefine.empty() )
+                {
+                    os << "#ifdef " << strDefine << "\n";
+                    bVisibilityGuard = true;
+                }
+            }
             
             const bool bContextIsWithinComponent = 
                 isContextWithinComponent( projectTree, translationUnitAnalysis, pStaticType );
@@ -560,6 +574,15 @@ eg::ComponentInterop& getPythonInterop()
                 {
                     THROW_RTE( "Unknown abstract type" );
                 }
+            }
+            
+            if( bVisibilityGuard )
+            {
+                os << "#else\n";
+                os << strIndent << "ERR( \"Attempt to call private context\" );\n";
+                os << strIndent << "Py_INCREF( Py_None );\n";
+                os << strIndent << "pEvaluation->m_result = pybind11::reinterpret_borrow< pybind11::object >( Py_None );\n";
+                os << "#endif\n";
             }
             
     os << "                }\n";

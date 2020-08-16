@@ -86,6 +86,8 @@ public:
     const boost::filesystem::path& getProjectDir() const { return m_projectDir; }
     const megaxml::Project& getProject() const { return m_project; }
 	const megaxml::Host& getHost() const { return m_host; }
+    
+    std::vector< boost::filesystem::path > getHostIncludes() const;
 private:
     const boost::filesystem::path m_projectDir;
     Environment m_environment;
