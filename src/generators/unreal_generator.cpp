@@ -115,10 +115,11 @@ namespace eg
 
     struct StaticInterfaceVisitor
     {
+        const eg::LinkAnalysis& linkAnalysis;
         std::ostream& os;
         std::string strIndent;
 
-        StaticInterfaceVisitor( std::ostream& os ) : os( os ) {}
+        StaticInterfaceVisitor( const eg::LinkAnalysis& _linkAnalysis, std::ostream& os ) : linkAnalysis( _linkAnalysis ), os( os ) {}
         
         void pushIndent()
         {
@@ -209,6 +210,18 @@ namespace eg
                         os << strIndent << "{\n";
                     }
                 }
+                
+                //link groups
+                const LinkGroup::Vector& linkGroups = linkAnalysis.getLinkGroups();
+                for( const LinkGroup* pLinkGroup : linkGroups )
+                {
+                    const std::vector< interface::Context* >& targets = pLinkGroup->getInterfaceTargets();
+                    if( std::find( targets.begin(), targets.end(), pContext ) != targets.end() )
+                    {
+                        //generate linkgroup access
+                        os << strIndent << "  virtual const IContext* " << pLinkGroup->getLinkName() << "() const = 0;\n";
+                    }
+                }
             }
                 
             pushIndent();
@@ -284,9 +297,12 @@ void generateUnrealInterface( std::ostream& os, const eg::ReadSession& session,
     os << "{\n";
     os << "};\n";
     
+    
+    const eg::LinkAnalysis& linkAnalysis = session.getLinkAnalysis();
+    
     {
         os << "\n//Object Interface\n";
-        eg::StaticInterfaceVisitor interfaceVisitor( os );
+        eg::StaticInterfaceVisitor interfaceVisitor( linkAnalysis, os );
         pInterfaceRoot->pushpop( interfaceVisitor );
         os << "\n";
     }
@@ -354,7 +370,8 @@ std::string dataTypeFull( const eg::interface::Dimension* pDimension )
     return os.str();
 }
     
-void generateImplementationDeclarations( std::ostream& os, const eg::Layout& layout, const eg::concrete::Action* pContext, eg::PrinterFactory::Ptr pPrinterFactory )
+void generateImplementationDeclarations( std::ostream& os, const eg::LinkAnalysis& linkAnalysis, 
+    const eg::Layout& layout, const eg::concrete::Action* pContext, eg::PrinterFactory::Ptr pPrinterFactory )
 {
     const std::vector< eg::concrete::Element* >& children = pContext->getChildren();
     
@@ -366,6 +383,14 @@ void generateImplementationDeclarations( std::ostream& os, const eg::Layout& lay
         os << "  eg::TypeInstance ref;\n";
         os << "  std::size_t getInstance() const { return ref.instance; };\n";
         //os << "  virtual std::size_t getRTTI() const { return ref.type; };\n";
+        
+        //link groups
+        const eg::concrete::Action::LinkMap& links = pContext->getLinks();
+        for( eg::concrete::Action::LinkMap::const_iterator i = links.begin(),
+            iEnd = links.end(); i!=iEnd; ++i )
+        {
+            os << "  virtual const IContext* " << i->first << "() const;\n";
+        }
         
         for( eg::concrete::Element* pChildElement : children )
         {
@@ -429,7 +454,7 @@ void generateImplementationDeclarations( std::ostream& os, const eg::Layout& lay
             
             if( bIsContext )
             {
-                generateImplementationDeclarations( os, layout, pChildContext, pPrinterFactory );
+                generateImplementationDeclarations( os, linkAnalysis, layout, pChildContext, pPrinterFactory );
             }
         }
     }
@@ -479,13 +504,47 @@ void generateAllocations( std::ostream& os, const eg::concrete::Action* pContext
     }
 }
 
-void generateImplementationDefinitions( std::ostream& os, const eg::Layout& layout, const eg::DerivationAnalysis& derivationAnalysis, 
+void generateImplementationDefinitions( std::ostream& os, const eg::LinkAnalysis& linkAnalysis, 
+    const eg::Layout& layout, const eg::DerivationAnalysis& derivationAnalysis, 
     const eg::concrete::Action* pContext, eg::PrinterFactory::Ptr pPrinterFactory )
 {
     const std::vector< eg::concrete::Element* >& children = pContext->getChildren();
     
     if( pContext->getParent() )
     {
+        //link groups
+        const eg::concrete::Action::LinkMap& links = pContext->getLinks();
+        for( eg::concrete::Action::LinkMap::const_iterator i = links.begin(),
+            iEnd = links.end(); i!=iEnd; ++i )
+        {
+            const eg::concrete::Dimension_Generated* pBackReference = i->second;
+            const eg::LinkGroup* pLinkGroup = pBackReference->getLinkGroup();
+            VERIFY_RTE( pLinkGroup );
+            
+            //generate linkgroup access
+            os << "const IContext* " << implName( pContext ) << "::" << i->first << "() const\n";
+            os << "{\n";
+            os << "  const auto& backLinkRef = " << *pPrinterFactory->read( layout.getDataMember( pBackReference ), "ref.instance" ) << ";\n";
+            os << "  switch( backLinkRef.type )\n";
+            os << "  {\n";
+            for( const eg::concrete::Action* pConcreteLinkType : pLinkGroup->getConcreteLinks() )
+            {
+            os << "    case " << pConcreteLinkType->getIndex() << ": return &" << arrayName( pConcreteLinkType ) << "[ backLinkRef.instance ];\n";
+            }
+            os << "    default: return nullptr;\n";
+            os << "  }\n";
+            os << "}\n";
+        }
+        
+        const eg::LinkGroup::Vector& linkGroups = linkAnalysis.getLinkGroups();
+        for( const eg::LinkGroup* pLinkGroup : linkGroups )
+        {
+            const std::vector< eg::concrete::Action* >& targets = pLinkGroup->getTargets();
+            if( std::find( targets.begin(), targets.end(), pContext ) != targets.end() )
+            {
+            }
+        }
+        
         for( eg::concrete::Element* pChildElement : children )
         {
             if( const eg::concrete::Dimension_User* pUserDimension = dynamic_cast< const eg::concrete::Dimension_User* >( pChildElement ) )
@@ -596,7 +655,7 @@ void generateImplementationDefinitions( std::ostream& os, const eg::Layout& layo
             
             if( bIsContext )
             {
-                generateImplementationDefinitions( os, layout, derivationAnalysis, pChildContext, pPrinterFactory );
+                generateImplementationDefinitions( os, linkAnalysis, layout, derivationAnalysis, pChildContext, pPrinterFactory );
             }
         }
     }
@@ -614,6 +673,7 @@ void generateUnrealCode( std::ostream& os, const eg::ReadSession& session,
     
     const eg::concrete::Action* pConcreteRoot = session.getInstanceRoot();
     const eg::Layout& layout = session.getLayout();
+    const eg::LinkAnalysis& linkAnaysis = session.getLinkAnalysis();
     const eg::DerivationAnalysis& derivationAnalysis = session.getDerivationAnalysis();
     
     VERIFY_RTE( !pConcreteRoot->getParent() );
@@ -624,14 +684,14 @@ void generateUnrealCode( std::ostream& os, const eg::ReadSession& session,
         
     eg::generateMemberFunctions( os, *pPrinterFactory, session );
     
-    generateImplementationDeclarations( os, layout, pActualRoot, pPrinterFactory );
+    generateImplementationDeclarations( os, linkAnaysis, layout, pActualRoot, pPrinterFactory );
     
     os << "\n";
     os << "using R = eg::TypeInstance;\n";
     
     generateAllocations( os, pActualRoot );
     
-    generateImplementationDefinitions( os, layout, derivationAnalysis, pActualRoot, pPrinterFactory );
+    generateImplementationDefinitions( os, linkAnaysis, layout, derivationAnalysis, pActualRoot, pPrinterFactory );
     
     os << "\n";
 
