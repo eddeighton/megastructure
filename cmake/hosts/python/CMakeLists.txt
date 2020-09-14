@@ -19,7 +19,7 @@ include( ${MEGA_ROOT_DIR}/cmake/common_include.cmake )
 #eg
 include( ${MEGA_ROOT_DIR}/cmake/eg_include.cmake )
 
-set( MEGA_PYTHON_HOST_DIR ${MEGA_ROOT_DIR}/src/python )
+set( MEGA_PYTHON_HOST_DIR ${MEGA_ROOT_DIR}/src/hosts/python )
 #get the sources
 
 set( MEGA_PYTHON_HOST_SOURCES
@@ -48,5 +48,3 @@ target_link_libraries( python_host megastructureprotocollib )
 target_link_libraries( python_host componentlib )
 
 install( TARGETS python_host DESTINATION bin)
-install( FILES ${MEGA_ROOT_DIR}/tests/host/.eg DESTINATION include/testhost )
-install( FILES ${MEGA_PYTHON_HOST_DIR}/.eg DESTINATION include/pythonhost )

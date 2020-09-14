@@ -31,12 +31,6 @@ namespace megaxml
   //
 
   void Package_pskel::
-  Name_parser (::xml_schema::string_pskel& p)
-  {
-    this->Name_parser_ = &p;
-  }
-
-  void Package_pskel::
   Type_parser (::xml_schema::string_pskel& p)
   {
     this->Type_parser_ = &p;
@@ -61,13 +55,11 @@ namespace megaxml
   }
 
   void Package_pskel::
-  parsers (::xml_schema::string_pskel& Name,
-           ::xml_schema::string_pskel& Type,
+  parsers (::xml_schema::string_pskel& Type,
            ::megaxml::Directories_pskel& Directories,
            ::megaxml::Files_pskel& Files,
            ::xml_schema::string_pskel& Command)
   {
-    this->Name_parser_ = &Name;
     this->Type_parser_ = &Type;
     this->Directories_parser_ = &Directories;
     this->Files_parser_ = &Files;
@@ -77,7 +69,6 @@ namespace megaxml
   Package_pskel::
   Package_pskel ()
   : Package_impl_ (0),
-    Name_parser_ (0),
     Type_parser_ (0),
     Directories_parser_ (0),
     Files_parser_ (0),
@@ -90,7 +81,6 @@ namespace megaxml
   Package_pskel (Package_pskel* impl, void*)
   : ::xsde::cxx::parser::validating::complex_content (impl, 0),
     Package_impl_ (impl),
-    Name_parser_ (0),
     Type_parser_ (0),
     Directories_parser_ (0),
     Files_parser_ (0),
@@ -113,22 +103,6 @@ namespace megaxml
   Host_pskel (Host_pskel* impl, void*)
   : ::megaxml::Package_pskel (impl, 0),
     Host_impl_ (impl)
-  {
-  }
-
-  // Defaults_pskel
-  //
-
-  Defaults_pskel::
-  Defaults_pskel ()
-  : Defaults_impl_ (0)
-  {
-  }
-
-  Defaults_pskel::
-  Defaults_pskel (Defaults_pskel* impl, void*)
-  : ::xsde::cxx::parser::validating::complex_content (impl, 0),
-    Defaults_impl_ (impl)
   {
   }
 
@@ -181,6 +155,22 @@ namespace megaxml
     CompilerFlags_parser_ (0),
     LinkerFlags_parser_ (0),
     v_state_stack_ (sizeof (v_state_), &v_state_first_)
+  {
+  }
+
+  // Defaults_pskel
+  //
+
+  Defaults_pskel::
+  Defaults_pskel ()
+  : Defaults_impl_ (0)
+  {
+  }
+
+  Defaults_pskel::
+  Defaults_pskel (Defaults_pskel* impl, void*)
+  : ::xsde::cxx::parser::validating::complex_content (impl, 0),
+    Defaults_impl_ (impl)
   {
   }
 
@@ -493,13 +483,6 @@ namespace megaxml
   //
 
   void Package_pskel::
-  Name (const ::std::string& x)
-  {
-    if (this->Package_impl_)
-      this->Package_impl_->Name (x);
-  }
-
-  void Package_pskel::
   Type (const ::std::string& x)
   {
     if (this->Package_impl_)
@@ -539,9 +522,6 @@ namespace megaxml
     this->v_state_stack_.clear ();
 
     this->resetting_ = true;
-
-    if (this->Name_parser_)
-      this->Name_parser_->_reset ();
 
     if (this->Type_parser_)
       this->Type_parser_->_reset ();
@@ -952,7 +932,7 @@ namespace megaxml
       {
         unsigned long s = ~0UL;
 
-        if (n == "Name" && ns.empty ())
+        if (n == "Type" && ns.empty ())
           s = 0UL;
 
         if (s != ~0UL)
@@ -1064,22 +1044,22 @@ namespace megaxml
     {
       case 0UL:
       {
-        if (n == "Name" && ns.empty ())
+        if (n == "Type" && ns.empty ())
         {
           if (start)
           {
-            if (this->Name_parser_)
+            if (this->Type_parser_)
             {
-              this->Name_parser_->pre ();
-              ctx.nested_parser (this->Name_parser_);
+              this->Type_parser_->pre ();
+              ctx.nested_parser (this->Type_parser_);
             }
           }
           else
           {
-            if (this->Name_parser_ != 0)
+            if (this->Type_parser_ != 0)
             {
-              const ::std::string& tmp = this->Name_parser_->post_string ();
-              this->Name (tmp);
+              const ::std::string& tmp = this->Type_parser_->post_string ();
+              this->Type (tmp);
             }
 
             count = 0;
@@ -1104,46 +1084,6 @@ namespace megaxml
       }
       case 1UL:
       {
-        if (n == "Type" && ns.empty ())
-        {
-          if (start)
-          {
-            if (this->Type_parser_)
-            {
-              this->Type_parser_->pre ();
-              ctx.nested_parser (this->Type_parser_);
-            }
-          }
-          else
-          {
-            if (this->Type_parser_ != 0)
-            {
-              const ::std::string& tmp = this->Type_parser_->post_string ();
-              this->Type (tmp);
-            }
-
-            count = 0;
-            state = 2UL;
-          }
-
-          break;
-        }
-        else
-        {
-          assert (start);
-          if (count < 1UL)
-          {
-            this->_schema_error (::xsde::cxx::schema_error::expected_element);
-            break;
-          }
-
-          count = 0;
-          state = 2UL;
-          // Fall through.
-        }
-      }
-      case 2UL:
-      {
         if (n == "Directories" && ns.empty ())
         {
           if (start)
@@ -1163,7 +1103,7 @@ namespace megaxml
             }
 
             count = 0;
-            state = 3UL;
+            state = 2UL;
           }
 
           break;
@@ -1172,11 +1112,11 @@ namespace megaxml
         {
           assert (start);
           count = 0;
-          state = 3UL;
+          state = 2UL;
           // Fall through.
         }
       }
-      case 3UL:
+      case 2UL:
       {
         if (n == "Files" && ns.empty ())
         {
@@ -1197,7 +1137,7 @@ namespace megaxml
             }
 
             count = 0;
-            state = 4UL;
+            state = 3UL;
           }
 
           break;
@@ -1206,11 +1146,11 @@ namespace megaxml
         {
           assert (start);
           count = 0;
-          state = 4UL;
+          state = 3UL;
           // Fall through.
         }
       }
-      case 4UL:
+      case 3UL:
       {
         if (n == "Command" && ns.empty ())
         {

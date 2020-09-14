@@ -92,8 +92,8 @@ namespace megaxml
 {
   class Package_pskel;
   class Host_pskel;
-  class Defaults_pskel;
   class Build_pskel;
+  class Defaults_pskel;
   class Project_pskel;
   class Files_pskel;
   class EG_pskel;
@@ -309,9 +309,6 @@ namespace megaxml
     // Elements.
     //
     virtual void
-    Name (const ::std::string&);
-
-    virtual void
     Type (const ::std::string&);
 
     virtual void
@@ -329,17 +326,13 @@ namespace megaxml
     // Parser construction API.
     //
     void
-    parsers (::xml_schema::string_pskel& /* Name */,
-             ::xml_schema::string_pskel& /* Type */,
+    parsers (::xml_schema::string_pskel& /* Type */,
              ::megaxml::Directories_pskel& /* Directories */,
              ::megaxml::Files_pskel& /* Files */,
              ::xml_schema::string_pskel& /* Command */);
 
     // Individual element parsers.
     //
-    void
-    Name_parser (::xml_schema::string_pskel&);
-
     void
     Type_parser (::xml_schema::string_pskel&);
 
@@ -375,7 +368,6 @@ namespace megaxml
                        const ::xsde::cxx::ro_string&);
 
     protected:
-    ::xml_schema::string_pskel* Name_parser_;
     ::xml_schema::string_pskel* Type_parser_;
     ::megaxml::Directories_pskel* Directories_parser_;
     ::megaxml::Files_pskel* Files_parser_;
@@ -441,28 +433,6 @@ namespace megaxml
     protected:
     Host_pskel* Host_impl_;
     Host_pskel (Host_pskel*, void*);
-  };
-
-  class Defaults_pskel: public ::xsde::cxx::parser::validating::complex_content
-  {
-    public:
-    // Parser callbacks. Override them in your implementation.
-    //
-    // virtual void
-    // pre ();
-
-    virtual ::megaxml::Defaults
-    post_Defaults () = 0;
-
-    // Constructor.
-    //
-    Defaults_pskel ();
-
-    // Implementation details.
-    //
-    protected:
-    Defaults_pskel* Defaults_impl_;
-    Defaults_pskel (Defaults_pskel*, void*);
   };
 
   class Build_pskel: public ::xsde::cxx::parser::validating::complex_content
@@ -567,6 +537,28 @@ namespace megaxml
                 const ::xsde::cxx::ro_string&,
                 const ::xsde::cxx::ro_string&,
                 bool);
+  };
+
+  class Defaults_pskel: public ::xsde::cxx::parser::validating::complex_content
+  {
+    public:
+    // Parser callbacks. Override them in your implementation.
+    //
+    // virtual void
+    // pre ();
+
+    virtual ::megaxml::Defaults
+    post_Defaults () = 0;
+
+    // Constructor.
+    //
+    Defaults_pskel ();
+
+    // Implementation details.
+    //
+    protected:
+    Defaults_pskel* Defaults_impl_;
+    Defaults_pskel (Defaults_pskel*, void*);
   };
 
   class Project_pskel: public ::xsde::cxx::parser::validating::complex_content

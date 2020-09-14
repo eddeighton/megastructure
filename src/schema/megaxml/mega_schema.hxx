@@ -168,8 +168,8 @@ namespace megaxml
 {
   class Package;
   class Host;
-  class Defaults;
   class Build;
+  class Defaults;
   class Project;
   class Files;
   class EG;
@@ -192,17 +192,6 @@ namespace megaxml
     Package ();
 
     ~Package ();
-
-    // Name
-    //
-    const ::std::string&
-    Name () const;
-
-    ::std::string&
-    Name ();
-
-    void
-    Name (const ::std::string&);
 
     // Type
     //
@@ -256,7 +245,6 @@ namespace megaxml
     Command ();
 
     private:
-    ::std::string Name_;
     ::std::string Type_;
     ::megaxml::Directories* Directories_;
     ::megaxml::Files* Files_;
@@ -275,21 +263,6 @@ namespace megaxml
     Host ();
 
     ~Host ();
-
-    private:
-  };
-
-  // Defaults (fixed-length)
-  //
-  class Defaults
-  {
-    public:
-    Defaults ();
-
-    Defaults (const Defaults&);
-    Defaults& operator= (const Defaults&);
-
-    ~Defaults ();
 
     private:
   };
@@ -343,6 +316,21 @@ namespace megaxml
     ::std::string Name_;
     ::std::string CompilerFlags_;
     ::std::string LinkerFlags_;
+  };
+
+  // Defaults (fixed-length)
+  //
+  class Defaults
+  {
+    public:
+    Defaults ();
+
+    Defaults (const Defaults&);
+    Defaults& operator= (const Defaults&);
+
+    ~Defaults ();
+
+    private:
   };
 
   // Project (variable-length)

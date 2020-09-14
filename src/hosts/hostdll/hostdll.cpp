@@ -1,5 +1,5 @@
 
-#include "host/host.hpp"
+#include "hostdll/hostdll.hpp"
 
 #include <boost/filesystem.hpp>
 #include <boost/optional.hpp>

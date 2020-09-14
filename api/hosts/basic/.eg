@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<EG xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="file:///W:/workspace/eg/src/driver/schema.xsd">
+	<Host>
+        <Type>basic</Type>
+		<Command>${MEGA}/bin/basic_host.exe</Command>
+	</Host>
+</EG>

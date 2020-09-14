@@ -48,9 +48,6 @@ namespace megaxml
     // Elements.
     //
     virtual ::std::string
-    Name ();
-
-    virtual ::std::string
     Type ();
 
     virtual bool
@@ -102,21 +99,6 @@ namespace megaxml
     Host_simpl_state Host_simpl_state_;
   };
 
-  class Defaults_simpl: public Defaults_sskel
-  {
-    public:
-    virtual void
-    pre (const ::megaxml::Defaults&);
-
-    public:
-    struct Defaults_simpl_state
-    {
-      const ::megaxml::Defaults* Defaults_;
-    };
-
-    Defaults_simpl_state Defaults_simpl_state_;
-  };
-
   class Build_simpl: public Build_sskel
   {
     public:
@@ -141,6 +123,21 @@ namespace megaxml
     };
 
     Build_simpl_state Build_simpl_state_;
+  };
+
+  class Defaults_simpl: public Defaults_sskel
+  {
+    public:
+    virtual void
+    pre (const ::megaxml::Defaults&);
+
+    public:
+    struct Defaults_simpl_state
+    {
+      const ::megaxml::Defaults* Defaults_;
+    };
+
+    Defaults_simpl_state Defaults_simpl_state_;
   };
 
   class Project_simpl: public Project_sskel
@@ -395,15 +392,15 @@ namespace megaxml
 
     public:
     ::xml_schema::string_simpl string_s_;
-    ::megaxml::Run_simpl Run_s_;
-    ::megaxml::Defaults_simpl Defaults_s_;
     ::megaxml::Files_simpl Files_s_;
-    ::megaxml::Host_simpl Host_s_;
     ::megaxml::EG_simpl EG_s_;
     ::megaxml::Package_simpl Package_s_;
     ::megaxml::Directories_simpl Directories_s_;
+    ::megaxml::Host_simpl Host_s_;
     ::megaxml::Project_simpl Project_s_;
     ::megaxml::Build_simpl Build_s_;
+    ::megaxml::Run_simpl Run_s_;
+    ::megaxml::Defaults_simpl Defaults_s_;
   };
 }
 

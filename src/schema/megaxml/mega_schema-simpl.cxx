@@ -43,12 +43,6 @@ namespace megaxml
   }
 
   ::std::string Package_simpl::
-  Name ()
-  {
-    return this->Package_simpl_state_.Package_->Name ();
-  }
-
-  ::std::string Package_simpl::
   Type ()
   {
     return this->Package_simpl_state_.Package_->Type ();
@@ -107,15 +101,6 @@ namespace megaxml
     this->Host_simpl_state_.Host_ = &x;
   }
 
-  // Defaults_simpl
-  //
-
-  void Defaults_simpl::
-  pre (const ::megaxml::Defaults& x)
-  {
-    this->Defaults_simpl_state_.Defaults_ = &x;
-  }
-
   // Build_simpl
   //
 
@@ -141,6 +126,15 @@ namespace megaxml
   LinkerFlags ()
   {
     return this->Build_simpl_state_.Build_->LinkerFlags ();
+  }
+
+  // Defaults_simpl
+  //
+
+  void Defaults_simpl::
+  pre (const ::megaxml::Defaults& x)
+  {
+    this->Defaults_simpl_state_.Defaults_ = &x;
   }
 
   // Project_simpl
@@ -447,33 +441,27 @@ namespace megaxml
   EG_saggr::
   EG_saggr ()
   {
-    this->Run_s_.serializers (this->string_s_,
-                              this->string_s_,
-                              this->string_s_);
-
     this->Files_s_.serializers (this->string_s_,
                                 this->string_s_,
                                 this->string_s_,
                                 this->string_s_);
-
-    this->Host_s_.serializers (this->string_s_,
-                               this->string_s_,
-                               this->Directories_s_,
-                               this->Files_s_,
-                               this->string_s_);
 
     this->EG_s_.serializers (this->Package_s_,
                              this->Host_s_,
                              this->Project_s_);
 
     this->Package_s_.serializers (this->string_s_,
-                                  this->string_s_,
                                   this->Directories_s_,
                                   this->Files_s_,
                                   this->string_s_);
 
     this->Directories_s_.serializers (this->string_s_,
                                       this->string_s_);
+
+    this->Host_s_.serializers (this->string_s_,
+                               this->Directories_s_,
+                               this->Files_s_,
+                               this->string_s_);
 
     this->Project_s_.serializers (this->string_s_,
                                   this->string_s_,
@@ -486,6 +474,10 @@ namespace megaxml
     this->Build_s_.serializers (this->string_s_,
                                 this->string_s_,
                                 this->string_s_);
+
+    this->Run_s_.serializers (this->string_s_,
+                              this->string_s_,
+                              this->string_s_);
   }
 
   const char* EG_saggr::

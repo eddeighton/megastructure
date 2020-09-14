@@ -1,11 +1,8 @@
 
-
 #include <iostream>
 #include <chrono>
 #include <thread>
-#include <future>
-#include <string>
-#include <memory>
+//#include <signal.h>
 
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
@@ -14,12 +11,18 @@
 #include "common/processID.hpp"
 #include "common/assert_verify.hpp"
 
-#include "host/host.hpp"
+#include "protocol/protocol_helpers.hpp"
 
-//#include "W:\megatest\impl\reddwarf\unreal\testproject\unreal.hpp"
+#include "megastructure/component.hpp"
+#include "megastructure/mega.hpp"
+#include "egcomponent/egcomponent.hpp"
+
 
 struct Args
 {
+	std::string slave_mega_port;
+	std::string slave_eg_port;
+    std::string programName;
 };
 
 bool parse_args( int argc, const char* argv[], Args& args )
@@ -31,6 +34,9 @@ bool parse_args( int argc, const char* argv[], Args& args )
 		boost::program_options::variables_map variables;
 		
 		options.add_options()
+			("sport", po::value< std::string >( &args.slave_mega_port )->default_value( megastructure::MEGA_PORT ), "Slave Mega Port" )
+			("eport", po::value< std::string >( &args.slave_eg_port )->default_value( megastructure::EG_PORT ), "Slave EG Port" )
+            ("name", po::value< std::string >( &args.programName ), "Alternative name for program to be known by instead of default actual process name" )
 			("help", "produce help message")
 		;
 
@@ -74,16 +80,24 @@ int main( int argc, const char* argv[] )
 	
 	try
 	{	
+        if( args.programName.empty() )
+        {
+            args.programName = megastructure::getHostProgramName();
+        }
+		
 		std::future< std::string > inputStringFuture =
 			std::async( std::launch::async, readInput );
-            
-        std::shared_ptr< megastructure::IMegaHost > pMegaHost( 
-            createMegaHost( nullptr ),
-            []( const megastructure::IMegaHost* pMegaHost ){ destroyMegaHost( pMegaHost ); } );
-            
-        
 			
-        //SPDLOG_INFO( "Host: {} pid: {}", args.programName, Common::getProcessID() );
+		Environment environment;
+		
+		megastructure::Component component( 
+			environment,
+			args.slave_mega_port,
+			args.slave_eg_port,
+			args.programName,
+            nullptr );
+            
+        SPDLOG_INFO( "Host: {} pid: {}", args.programName, Common::getProcessID() );
 			
 		while( true )
 		{
@@ -98,36 +112,14 @@ int main( int argc, const char* argv[] )
 				{
 					break;
 				}
+                else if( strInput == "help" )
+                {
+                    std::cout << "help - this message" << std::endl;
+                    std::cout << "quit - shutdown this host" << std::endl;
+                }
                 else if( strInput == "" )
                 {
                     //do nothing
-                }
-                else if( strInput == "help" )
-                {
-                    std::cout << "help - this message\n";
-                    std::cout << "test - attempt to get sim root and log stuff\n";
-                    std::cout << "quit - quit this host\n";
-                }
-                else if( strInput == "test" )
-                {
-                    /*using TestProject = Iroot::Ireddwarf::Iunreal::Itestproject;
-                    const Iroot* pRoot = (const Iroot*)pMegaHost->getRoot();
-                    if( const Iroot::Ireddwarf* pRedDwarf = pRoot->reddwarf( 0 ) )
-                    {
-                        if( const Iroot::Ireddwarf::Iunreal* pUnreal = pRedDwarf->unreal( 0 ) )
-                        {
-                            if( const TestProject* pTestProject = pUnreal->testproject( 0 ) )
-                            {
-                                size_t iSim = pTestProject->Tank_begin();
-                                while( const TestProject::ITank* pSimTank = pTestProject->Tank( iSim ) )
-                                {
-                                    std::cout << "Tank: " << pSimTank->getInstance() << " x: " << pSimTank->x() << " y: " << pSimTank->y() << " angle: " <<pSimTank->angle() << "\n";
-                                    iSim = pTestProject->Tank_next( iSim );
-                                }
-                            }
-                        }
-                    }*/
-                    
                 }
 				else
 				{
@@ -138,7 +130,7 @@ int main( int argc, const char* argv[] )
 					std::async( std::launch::async, readInput );
 			}
 			
-			pMegaHost->runCycle();
+			component.runCycle();
 		}
 		
 	}
@@ -147,6 +139,7 @@ int main( int argc, const char* argv[] )
 		std::cout << "exception: " << ex.what() << std::endl;
 		throw ex;
 	}
+	
 	
 	return 0;
 }

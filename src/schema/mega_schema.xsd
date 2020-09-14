@@ -15,7 +15,7 @@
 	</xs:element>
 	<xs:complexType name="Package">
 		<xs:sequence>
-			<xs:element name="Name" type="xs:string"/>
+			<!--<xs:element name="Name" type="xs:string"/>-->
 			<xs:element name="Type" type="xs:string"/>
 			<xs:element name="Directories" minOccurs="0">
 				<xs:complexType>

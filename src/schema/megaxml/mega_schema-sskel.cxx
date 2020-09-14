@@ -31,12 +31,6 @@ namespace megaxml
   //
 
   void Package_sskel::
-  Name_serializer (::xml_schema::string_sskel& s)
-  {
-    this->Name_serializer_ = &s;
-  }
-
-  void Package_sskel::
   Type_serializer (::xml_schema::string_sskel& s)
   {
     this->Type_serializer_ = &s;
@@ -61,13 +55,11 @@ namespace megaxml
   }
 
   void Package_sskel::
-  serializers (::xml_schema::string_sskel& Name,
-               ::xml_schema::string_sskel& Type,
+  serializers (::xml_schema::string_sskel& Type,
                ::megaxml::Directories_sskel& Directories,
                ::megaxml::Files_sskel& Files,
                ::xml_schema::string_sskel& Command)
   {
-    this->Name_serializer_ = &Name;
     this->Type_serializer_ = &Type;
     this->Directories_serializer_ = &Directories;
     this->Files_serializer_ = &Files;
@@ -77,7 +69,6 @@ namespace megaxml
   Package_sskel::
   Package_sskel ()
   : Package_impl_ (0),
-    Name_serializer_ (0),
     Type_serializer_ (0),
     Directories_serializer_ (0),
     Files_serializer_ (0),
@@ -89,7 +80,6 @@ namespace megaxml
   Package_sskel (Package_sskel* impl, void*)
   : ::xsde::cxx::serializer::validating::complex_content (impl, 0),
     Package_impl_ (impl),
-    Name_serializer_ (0),
     Type_serializer_ (0),
     Directories_serializer_ (0),
     Files_serializer_ (0),
@@ -111,22 +101,6 @@ namespace megaxml
   Host_sskel (Host_sskel* impl, void*)
   : ::megaxml::Package_sskel (impl, 0),
     Host_impl_ (impl)
-  {
-  }
-
-  // Defaults_sskel
-  //
-
-  Defaults_sskel::
-  Defaults_sskel ()
-  : Defaults_impl_ (0)
-  {
-  }
-
-  Defaults_sskel::
-  Defaults_sskel (Defaults_sskel* impl, void*)
-  : ::xsde::cxx::serializer::validating::complex_content (impl, 0),
-    Defaults_impl_ (impl)
   {
   }
 
@@ -177,6 +151,22 @@ namespace megaxml
     Name_serializer_ (0),
     CompilerFlags_serializer_ (0),
     LinkerFlags_serializer_ (0)
+  {
+  }
+
+  // Defaults_sskel
+  //
+
+  Defaults_sskel::
+  Defaults_sskel ()
+  : Defaults_impl_ (0)
+  {
+  }
+
+  Defaults_sskel::
+  Defaults_sskel (Defaults_sskel* impl, void*)
+  : ::xsde::cxx::serializer::validating::complex_content (impl, 0),
+    Defaults_impl_ (impl)
   {
   }
 
@@ -507,9 +497,6 @@ namespace megaxml
 
     this->resetting_ = true;
 
-    if (this->Name_serializer_)
-      this->Name_serializer_->_reset ();
-
     if (this->Type_serializer_)
       this->Type_serializer_->_reset ();
 
@@ -533,13 +520,6 @@ namespace megaxml
   {
     assert (this->Package_impl_);
     this->Package_impl_->pre (x);
-  }
-
-  ::std::string Host_sskel::
-  Name ()
-  {
-    assert (this->Package_impl_);
-    return this->Package_impl_->Name ();
   }
 
   ::std::string Host_sskel::
@@ -570,9 +550,6 @@ namespace megaxml
     return this->Package_impl_->Command ();
   }
 
-  // Defaults_sskel
-  //
-
   // Build_sskel
   //
 
@@ -598,6 +575,9 @@ namespace megaxml
 
     this->resetting_ = false;
   }
+
+  // Defaults_sskel
+  //
 
   // Project_sskel
   //
@@ -828,45 +808,6 @@ namespace megaxml
   _serialize_content ()
   {
     ::xsde::cxx::serializer::context& ctx = this->_context ();
-
-    // Name
-    //
-    {
-      const ::std::string& r = this->Name ();
-
-      if (this->Name_serializer_)
-      {
-        this->Name_serializer_->pre (r);
-        this->_start_element ("Name");
-        this->Name_serializer_->_pre_impl (ctx);
-
-        if (ctx.error_type ())
-          return;
-
-        this->Name_serializer_->_serialize_attributes ();
-
-        if (ctx.error_type ())
-          return;
-
-        this->Name_serializer_->_serialize_content ();
-
-        if (ctx.error_type ())
-          return;
-
-        this->Name_serializer_->_post_impl ();
-
-        if (ctx.error_type ())
-          return;
-
-        this->_end_element ();
-        this->Name_serializer_->post ();
-      }
-      else
-      {
-        this->_schema_error (::xsde::cxx::schema_error::expected_element);
-        return;
-      }
-    }
 
     // Type
     //

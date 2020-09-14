@@ -72,12 +72,6 @@ namespace megaxml
   }
 
   void Package_pimpl::
-  Name (const ::std::string& x)
-  {
-    this->Package_pimpl_state_.Package_->Name (x);
-  }
-
-  void Package_pimpl::
   Type (const ::std::string& x)
   {
     this->Package_pimpl_state_.Package_->Type (x);
@@ -163,21 +157,6 @@ namespace megaxml
     return r;
   }
 
-  // Defaults_pimpl
-  //
-
-  void Defaults_pimpl::
-  pre ()
-  {
-    this->Defaults_pimpl_state_.Defaults_ = ::megaxml::Defaults ();
-  }
-
-  ::megaxml::Defaults Defaults_pimpl::
-  post_Defaults ()
-  {
-    return this->Defaults_pimpl_state_.Defaults_;
-  }
-
   // Build_pimpl
   //
 
@@ -209,6 +188,21 @@ namespace megaxml
   post_Build ()
   {
     return this->Build_pimpl_state_.Build_;
+  }
+
+  // Defaults_pimpl
+  //
+
+  void Defaults_pimpl::
+  pre ()
+  {
+    this->Defaults_pimpl_state_.Defaults_ = ::megaxml::Defaults ();
+  }
+
+  ::megaxml::Defaults Defaults_pimpl::
+  post_Defaults ()
+  {
+    return this->Defaults_pimpl_state_.Defaults_;
   }
 
   // Project_pimpl
@@ -591,33 +585,27 @@ namespace megaxml
   EG_paggr::
   EG_paggr ()
   {
-    this->Run_p_.parsers (this->string_p_,
-                          this->string_p_,
-                          this->string_p_);
-
     this->Files_p_.parsers (this->string_p_,
                             this->string_p_,
                             this->string_p_,
                             this->string_p_);
-
-    this->Host_p_.parsers (this->string_p_,
-                           this->string_p_,
-                           this->Directories_p_,
-                           this->Files_p_,
-                           this->string_p_);
 
     this->EG_p_.parsers (this->Package_p_,
                          this->Host_p_,
                          this->Project_p_);
 
     this->Package_p_.parsers (this->string_p_,
-                              this->string_p_,
                               this->Directories_p_,
                               this->Files_p_,
                               this->string_p_);
 
     this->Directories_p_.parsers (this->string_p_,
                                   this->string_p_);
+
+    this->Host_p_.parsers (this->string_p_,
+                           this->Directories_p_,
+                           this->Files_p_,
+                           this->string_p_);
 
     this->Project_p_.parsers (this->string_p_,
                               this->string_p_,
@@ -630,6 +618,10 @@ namespace megaxml
     this->Build_p_.parsers (this->string_p_,
                             this->string_p_,
                             this->string_p_);
+
+    this->Run_p_.parsers (this->string_p_,
+                          this->string_p_,
+                          this->string_p_);
   }
 
   const char* EG_paggr::

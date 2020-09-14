@@ -35,8 +35,6 @@ def loop_asyncio(kernel):
         if stream.flush(limit=1):
             loop.stop()
         
-    #fuckyouthen
-    
     for stream in kernel.shell_streams:
         fd = stream.getsockopt(zmq.FD)
         notifier = partial(process_stream_events, stream)

@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <EG xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="file:///W:/workspace/eg/src/driver/schema.xsd">
 	<Host>
-		<Name>pythonhost</Name>
         <Type>python</Type>
         <Files>
             <Include>${PYBIND}/include/pybind11/pybind11.h</Include>

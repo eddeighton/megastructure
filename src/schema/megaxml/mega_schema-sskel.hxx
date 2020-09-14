@@ -92,8 +92,8 @@ namespace megaxml
 {
   class Package_sskel;
   class Host_sskel;
-  class Defaults_sskel;
   class Build_sskel;
+  class Defaults_sskel;
   class Project_sskel;
   class Files_sskel;
   class EG_sskel;
@@ -305,9 +305,6 @@ namespace megaxml
     // Elements.
     //
     virtual ::std::string
-    Name () = 0;
-
-    virtual ::std::string
     Type () = 0;
 
     virtual bool
@@ -334,17 +331,13 @@ namespace megaxml
     // Serializer construction API.
     //
     void
-    serializers (::xml_schema::string_sskel& /* Name */,
-                 ::xml_schema::string_sskel& /* Type */,
+    serializers (::xml_schema::string_sskel& /* Type */,
                  ::megaxml::Directories_sskel& /* Directories */,
                  ::megaxml::Files_sskel& /* Files */,
                  ::xml_schema::string_sskel& /* Command */);
 
     // Individual element serializers.
     //
-    void
-    Name_serializer (::xml_schema::string_sskel&);
-
     void
     Type_serializer (::xml_schema::string_sskel&);
 
@@ -375,7 +368,6 @@ namespace megaxml
     Package_sskel (Package_sskel*, void*);
 
     protected:
-    ::xml_schema::string_sskel* Name_serializer_;
     ::xml_schema::string_sskel* Type_serializer_;
     ::megaxml::Directories_sskel* Directories_serializer_;
     ::megaxml::Files_sskel* Files_serializer_;
@@ -405,9 +397,6 @@ namespace megaxml
     pre (const ::megaxml::Package&);
 
     virtual ::std::string
-    Name ();
-
-    virtual ::std::string
     Type ();
 
     virtual const ::megaxml::Directories&
@@ -422,30 +411,6 @@ namespace megaxml
     protected:
     Host_sskel* Host_impl_;
     Host_sskel (Host_sskel*, void*);
-  };
-
-  class Defaults_sskel: public ::xsde::cxx::serializer::validating::complex_content
-  {
-    public:
-    // Serializer callbacks. Override them in your implementation.
-    //
-
-    virtual void
-    pre (const ::megaxml::Defaults&) = 0;
-
-    // virtual void
-    // post ();
-
-    // Constructor.
-    //
-    Defaults_sskel ();
-
-    // Implementation.
-    //
-    public:
-    protected:
-    Defaults_sskel* Defaults_impl_;
-    Defaults_sskel (Defaults_sskel*, void*);
   };
 
   class Build_sskel: public ::xsde::cxx::serializer::validating::complex_content
@@ -510,6 +475,30 @@ namespace megaxml
     ::xml_schema::string_sskel* Name_serializer_;
     ::xml_schema::string_sskel* CompilerFlags_serializer_;
     ::xml_schema::string_sskel* LinkerFlags_serializer_;
+  };
+
+  class Defaults_sskel: public ::xsde::cxx::serializer::validating::complex_content
+  {
+    public:
+    // Serializer callbacks. Override them in your implementation.
+    //
+
+    virtual void
+    pre (const ::megaxml::Defaults&) = 0;
+
+    // virtual void
+    // post ();
+
+    // Constructor.
+    //
+    Defaults_sskel ();
+
+    // Implementation.
+    //
+    public:
+    protected:
+    Defaults_sskel* Defaults_impl_;
+    Defaults_sskel (Defaults_sskel*, void*);
   };
 
   class Project_sskel: public ::xsde::cxx::serializer::validating::complex_content

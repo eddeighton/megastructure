@@ -203,6 +203,8 @@ void LoadHostsProgramActivity::start()
 	
 	if( pProjectTree )
 	{
+        //NOTE - process name here just refers to the file name of the host program i.e. basic_host.exe
+        
 		//determine a process name to host name map where
 		//the set of enrolled hosts each have a non-unique process name
 		//the program has an associated process name for each host
@@ -210,67 +212,77 @@ void LoadHostsProgramActivity::start()
 		//to map to host names in the project and attempts to reuse existing equal mappings from 
 		//the previous configuration
 		HostMap::ProcessNameToHostNameMap processNameToHostName;
-		
-		const Coordinator::PtrVector& coordinators = pProjectTree->getCoordinators();
-		for( Coordinator::Ptr pCoordinator : coordinators )
-		{
-			//we are only interested in our slave coordinator
-			if( pCoordinator->name() == m_slave.getName() )
-			{
-				const HostName::PtrVector& hostNames = pCoordinator->getHostNames();
-				for( HostName::Ptr pHostName : hostNames )
-				{
-					//attempt to determine the process name for the host name
-					boost::optional< std::string > optProcessName;
-					{
-						const ProjectName::PtrVector& projectNames = pHostName->getProjectNames();
-						
-						VERIFY_RTE_MSG( projectNames.size() == 1U, 
-							"Host : " << pHostName->name() << 
-							" has incorrect number projects for projectName: " << m_programName );
-							
-						for( ProjectName::Ptr pProjectName : projectNames )
-						{
-							if( pProjectName->name() == m_programName )
-							{
-								const megaxml::Host& host = pProjectName->getProject().getHost();
-								VERIFY_RTE_MSG( host.Command().size() == 1U, 
-									"Host has incorrect number of commands in project: " << 
-									pProjectName->getProject().getProjectDir().string() );
-								for( const std::string& strCommand : host.Command() )
-								{
-									boost::filesystem::path commandPath = 
-										environment.expand( strCommand );
-									optProcessName = commandPath.filename().string();
-									break;
-								}
-							}
-							break;
-						}
-					}
-					if( optProcessName )
-					{
-						processNameToHostName.insert( 
-							std::make_pair( optProcessName.get(), pHostName->name() ) );
-					}
-				}
-			}
-		}
-		
-		//given processNameToHostName can now determine the new association of hosts to hostNames
         {
-            std::ostringstream osPairs;
-            osPairs << "Found process name to host name pairs:\n" << std::endl;
-            for( auto& i : processNameToHostName )
+            const Coordinator::PtrVector& coordinators = pProjectTree->getCoordinators();
+            for( Coordinator::Ptr pCoordinator : coordinators )
             {
-                osPairs << i.first << " : " << i.second << "\n";
+                //we are only interested in our slave coordinator
+                if( pCoordinator->name() == m_slave.getName() )
+                {
+                    const HostName::PtrVector& hostNames = pCoordinator->getHostNames();
+                    for( HostName::Ptr pHostName : hostNames )
+                    {
+                        //attempt to determine the process name for the host name
+                        boost::optional< std::string > optProcessName;
+                        {
+                            const ProjectName::PtrVector& projectNames = pHostName->getProjectNames();
+                            
+                            VERIFY_RTE_MSG( projectNames.size() == 1U, 
+                                "Host : " << pHostName->name() << 
+                                " has incorrect number projects for projectName: " << m_programName );
+                                
+                            for( ProjectName::Ptr pProjectName : projectNames )
+                            {
+                                if( pProjectName->name() == m_programName )
+                                {
+                                    const megaxml::Host& host = pProjectName->getProject().getHost();
+                                    VERIFY_RTE_MSG( host.Command().size() == 1U, 
+                                        "Host has incorrect number of commands in project: " << 
+                                        pProjectName->getProject().getProjectDir().string() );
+                                    for( const std::string& strCommand : host.Command() )
+                                    {
+                                        boost::filesystem::path commandPath = 
+                                            environment.expand( strCommand );
+                                        optProcessName = commandPath.filename().string();
+                                        break;
+                                    }
+                                }
+                                break;
+                            }
+                        }
+                        if( optProcessName )
+                        {
+                            processNameToHostName.insert( 
+                                std::make_pair( optProcessName.get(), pHostName->name() ) );
+                        }
+                    }
+                }
             }
-            SPDLOG_INFO( "Found process name to host name pairs: {}", osPairs.str() );
+            //given processNameToHostName can now determine the new association of hosts to hostNames
+            if( processNameToHostName.empty() )
+            {
+                SPDLOG_WARN( "Program: {} has no projects", m_programName );
+            }
+            else
+            {
+                std::ostringstream osPairs;
+                osPairs << "\n";
+                for( auto& i : processNameToHostName )
+                {
+                    osPairs << "\t" << i.first << " : " << i.second << "\n";
+                }
+                SPDLOG_INFO( "Program: {} has process name to host name pairs: {}", m_programName, osPairs.str() );
+            }
         }
 		
 		std::vector< Host > unmappedClients; 
 		std::vector< std::string > unmappedHostNames;
 		HostMap newMapping( m_slave.getHosts(), processNameToHostName, unmappedClients, unmappedHostNames );
+        
+        for( const std::string& strUnmappedHostName : unmappedHostNames )
+        {
+            SPDLOG_WARN( "Could not map hostname: {}", strUnmappedHostName );
+        }
 		
 		for( Host host : unmappedClients )
 		{
