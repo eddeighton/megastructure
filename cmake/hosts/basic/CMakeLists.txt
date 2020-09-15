@@ -4,9 +4,6 @@ cmake_minimum_required( VERSION 3.1...3.16 )
 #get boost
 include( ${MEGA_ROOT_DIR}/cmake/boost_include.cmake )
 
-#get clang
-include( ${MEGA_ROOT_DIR}/cmake/clang_include.cmake )
-
 #get xsde
 include( ${MEGA_ROOT_DIR}/cmake/xsde_include.cmake )
 
@@ -33,7 +30,6 @@ link_boost( basic_host filesystem )
 link_boost( basic_host system )
 link_boost( basic_host date_time )
 link_xsde( basic_host )
-link_clang( basic_host )
 link_common( basic_host )
 link_eg( basic_host )
 

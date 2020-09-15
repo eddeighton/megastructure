@@ -229,9 +229,6 @@ void build_interface_header( const Environment& environment, eg::ParserSession* 
 
 void build_parser_session( const Environment& environment, const ProjectTree& projectTree, const std::string& strCompilationFlags )
 {
-	
-	eg::ParserDiagnosticSystem diagnostics( projectTree.getSourceFolder(), std::cout );
-	
 	eg::ParserSession::SourceCodeTree sourceCodeTree;
 	{
 		sourceCodeTree.root = projectTree.getSourceFolder();
@@ -240,9 +237,10 @@ void build_parser_session( const Environment& environment, const ProjectTree& pr
 	
 	{
 		std::unique_ptr< eg::ParserSession > pParserSession = 
-			std::make_unique< eg::ParserSession >();
+			std::make_unique< eg::ParserSession >( environment.getParserDll(),
+                projectTree.getSourceFolder(), std::cout );
 			
-		pParserSession->parse( sourceCodeTree, diagnostics );
+		pParserSession->parse( sourceCodeTree );
 		
 		pParserSession->buildAbstractTree();
 		
@@ -306,43 +304,18 @@ void build_operations_include_header( const Environment& environment, const eg::
         {
             //osOperations << "#ifdef " << strDefine << "\n";
             //osOperations << "//Add private host include directives here\n";
-            
-            bool bFound = false;
-            for( Coordinator::Ptr pCoordinator : projectTree.getCoordinators() )
             {
-                if( chd.isCoordinator( pCoordinator->name() ) )
+                if( chd.pCoordinator && chd.pHostName )
                 {
-                    for( HostName::Ptr pHostName : pCoordinator->getHostNames() )
+                    const std::string strCoordinator = chd.pCoordinator->getIdentifier();
+                    const std::string strHostname = chd.pHostName->getIdentifier();
+                    for( const boost::filesystem::path& includePath : projectTree.getImplIncludeFiles( 
+                            environment, strCoordinator, strHostname ) )
                     {
-                        if( chd.isHost( pHostName->name() ) )
-                        {
-                            for( ProjectName::Ptr pProjectName : pHostName->getProjectNames() )
-                            {
-                                if( pProjectName->name() == projectTree.getProjectName() )
-                                {
-                                    //found it!
-                                    const Project& project = pProjectName->getProject();
-                                    const megaxml::Host& host = project.getHost();
-                                    
-                                    for( const boost::filesystem::path& includePath : project.getHostIncludes() )
-                                    {
-                                        os << "#include \"" << includePath.string() << "\"\n";
-                                    }
-                                    
-                                    bFound = true;
-                                    break;
-                                }
-                            }
-                        }
-                        if( bFound )break;
+                        os << "#include \"" << includePath.string() << "\"\n";
                     }
                 }
-                if( bFound )break;
             }
-            
-            VERIFY_RTE_MSG( bFound, "Failed to locate coordinator hostname projectname" );
-            
-            //osOperations << "#endif\n";
         }
     
         boost::filesystem::updateFileIfChanged( projectTree.getOperationsIncludeHeader( strTUName ), os.str() );
@@ -363,10 +336,25 @@ void build_operations_include_header( const Environment& environment, const eg::
 		osCmd << "-Xclang -emit-pch -o " << environment.printPath( projectTree.getOperationsIncludePCH( strTUName ) ) << " ";
 		
 		osCmd << "-I " << environment.getEGLibraryInclude().generic_string() << " ";
-            
-        for( const boost::filesystem::path& includeDirectory : projectTree.getIncludeDirectories( environment ) )
+        
         {
-            osCmd << "-I " << environment.printPath( includeDirectory ) << " ";
+            if( chd.pCoordinator && chd.pHostName )
+            {
+                const std::string strCoordinator = chd.pCoordinator->getIdentifier();
+                const std::string strHostname = chd.pHostName->getIdentifier();
+                for( const boost::filesystem::path& includeDirectory : projectTree.getImplIncludeDirectories( 
+                        environment, strCoordinator, strHostname ) )
+                {
+                    osCmd << "-I " << environment.printPath( includeDirectory ) << " ";
+                }
+            }
+            else
+            {
+                for( const boost::filesystem::path& includeDirectory : projectTree.getIncludeDirectories( environment ) )
+                {
+                    osCmd << "-I " << environment.printPath( includeDirectory ) << " ";
+                } 
+            }
         }
 		
 		osCmd << environment.printPath( projectTree.getOperationsIncludeHeader( strTUName ) ) << " ";
@@ -490,9 +478,24 @@ void build_operations( eg::InterfaceSession& interfaceSession, const Environment
             osCmd << "-Xclang -egtu=" << environment.printPath( projectTree.getTUDBName( strTUName ) ) << " ";
             osCmd << "-Xclang -egtuid=" << pTranslationUnit->getDatabaseFileID() << " ";
             
-            for( const boost::filesystem::path& includeDirectory : projectTree.getIncludeDirectories( environment ) )
             {
-                osCmd << "-I " << environment.printPath( includeDirectory ) << " ";
+                if( chd.pCoordinator && chd.pHostName )
+                {
+                    const std::string strCoordinator = chd.pCoordinator->getIdentifier();
+                    const std::string strHostname = chd.pHostName->getIdentifier();
+                    for( const boost::filesystem::path& includeDirectory : projectTree.getImplIncludeDirectories( 
+                            environment, strCoordinator, strHostname ) )
+                    {
+                        osCmd << "-I " << environment.printPath( includeDirectory ) << " ";
+                    }
+                }
+                else
+                {
+                    for( const boost::filesystem::path& includeDirectory : projectTree.getIncludeDirectories( environment ) )
+                    {
+                        osCmd << "-I " << environment.printPath( includeDirectory ) << " ";
+                    } 
+                }
             }
             
             osCmd << environment.printPath( projectTree.getOperationsHeader( strTUName ) ) << " ";
@@ -916,7 +919,7 @@ void build_component( const eg::ReadSession& session, const Environment& environ
 		osCmd << "-I " << environment.printPath( environment.getEGLibraryInclude() ) << " ";
 		osCmd << "-I " << environment.printPath( projectTree.getInterfaceFolder() ) << " ";
 		
-		for( const boost::filesystem::path& includeDirectory : projectTree.getIncludeDirectories( environment ) )
+		for( const boost::filesystem::path& includeDirectory : projectTree.getImplIncludeDirectories( environment ) )
 		{
 			osCmd << "-I " << environment.printPath( includeDirectory ) << " ";
 		}

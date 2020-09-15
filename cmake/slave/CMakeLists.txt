@@ -7,9 +7,6 @@ include( ${MEGA_ROOT_DIR}/cmake/boost_include.cmake )
 #get xsde
 include( ${MEGA_ROOT_DIR}/cmake/xsde_include.cmake )
 
-#get clang
-include( ${MEGA_ROOT_DIR}/cmake/clang_include.cmake )
-
 #get spdlog
 include( ${MEGA_ROOT_DIR}/cmake/spdlog_include.cmake )
 
@@ -52,11 +49,10 @@ link_boost( slave filesystem )
 link_boost( slave system )
 link_boost( slave date_time )
 link_xsde( slave )
-link_clang( slave )
 link_spdlog( slave )
 link_schemalib( slave )
 link_common( slave )
-link_eg( slave )
+link_eg_runtime( slave )
 link_megastructure( slave )
 
 install( TARGETS slave DESTINATION bin)

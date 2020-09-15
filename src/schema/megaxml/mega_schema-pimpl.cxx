@@ -585,11 +585,6 @@ namespace megaxml
   EG_paggr::
   EG_paggr ()
   {
-    this->Files_p_.parsers (this->string_p_,
-                            this->string_p_,
-                            this->string_p_,
-                            this->string_p_);
-
     this->EG_p_.parsers (this->Package_p_,
                          this->Host_p_,
                          this->Project_p_);
@@ -606,6 +601,11 @@ namespace megaxml
                            this->Directories_p_,
                            this->Files_p_,
                            this->string_p_);
+
+    this->Files_p_.parsers (this->string_p_,
+                            this->string_p_,
+                            this->string_p_,
+                            this->string_p_);
 
     this->Project_p_.parsers (this->string_p_,
                               this->string_p_,

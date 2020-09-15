@@ -360,7 +360,7 @@ boost::filesystem::path ProjectTree::getBasicSchedulerFilePath( const Environmen
             environment.expand( "${EG}/include/eg/basic_scheduler.cpp" ) ) );
 }
 
-void ProjectTree::collateIncludeDirectories( 
+static void collatePaths( 
     const Environment& environment,
     std::set< boost::filesystem::path >& uniquified, 
     std::vector< boost::filesystem::path >& directories,
@@ -378,66 +378,150 @@ void ProjectTree::collateIncludeDirectories(
     }
 }
 
+static void collatePaths( 
+    const Environment& environment,
+    std::set< boost::filesystem::path >& uniquified, 
+    std::vector< boost::filesystem::path >& directories,
+    const megaxml::Directories& xmlDirectories )
+{
+    for( const std::string& strInclude : xmlDirectories.Include() )
+    {
+        collatePaths( environment, uniquified, directories, strInclude );
+    }
+}
+
+static void collatePaths( 
+    const Environment& environment,
+    std::set< boost::filesystem::path >& uniquified, 
+    std::vector< boost::filesystem::path >& directories,
+    const megaxml::Files& xmlFiles )
+{
+    for( const std::string& strInclude : xmlFiles.Include() )
+    {
+        const boost::filesystem::path normPath =
+            boost::filesystem::edsCannonicalise(
+                    environment.expand( strInclude ) );
+                   
+        if( 0 == uniquified.count( normPath ) )
+        {
+            uniquified.insert( normPath );
+            directories.push_back( normPath );
+        }
+    }
+}
+
 std::vector< boost::filesystem::path > ProjectTree::getIncludeDirectories( const Environment& environment ) const
 {
     std::set< boost::filesystem::path > uniquified;
     std::vector< boost::filesystem::path > directories;
     
-    collateIncludeDirectories( environment, uniquified, directories, "${BOOST}/include/boost-1_73" );
-    collateIncludeDirectories( environment, uniquified, directories, "${PYBIND}/include" );
-    collateIncludeDirectories( environment, uniquified, directories, "${PYTHONHOME}/include" );
-    collateIncludeDirectories( environment, uniquified, directories, "${EG}/include" );
-    collateIncludeDirectories( environment, uniquified, directories, "${MEGA}/include" );
-    collateIncludeDirectories( environment, uniquified, directories, "${PROTOBUF}/include" );
-    collateIncludeDirectories( environment, uniquified, directories, "${MESSAGEPACK}/include" );
+    collatePaths( environment, uniquified, directories, "${BOOST}/include/boost-1_73" );
+    collatePaths( environment, uniquified, directories, "${PYBIND}/include" );
+    collatePaths( environment, uniquified, directories, "${PYTHONHOME}/include" );
+    collatePaths( environment, uniquified, directories, "${EG}/include" );
+    collatePaths( environment, uniquified, directories, "${MEGA}/include" );
+    collatePaths( environment, uniquified, directories, "${PROTOBUF}/include" );
+    collatePaths( environment, uniquified, directories, "${MESSAGEPACK}/include" );
     
     directories.push_back( 
         boost::filesystem::edsCannonicalise(
             boost::filesystem::absolute( 
                 getInterfaceFolder() ) ) );
-    
-    /*if( m_host.Directories_present() )
-        collateIncludeDirectories( m_environment, uniquified, directories, m_host.Directories() );
-    
-    for( const megaxml::Package& package : m_packages )
+        
+    return directories;
+}
+
+const ProjectName::Ptr ProjectTree::getCoordinatorHostnameProject( 
+    const std::string& strCoordinatorName, const std::string& strHostName, const std::string& strProjectName ) const
+{
+    for( Coordinator::Ptr pCoordinator : getCoordinators() )
     {
-        if( package.Directories_present() )
-            collateIncludeDirectories( m_environment, uniquified, directories, package.Directories() );
-    }*/
+        if( strCoordinatorName == pCoordinator->name() )
+        {
+            for( HostName::Ptr pHostName : pCoordinator->getHostNames() )
+            {
+                if( strHostName == pHostName->name() )
+                {
+                    for( ProjectName::Ptr pProjectName : pHostName->getProjectNames() )
+                    {
+                        if( pProjectName->name() == strProjectName )
+                        {
+                            //found it!
+                            return pProjectName;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    return nullptr;
+}
+
+std::vector< boost::filesystem::path > ProjectTree::getImplIncludeDirectories( const Environment& environment, 
+        const std::string& strCoordinatorName, const std::string& strHostName ) const
+{
+    std::set< boost::filesystem::path > uniquified;
+    std::vector< boost::filesystem::path > directories;
+    
+    directories = getIncludeDirectories( environment );
+    
+    VERIFY_RTE( !strCoordinatorName.empty() );
+    VERIFY_RTE( !strHostName.empty() );
+    
+    const ProjectName::Ptr pProject = getCoordinatorHostnameProject( strCoordinatorName, strHostName, getProjectName() );
+    VERIFY_RTE( pProject );
+    
+    {
+        const Project& project = pProject->getProject();
+        
+        const megaxml::Host& xmlHost = project.getHost();
+        if( xmlHost.Directories_present() )
+        {
+            collatePaths( environment, uniquified, directories, xmlHost.Directories() );
+        }
+    }
     
     return directories;
 }
 
 std::vector< boost::filesystem::path > ProjectTree::getImplIncludeDirectories( const Environment& environment ) const
 {
-    std::set< boost::filesystem::path > uniquified;
-    std::vector< boost::filesystem::path > directories;
-    
-    //collateIncludeDirectories( environment, uniquified, directories, "${BOOST}/include/boost-1_73" );
-    //collateIncludeDirectories( environment, uniquified, directories, "${PYBIND}/include" );
-    //collateIncludeDirectories( environment, uniquified, directories, "${PYTHONHOME}/include" );
-    //collateIncludeDirectories( environment, uniquified, directories, "${EG}/include" );
-    //collateIncludeDirectories( environment, uniquified, directories, "${MEGA}/include" );
-    //collateIncludeDirectories( environment, uniquified, directories, "${PROTOBUF}/include" );
-    //collateIncludeDirectories( environment, uniquified, directories, "${MESSAGEPACK}/include" );
-    
-    directories.push_back( 
-        boost::filesystem::edsCannonicalise(
-            boost::filesystem::absolute( 
-                getInterfaceFolder() ) ) );
-    
-    /*if( m_host.Directories_present() )
-        collateIncludeDirectories( m_environment, uniquified, directories, m_host.Directories() );
-    
-    for( const megaxml::Package& package : m_packages )
-    {
-        if( package.Directories_present() )
-            collateIncludeDirectories( m_environment, uniquified, directories, package.Directories() );
-    }*/
-    
-    return directories;
+    VERIFY_RTE( m_coordinatorName && m_hostName );
+    return getImplIncludeDirectories( environment, m_coordinatorName.get(), m_hostName.get() );
 }
 
+std::vector< boost::filesystem::path > ProjectTree::getImplIncludeFiles( const Environment& environment, 
+    const std::string& strCoordinatorName, const std::string& strHostName ) const
+{
+    std::set< boost::filesystem::path > uniquified;
+    std::vector< boost::filesystem::path > includeFiles;
+    
+    VERIFY_RTE( !strCoordinatorName.empty() );
+    VERIFY_RTE( !strHostName.empty() );
+    
+    const ProjectName::Ptr pProject = getCoordinatorHostnameProject( strCoordinatorName, strHostName, getProjectName() );
+    VERIFY_RTE( pProject );
+    
+    {
+        const Project& project = pProject->getProject();
+        
+        const megaxml::Project& xmlProject = project.getProject();
+        if( xmlProject.Files_present() )
+        {
+            collatePaths( environment, uniquified, includeFiles, xmlProject.Files() );
+        }
+        
+        const megaxml::Host& xmlHost = project.getHost();
+        if( xmlHost.Files_present() )
+        {
+            collatePaths( environment, uniquified, includeFiles, xmlHost.Files() );
+        }
+    }
+    
+    return includeFiles;
+}
+        
 boost::filesystem::path ProjectTree::getTUDBName( const std::string& strTUName ) const
 {
     std::ostringstream os;

@@ -441,11 +441,6 @@ namespace megaxml
   EG_saggr::
   EG_saggr ()
   {
-    this->Files_s_.serializers (this->string_s_,
-                                this->string_s_,
-                                this->string_s_,
-                                this->string_s_);
-
     this->EG_s_.serializers (this->Package_s_,
                              this->Host_s_,
                              this->Project_s_);
@@ -462,6 +457,11 @@ namespace megaxml
                                this->Directories_s_,
                                this->Files_s_,
                                this->string_s_);
+
+    this->Files_s_.serializers (this->string_s_,
+                                this->string_s_,
+                                this->string_s_,
+                                this->string_s_);
 
     this->Project_s_.serializers (this->string_s_,
                                   this->string_s_,

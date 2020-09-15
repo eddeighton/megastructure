@@ -7,9 +7,6 @@ include( ${MEGA_ROOT_DIR}/cmake/boost_include.cmake )
 #get gtest
 include( ${MEGA_ROOT_DIR}/cmake/gtest_include.cmake )
 
-#get the unit test utils
-#include( ${MEGA_ROOT_DIR}/cmake/test_utils_include.cmake )
-
 #get message pack
 include( ${MEGA_ROOT_DIR}/cmake/messagepack_include.cmake )
 
@@ -42,7 +39,6 @@ link_gtest( mega_tests )
 link_messagePack( mega_tests )
 link_spdlog( mega_tests )
 link_common( mega_tests )
-#link_gtest_utils( mega_tests )
 link_gtest( mega_tests )
 link_gtest_main( mega_tests )
 

@@ -4,9 +4,6 @@ cmake_minimum_required( VERSION 3.1...3.16 )
 #get boost
 include( ${MEGA_ROOT_DIR}/cmake/boost_include.cmake )
 
-#get clang
-include( ${MEGA_ROOT_DIR}/cmake/clang_include.cmake )
-
 #get xsde
 include( ${MEGA_ROOT_DIR}/cmake/xsde_include.cmake )
 
@@ -33,7 +30,6 @@ link_boost( hostdll_runner filesystem )
 link_boost( hostdll_runner system )
 link_boost( hostdll_runner date_time )
 link_xsde( hostdll_runner )
-link_clang( hostdll_runner )
 link_common( hostdll_runner )
 link_eg( hostdll_runner )
 

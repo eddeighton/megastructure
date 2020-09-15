@@ -17,6 +17,7 @@
 //  NEGLIGENCE) OR STRICT LIABILITY, EVEN IF COPYRIGHT OWNERS ARE ADVISED
 //  OF THE POSSIBILITY OF SUCH DAMAGES.
 
+
 #include "megaxml/mega_schema.hxx"
 #include "megaxml/mega_schema-pimpl.hxx"
 
@@ -82,6 +83,8 @@ enum MainCommand
     //eCmd_Debug,
     TOTAL_MAIN_COMMANDS
 };
+
+extern std::string stacktraceUtil();
 
 int main( int argc, const char* argv[] )
 {
@@ -267,6 +270,11 @@ int main( int argc, const char* argv[] )
         catch( std::exception& e )
         {
             std::cout << "Error: " << e.what() << std::endl;
+            return 1;
+        }
+        catch( ... )
+        {
+            std::cout << "Unknown error.\n" << std::endl;
             return 1;
         }
     }

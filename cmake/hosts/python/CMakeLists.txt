@@ -4,9 +4,6 @@ cmake_minimum_required( VERSION 3.1...3.16 )
 #get boost
 include( ${MEGA_ROOT_DIR}/cmake/boost_include.cmake )
 
-#get clang
-include( ${MEGA_ROOT_DIR}/cmake/clang_include.cmake )
-
 #get xsde
 include( ${MEGA_ROOT_DIR}/cmake/xsde_include.cmake )
 
@@ -38,10 +35,9 @@ link_boost( python_host filesystem )
 link_boost( python_host system )
 link_boost( python_host date_time )
 link_xsde( python_host )
-link_clang( python_host )
 link_pybind11_as_module( python_host )
 link_common( python_host )
-link_eg( python_host )
+link_eg_runtime( python_host )
 
 target_link_libraries( python_host megastructurelib )
 target_link_libraries( python_host megastructureprotocollib )

@@ -4,9 +4,6 @@ cmake_minimum_required( VERSION 3.1...3.16 )
 #get boost
 include( ${MEGA_ROOT_DIR}/cmake/boost_include.cmake )
 
-#get clang
-include( ${MEGA_ROOT_DIR}/cmake/clang_include.cmake )
-
 #get xsde
 include( ${MEGA_ROOT_DIR}/cmake/xsde_include.cmake )
 
@@ -49,14 +46,10 @@ target_link_options( componentlib PUBLIC "-SAFESEH:NO" )
 link_boost( componentlib program_options )
 link_boost( componentlib filesystem )
 link_boost( componentlib system )
-#link_boost( componentlib date_time )
 link_xsde( componentlib )
-link_clang( componentlib )
 link_spdlog( componentlib )
 link_common( componentlib )
 link_eg( componentlib )
-#link_common( componentlib )
-#link_eventlog( componentlib )
 link_megastructure( componentlib )
 
 install( TARGETS componentlib DESTINATION lib)

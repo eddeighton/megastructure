@@ -7,9 +7,6 @@ include( ${MEGA_ROOT_DIR}/cmake/boost_include.cmake )
 #get xsde
 include( ${MEGA_ROOT_DIR}/cmake/xsde_include.cmake )
 
-#get clang
-include( ${MEGA_ROOT_DIR}/cmake/clang_include.cmake )
-
 #get spdlog
 include( ${MEGA_ROOT_DIR}/cmake/spdlog_include.cmake )
 
@@ -51,7 +48,6 @@ link_boost( hostdll filesystem )
 link_boost( hostdll system )
 link_boost( hostdll date_time )
 link_xsde( hostdll )
-link_clang( hostdll )
 link_spdlog( hostdll )
 link_schemalib( hostdll )
 link_common( hostdll )

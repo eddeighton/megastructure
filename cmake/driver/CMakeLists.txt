@@ -10,9 +10,6 @@ include( ${MEGA_ROOT_DIR}/cmake/schema/schema_include.cmake )
 #get boost
 include( ${MEGA_ROOT_DIR}/cmake/boost_include.cmake )
 
-#get clang
-include( ${MEGA_ROOT_DIR}/cmake/clang_include.cmake )
-
 #get indicators
 include( ${MEGA_ROOT_DIR}/cmake/indicators_include.cmake )
 
@@ -33,6 +30,7 @@ set( DRIVER_SOURCES
 	${DRIVER_SOURCE_DIR}/command_log.cpp
 	${DRIVER_SOURCE_DIR}/command_run.cpp
 	${DRIVER_SOURCE_DIR}/main.cpp
+	${DRIVER_SOURCE_DIR}/stacktrace.cpp
 	)
 	
 set( GENERATOR_SOURCE_DIR ${MEGA_ROOT_DIR}/src/generators )
@@ -58,7 +56,6 @@ link_boost( mega timer )
 link_boost( mega filesystem )
 link_boost( mega iostreams )
 link_boost( mega serialization )
-link_clang( mega )
 link_indicators( mega )
 link_common( mega )
 link_eg( mega )

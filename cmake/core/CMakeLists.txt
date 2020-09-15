@@ -10,9 +10,6 @@ include( ${MEGA_ROOT_DIR}/cmake/zmq_include.cmake )
 #get xsde
 include( ${MEGA_ROOT_DIR}/cmake/xsde_include.cmake )
 
-#get clang
-include( ${MEGA_ROOT_DIR}/cmake/clang_include.cmake )
-
 #get spdlog
 include( ${MEGA_ROOT_DIR}/cmake/spdlog_include.cmake )
 
@@ -60,7 +57,6 @@ link_boost( megastructurelib iostreams )
 link_boost( megastructurelib serialization )
 link_zmq( megastructurelib )
 link_xsde( megastructurelib )
-link_clang( megastructurelib )
 link_spdlog( megastructurelib )
 link_messagePack( megastructurelib )
 link_common( megastructurelib )

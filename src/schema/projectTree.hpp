@@ -98,7 +98,10 @@ private:
 public:
 	
 	void print( std::ostream& os );
-	
+    
+    const ProjectName::Ptr getCoordinatorHostnameProject( 
+        const std::string& strCoordinatorName, const std::string& strHostName, const std::string& strProjectName ) const;
+        
 	const std::string& getCoordinatorName() const { return m_coordinatorName.get(); }
 	const std::string& getHostName() const { return m_hostName.get(); }
 	const std::string& getProjectName() const { return m_projectName; }
@@ -132,14 +135,21 @@ public:
 	boost::filesystem::path getCoroutineFrameSourceFilePath( const Environment& environment ) const;
 	boost::filesystem::path getBasicSchedulerFilePath( const Environment& environment ) const;
 		
-	static void collateIncludeDirectories( 
-		const Environment& environment,
-		std::set< boost::filesystem::path >& uniquified, 
-		std::vector< boost::filesystem::path >& directories,
-		const std::string& strDirectory );
+	//static void collateIncludeDirectories( 
+	//	const Environment& environment,
+	//	std::set< boost::filesystem::path >& uniquified, 
+	//	std::vector< boost::filesystem::path >& directories,
+	//	const std::string& strDirectory );
 
 	std::vector< boost::filesystem::path > getIncludeDirectories( const Environment& environment ) const;
+	std::vector< boost::filesystem::path > getImplIncludeDirectories( const Environment& environment, 
+        const std::string& strCoordinatorName, const std::string& strHostName ) const;
 	std::vector< boost::filesystem::path > getImplIncludeDirectories( const Environment& environment ) const;
+    
+	std::vector< boost::filesystem::path > getImplIncludeFiles( const Environment& environment, 
+        const std::string& strCoordinatorName, const std::string& strHostName ) const;
+    
+    
 	boost::filesystem::path getOperationsIncludeHeader( const std::string& strTUName ) const;
 	boost::filesystem::path getOperationsIncludePCH( const std::string& strTUName ) const;
 	boost::filesystem::path getOperationsHeader( const std::string& strTUName ) const;
