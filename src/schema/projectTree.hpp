@@ -149,12 +149,14 @@ public:
 	std::vector< boost::filesystem::path > getImplIncludeFiles( const Environment& environment, 
         const std::string& strCoordinatorName, const std::string& strHostName ) const;
     
-    
+    boost::filesystem::path getGenericsHeader() const;
+    boost::filesystem::path getGenericsPCH() const;
 	boost::filesystem::path getOperationsIncludeHeader( const std::string& strTUName ) const;
 	boost::filesystem::path getOperationsIncludePCH( const std::string& strTUName ) const;
 	boost::filesystem::path getOperationsHeader( const std::string& strTUName ) const;
 	boost::filesystem::path getOperationsPublicPCH( const std::string& strTUName ) const;
 	boost::filesystem::path getOperationsPrivatePCH( const std::string& strTUName ) const;
+    
 	boost::filesystem::path getImplementationSource( const std::string& strTUName ) const;
     std::string getStructuresInclude() const;
 	boost::filesystem::path getDataStructureSource() const;

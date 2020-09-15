@@ -227,6 +227,55 @@ void build_interface_header( const Environment& environment, eg::ParserSession* 
 	}
 }
 
+void build_generics( eg::InterfaceSession& session, const Environment& environment, const ProjectTree& projectTree, const std::string& strCompilationFlags )
+{
+    //generate the generics code
+    {
+        //LogEntry log( std::cout, "Generating generics", bBenchCommands );
+        std::ostringstream osImpl;
+        eg::generateGenericsHeader( osImpl, session );
+        boost::filesystem::updateFileIfChanged( projectTree.getGenericsHeader(), osImpl.str() );
+    }
+    
+    //if( fileTracker.isModified( projectTree.getIncludePCH() ) ||
+    //    fileTracker.isModified( projectTree.getInterfacePCH() ) ||
+    //    fileTracker.isModified( projectTree.getGenericsHeader() ) )
+    {
+        //LogEntry log( std::cout, "Compiling generics to pch", bBenchCommands );
+        
+        std::ostringstream osCmd;
+        environment.startCompilationCommand( osCmd );
+		osCmd << " " << strCompilationFlags << " ";
+        
+        osCmd << "-Xclang -include-pch ";
+        osCmd << "-Xclang " << environment.printPath( projectTree.getIncludePCH() ) << " ";
+        
+        osCmd << "-Xclang -include-pch ";
+        osCmd << "-Xclang " << environment.printPath( projectTree.getInterfacePCH() ) << " ";
+        
+        osCmd << "-Xclang -emit-pch -o " << environment.printPath( projectTree.getGenericsPCH() ) << " ";
+		
+		osCmd << "-I " << environment.getEGLibraryInclude().generic_string() << " ";
+        
+        osCmd << environment.printPath( projectTree.getGenericsHeader() ) << " ";
+        
+        //if( bLogCommands )
+        {
+            std::cout << environment.printPath( projectTree.getGenericsPCH() ) << std::endl;
+            //std::cout << "\n" << osCmd.str() << std::endl;
+        }
+        
+        {
+            const int iResult = boost::process::system( osCmd.str() );
+            if( iResult )
+            {
+                THROW_RTE( "Error invoking clang++ " << iResult );
+            }
+        }
+    }
+}
+
+
 void build_parser_session( const Environment& environment, const ProjectTree& projectTree, const std::string& strCompilationFlags )
 {
 	eg::ParserSession::SourceCodeTree sourceCodeTree;
@@ -282,11 +331,15 @@ void build_parser_session( const Environment& environment, const ProjectTree& pr
 		);
 		
 		pInterfaceSession->store( projectTree.getInterfaceDatabaseFile() );
+        
+        build_generics( *pInterfaceSession, environment, projectTree, strCompilationFlags );
 	}
 }
 
 
-void build_operations_include_header( const Environment& environment, const eg::TranslationUnit* pTranslationUnit, 
+
+void build_operations_include_header( eg::InterfaceSession& session, 
+    const Environment& environment, const eg::TranslationUnit* pTranslationUnit, 
     const ProjectTree& projectTree, const std::string& strCompilationFlags )
 {
     const eg::TranslationUnit::CoordinatorHostnameDefinitionFile& chd =
@@ -317,7 +370,7 @@ void build_operations_include_header( const Environment& environment, const eg::
                 }
             }
         }
-    
+        
         boost::filesystem::updateFileIfChanged( projectTree.getOperationsIncludeHeader( strTUName ), os.str() );
     }
 	
@@ -332,6 +385,9 @@ void build_operations_include_header( const Environment& environment, const eg::
             
         osCmd << "-Xclang -include-pch ";
         osCmd << "-Xclang " << environment.printPath( projectTree.getInterfacePCH() ) << " ";
+            
+        osCmd << "-Xclang -include-pch ";
+        osCmd << "-Xclang " << environment.printPath( projectTree.getGenericsPCH() ) << " ";
     
 		osCmd << "-Xclang -emit-pch -o " << environment.printPath( projectTree.getOperationsIncludePCH( strTUName ) ) << " ";
 		
@@ -361,7 +417,7 @@ void build_operations_include_header( const Environment& environment, const eg::
 		
 		//if( bLogCommands )
 		//{
-            std::cout << environment.printPath( projectTree.getInterfacePCH() ) << std::endl;
+            std::cout << environment.printPath( projectTree.getOperationsIncludePCH( strTUName ) ) << std::endl;
 			//std::cout << "\n" << osCmd.str() << std::endl;
 		//}
 		
@@ -388,7 +444,7 @@ void build_operations( eg::InterfaceSession& interfaceSession, const Environment
             pTranslationUnit->getCoordinatorHostnameDefinitionFile();
         const std::string strDefine = chd.getHostDefine();
         
-        build_operations_include_header( environment, pTranslationUnit, projectTree, strCompilationFlags );
+        build_operations_include_header( interfaceSession, environment, pTranslationUnit, projectTree, strCompilationFlags );
         
         //generate the operation code
         {
@@ -425,6 +481,9 @@ void build_operations( eg::InterfaceSession& interfaceSession, const Environment
             
             osCmd << "-Xclang -include-pch ";
             osCmd << "-Xclang " << environment.printPath( projectTree.getInterfacePCH() ) << " ";
+            
+            osCmd << "-Xclang -include-pch ";
+            osCmd << "-Xclang " << environment.printPath( projectTree.getGenericsPCH() ) << " ";
             
             osCmd << "-Xclang -emit-pch -o " << environment.printPath( projectTree.getOperationsPublicPCH( strTUName ) ) << " ";
             osCmd << "-Xclang -egdb=" << environment.printPath( projectTree.getInterfaceDatabaseFile() ) << " ";
@@ -467,6 +526,9 @@ void build_operations( eg::InterfaceSession& interfaceSession, const Environment
             
             osCmd << "-Xclang -include-pch ";
             osCmd << "-Xclang " << environment.printPath( projectTree.getInterfacePCH() ) << " ";
+            
+            osCmd << "-Xclang -include-pch ";
+            osCmd << "-Xclang " << environment.printPath( projectTree.getGenericsPCH() ) << " ";
             
             osCmd << "-Xclang -include-pch ";
             osCmd << "-Xclang " << environment.printPath( projectTree.getOperationsIncludePCH( strTUName ) ) << " ";
@@ -792,6 +854,7 @@ void build_component( const eg::ReadSession& session, const Environment& environ
 		osImpl << "#include \"" << projectTree.getStructuresInclude() << "\"\n";
         osImpl << "#include \"" << projectTree.getNetStateSourceInclude() << "\"\n";
         
+        eg::generateAccessorFunctionImpls( osImpl, *pPrinterFactory, session );
 		eg::generateActionInstanceFunctions( osImpl, *pPrinterFactory, session );
         
         generateMegaStructureClockImpl( osImpl, session, projectTree, networkAnalysis );
@@ -915,6 +978,9 @@ void build_component( const eg::ReadSession& session, const Environment& environ
 		
 		osCmd << "-Xclang -include-pch ";
 		osCmd << "-Xclang " << environment.printPath( projectTree.getInterfacePCH() ) << " ";
+            
+        osCmd << "-Xclang -include-pch ";
+        osCmd << "-Xclang " << environment.printPath( projectTree.getGenericsPCH() ) << " ";
 	
 		osCmd << "-I " << environment.printPath( environment.getEGLibraryInclude() ) << " ";
 		osCmd << "-I " << environment.printPath( projectTree.getInterfaceFolder() ) << " ";
@@ -990,6 +1056,9 @@ void build_component( const eg::ReadSession& session, const Environment& environ
 				
 				osCmd << "-Xclang -include-pch ";
 				osCmd << "-Xclang " << environment.printPath( projectTree.getInterfacePCH() ) << " ";
+            
+                osCmd << "-Xclang -include-pch ";
+                osCmd << "-Xclang " << environment.printPath( projectTree.getGenericsPCH() ) << " ";
 				
 				osCmd << "-Xclang -include-pch ";
                 

@@ -717,7 +717,7 @@ eg::ComponentInterop& getPythonInterop()
                 
                 if( pActionContext || pObjectContext || pLinkContext )
                 {
-                    const const eg::concrete::Dimension_Generated* pStateDim = pAction->getState();
+                    const eg::concrete::Dimension_Generated* pStateDim = pAction->getState();
                     VERIFY_RTE( pStateDim );
                     
                     const eg::DataMember* pStateDataMember = layout.getDataMember( pStateDim );
@@ -1012,8 +1012,6 @@ void generatePythonBindings( std::ostream& os, const eg::ReadSession& session, c
     os << "\n";*/
 
     megastructure::generateRuntimeExterns( os, session );
-    
-    eg::generateMemberFunctions( os, *pPrinterFactory, session );
     
     generateTypeCasters( os, session, environment, projectTree );
     

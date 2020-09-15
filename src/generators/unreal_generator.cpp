@@ -681,8 +681,6 @@ void generateUnrealCode( std::ostream& os, const eg::ReadSession& session,
     
     const eg::concrete::Action* pActualRoot = 
         dynamic_cast< const eg::concrete::Action* >( pConcreteRoot->getChildren().front() );
-        
-    eg::generateMemberFunctions( os, *pPrinterFactory, session );
     
     generateImplementationDeclarations( os, linkAnaysis, layout, pActualRoot, pPrinterFactory );
     

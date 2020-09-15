@@ -531,6 +531,25 @@ boost::filesystem::path ProjectTree::getTUDBName( const std::string& strTUName )
             getInterfaceFolder() / os.str() ) );
 }
 
+
+boost::filesystem::path ProjectTree::getGenericsHeader() const
+{
+    std::ostringstream os;
+    os << "generics.hpp";
+    return boost::filesystem::edsCannonicalise(
+        boost::filesystem::absolute( 
+            getInterfaceFolder() / os.str() ) );
+}
+
+boost::filesystem::path ProjectTree::getGenericsPCH() const
+{
+    std::ostringstream os;
+    os << "generics.pch";
+    return boost::filesystem::edsCannonicalise(
+        boost::filesystem::absolute( 
+            getInterfaceFolder() / os.str() ) );
+}
+
 boost::filesystem::path ProjectTree::getOperationsIncludeHeader( const std::string& strTUName ) const
 {
     std::ostringstream os;
@@ -575,6 +594,7 @@ boost::filesystem::path ProjectTree::getOperationsPrivatePCH( const std::string&
         boost::filesystem::absolute( 
             getInterfaceFolder() / os.str() ) );
 }
+
 
 boost::filesystem::path ProjectTree::getImplementationSource( const std::string& strTUName ) const
 {
