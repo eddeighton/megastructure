@@ -24,6 +24,7 @@ struct BuildState
     const ProjectTree&          m_projectTree;
     const DiagnosticsConfig&    m_config;
     const std::string&          m_strCompilationFlags;
+    build::Stash&               m_stash;
     
     mutable std::unique_ptr< eg::ParserSession >            m_session_parser;
     mutable std::unique_ptr< eg::InterfaceSession >         m_session_interface;
@@ -32,11 +33,13 @@ struct BuildState
     BuildState( const Environment&          environment,
                 const ProjectTree&          projectTree,
                 const DiagnosticsConfig&    config,
-                const std::string&          strCompilationFlags )
+                const std::string&          strCompilationFlags,
+                build::Stash&               stash )
         :   m_environment         ( environment         ),
             m_projectTree         ( projectTree         ),
             m_config              ( config              ),
-            m_strCompilationFlags ( strCompilationFlags )
+            m_strCompilationFlags ( strCompilationFlags ),
+            m_stash               ( stash )
     {
         
     }
@@ -51,6 +54,7 @@ public:
             m_environment           ( buildState.m_environment              ),
             m_projectTree           ( buildState.m_projectTree              ),
             m_config                ( buildState.m_config                   ),
+            m_stash                 ( buildState.m_stash                    ),
             m_strCompilationFlags   ( buildState.m_strCompilationFlags      ),
             m_session_parser        ( buildState.m_session_parser           ),
             m_session_interface     ( buildState.m_session_interface        ),
@@ -63,6 +67,7 @@ protected:
     const ProjectTree&          m_projectTree;
     const DiagnosticsConfig&    m_config;
     const std::string&          m_strCompilationFlags;
+    build::Stash&               m_stash;
     
     std::unique_ptr< eg::ParserSession >&           m_session_parser;
     std::unique_ptr< eg::InterfaceSession >&        m_session_interface;

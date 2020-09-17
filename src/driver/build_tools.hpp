@@ -179,7 +179,21 @@ namespace build
         std::mutex m_mutex;
     };
     
+    std::size_t hash( const std::vector< std::string >& strings );
     
+    class Stash
+    {
+    public:
+        Stash( const Environment& environment, const boost::filesystem::path& stashDirectory );
+        
+        using HashCode = std::size_t;
+        
+        void stash( const boost::filesystem::path& file, const HashCode& code );
+        bool restore( const boost::filesystem::path& file, const HashCode& code );
+    private:
+        struct Pimpl;
+        std::shared_ptr< Pimpl > m_pPimpl;
+    };
     
 }
 

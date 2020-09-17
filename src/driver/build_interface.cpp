@@ -1,6 +1,8 @@
 
 #include "build_interface.hpp"
 
+#include "eg_parser/parser.hpp"
+
 #include "megaxml/mega_schema.hxx"
 #include "megaxml/mega_schema-pimpl.hxx"
 #include "megaxml/mega_schema-simpl.hxx"
@@ -14,8 +16,36 @@
 #include <iostream>
 #include <memory>
 #include <map>
+#include <functional>
 
 static DiagnosticsConfig m_config;
+
+struct ParserCallbackImpl : eg::EG_PARSER_CALLBACK, eg::FunctionBodyGenerator
+{
+    using FunctionMap = std::map< eg::IndexedObject::Index, std::ostringstream >;
+    FunctionMap m_contextMap, m_exportMap;
+    
+    //eg::EG_PARSER_CALLBACK
+    virtual void contextBody( const eg::input::Context* pContext, const char* pszBodyText )
+    {
+        m_contextMap[ pContext->getIndex() ] << pszBodyText;
+    }
+    virtual void exportBody( const eg::input::Export* pExport, const char* pszBodyText )
+    {
+        m_exportMap[ pExport->getIndex() ] << pszBodyText;
+    }
+    
+    //eg::FunctionBodyGenerator
+    virtual void printFunctionBody( const eg::input::Context* pContext, std::ostream& os )
+    {
+        os << m_contextMap[ pContext->getIndex() ].str();
+    }
+    virtual void printExportBody( const eg::input::Export* pExport, std::ostream& os )
+    {
+        os << m_exportMap[ pExport->getIndex() ].str();
+    }
+};
+ParserCallbackImpl m_functionBodyHandler;
 
 void Task_ParserSession::run()
 {
@@ -29,7 +59,9 @@ void Task_ParserSession::run()
     
     {
         m_session_parser = 
-            std::make_unique< eg::ParserSession >( m_environment.getParserDll(),
+            std::make_unique< eg::ParserSession >( 
+                &m_functionBodyHandler,
+                m_environment.getParserDll(),
                 m_projectTree.getSourceFolder(), std::cout );
         m_session_parser->parse( sourceCodeTree );
         m_session_parser->buildAbstractTree();
@@ -64,6 +96,7 @@ void Task_MainIncludePCH::run()
     const eg::interface::Root* pInterfaceRoot = m_session_parser->getTreeRoot();
     
     //generate the includes header
+    std::size_t hashCode;
     {
         //careful to only write to the file if it has been modified
         VERIFY_RTE( pInterfaceRoot );
@@ -72,6 +105,14 @@ void Task_MainIncludePCH::run()
             pInterfaceRoot, 
             m_projectTree.getSystemIncludes(), 
             m_projectTree.getUserIncludes( m_environment ) );
+            
+        hashCode = build::hash( { osInclude.str(), m_strCompilationFlags } );
+            
+        if( m_stash.restore( m_projectTree.getIncludePCH(), hashCode ) )
+        {
+            return;
+        }
+            
         boost::filesystem::updateFileIfChanged( 
             m_projectTree.getIncludeHeader(), osInclude.str() );
     }
@@ -86,6 +127,8 @@ void Task_MainIncludePCH::run()
     }
     
     invokeCachedCompiler( m_environment, cmd );
+            
+    m_stash.stash( m_projectTree.getIncludePCH(), hashCode );
 }
 
 void Task_MainInterfacePCH::run()
@@ -159,10 +202,16 @@ void Task_MainGenericsPCH::run()
     const eg::interface::Root* pInterfaceRoot = m_session_interface->getTreeRoot();
     
     //generate the generics code
+    std::size_t hashCode;
     {
         std::ostringstream osImpl;
         eg::generateGenericsHeader( osImpl, *m_session_interface );
         boost::filesystem::updateFileIfChanged( m_projectTree.getGenericsHeader(), osImpl.str() );
+        
+        if( m_stash.restore( m_projectTree.getIncludePCH(), hashCode ) )
+        {
+            return;
+        }
     }
     
     build::Compilation cmd( m_projectTree.getGenericsHeader(), 
@@ -180,12 +229,21 @@ void Task_ComponentIncludePCH::run()
 {
     START_BENCHMARK( "Task_ComponentIncludePCH: " << m_environment.printPath( m_projectTree.getComponentIncludePCH( m_component ) ) );
     
+    std::size_t hashCode;
     {
         std::ostringstream os;
         for( const boost::filesystem::path& includePath : m_projectTree.getComponentIncludeFiles( m_environment, m_component ) )
         {
             os << "#include \"" << includePath.string() << "\"\n";
-        }    
+        }
+
+        hashCode = build::hash( { os.str(), m_strCompilationFlags } );
+            
+        if( m_stash.restore( m_projectTree.getComponentIncludePCH( m_component ), hashCode ) )
+        {
+            return;
+        }
+        
         boost::filesystem::updateFileIfChanged( m_projectTree.getComponentIncludeHeader( m_component ), os.str() );
     }
     
@@ -199,6 +257,8 @@ void Task_ComponentIncludePCH::run()
         cmd.inputPCH.push_back( m_projectTree.getIncludePCH() );
     }
     invokeCachedCompiler( m_environment, cmd );
+    
+    m_stash.stash( m_projectTree.getComponentIncludePCH( m_component ), hashCode );
 }
 
 void Task_ComponentInterfacePCH::run()
@@ -250,7 +310,7 @@ void Task_OperationsHeader::run()
     
     {
         std::ostringstream osOperations;
-        eg::generateOperationSource( osOperations, m_session_interface->getTreeRoot(), *pTranslationUnit );
+        eg::generateOperationSource( osOperations, m_session_interface->getTreeRoot(), *pTranslationUnit, m_functionBodyHandler );
         boost::filesystem::updateFileIfChanged( m_projectTree.getOperationsHeader( pTranslationUnit->getName() ), osOperations.str() );
     }
 }
@@ -343,12 +403,14 @@ void Task_ImplementationSession::run()
 void build_interface( const boost::filesystem::path& projectDirectory, const std::string& strProject, const std::string& strCompilationFlags )
 {
     Environment environment;
+    
+    build::Stash stash( environment, projectDirectory / "stash" );
 
     START_BENCHMARK( "Total time compiling megastructure interface for: " << strProject );
     
     ProjectTree projectTree( environment, projectDirectory, strProject );
     
-    BuildState buildState( environment, projectTree, m_config, strCompilationFlags );
+    BuildState buildState( environment, projectTree, m_config, strCompilationFlags, stash );
     
     build::Task::PtrVector tasks;
     {

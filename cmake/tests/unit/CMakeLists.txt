@@ -23,6 +23,7 @@ set( MEGA_UNIT_TESTS
     ${MEGA_UNIT_TEST_DIR}/protocol_test.cpp
     ${MEGA_UNIT_TEST_DIR}/message_pack_tests.cpp
     ${MEGA_UNIT_TEST_DIR}/spdlog_test.cpp
+    ${MEGA_UNIT_TEST_DIR}/build_tools.cpp
     )
 
 add_executable( mega_tests ${MEGA_UNIT_TESTS})

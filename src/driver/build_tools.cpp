@@ -4,6 +4,9 @@
 #include "schema/project.hpp"
 #include "schema/projectTree.hpp"
 
+#include <boost/tokenizer.hpp>
+#include <boost/lexical_cast.hpp>
+
 #pragma warning( push )
 #pragma warning( disable : 4996) //iterator thing
 #pragma warning( disable : 4244) //conversion to DWORD from system_clock::rep
@@ -18,6 +21,8 @@
 namespace build
 {
     
+//////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 Task::Task( const RawPtrSet& dependencies )
     :   m_dependencies( dependencies )
 {
@@ -39,6 +44,8 @@ bool Task::isReady( const RawPtrSet& finished )
     return true;
 }
     
+//////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 Scheduler::Scheduler( const Task::PtrVector& tasks )
     :   m_tasks( tasks )
 {
@@ -121,7 +128,8 @@ void Scheduler::run()
     }
 }
 
-
+//////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 void invokeCachedCompiler( const Environment& environment, const Compilation& compilation )
 {
     std::ostringstream osCmd;
@@ -189,6 +197,9 @@ void invokeCachedCompiler( const Environment& environment, const Compilation& co
         THROW_RTE( "Missing compiler output" );
     }
     
+    
+    
+    
     const int iResult = boost::process::system( osCmd.str() );
     if( iResult )
     {
@@ -196,6 +207,169 @@ void invokeCachedCompiler( const Environment& environment, const Compilation& co
     }
 }
     
+//////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
+
+std::size_t hash( const std::vector< std::string >& strings )
+{
+    std::size_t szHash = 123456;
+    
+    for( const std::string& str : strings )
+    {
+        const std::size_t h = std::hash< std::string >{}( str );
+        szHash = szHash ^ ( h << 1 );
+    }
+    
+    return szHash;
+}
+    
+struct Stash::Pimpl
+{
+    const Environment& m_environment;
+    const boost::filesystem::path m_stashDirectory;
+    
+    using FileHash = std::pair< HashCode, boost::filesystem::path >;
+    using Manifest = std::map< FileHash, boost::filesystem::path >;
+    
+    Manifest m_manifest;
+    
+    inline static const char* pszManifestFileName = "manifest.txt";
+    
+    static void load( std::istream& inStream, Manifest& output )
+    {
+        std::string strLine;
+        while( std::getline( inStream, strLine ) )
+        {
+            using Tokeniser = boost::tokenizer< boost::char_separator< char > >;
+            boost::char_separator< char > sep( "," );
+            Tokeniser tokens( strLine, sep );
+            for ( Tokeniser::iterator i = tokens.begin(); i != tokens.end(); ++i )
+            {
+                FileHash fileHash;
+                fileHash.first = boost::lexical_cast< HashCode >( *i );
+                
+                if( ++i == tokens.end() )
+                    THROW_RTE( "Error in stash manifest" );
+                fileHash.second = *i;
+                
+                if( ++i == tokens.end() )
+                    THROW_RTE( "Error in stash manifest" );
+                
+                output.insert( std::make_pair( fileHash, *i ) );
+            }
+        }
+    }
+
+    static void save( const Manifest& input, std::ostream& outStream )
+    {
+        for( Manifest::const_iterator i = input.begin(),
+            iEnd = input.end(); i!=iEnd; ++i )
+        {
+            outStream << i->first.first << ',' << i->first.second.string() << ',' << i->second.string() << '\n';
+        }
+    }
+
+    void loadManifest()
+    {
+        const boost::filesystem::path manifestFile = m_stashDirectory / pszManifestFileName;
+        if( boost::filesystem::exists( manifestFile ) )
+        {
+            std::ifstream inputFileStream( manifestFile.native().c_str(), std::ios::in );
+            if( !inputFileStream.good() )
+            {
+                THROW_RTE( "Failed to open file: " << manifestFile.string() );
+            }
+            load( inputFileStream, m_manifest );
+        }
+        else
+        {
+            m_manifest.clear();
+        }
+        
+    }
+    void saveManifest()
+    {
+        const boost::filesystem::path manifestFile = m_stashDirectory / pszManifestFileName;
+        boost::filesystem::ensureFoldersExist( manifestFile );
+        std::unique_ptr< boost::filesystem::ofstream > pFileStream = 
+            boost::filesystem::createNewFileStream( manifestFile );
+        save( m_manifest, *pFileStream );
+    }
+    
+    std::mutex m_mutex;
+    Pimpl( const Environment& environment, const boost::filesystem::path& stashDirectory )
+        :   m_environment( environment ),
+            m_stashDirectory( stashDirectory )
+    {
+        loadManifest();
+    }
+    /*~Pimpl()
+    {
+        saveManifest();
+    }*/
+    
+    void stash( const boost::filesystem::path& file, const HashCode& code )
+    {
+        std::lock_guard lock( m_mutex );
+        
+        const boost::filesystem::path manifestFile = m_stashDirectory / pszManifestFileName;
+        boost::filesystem::ensureFoldersExist( manifestFile );
+        
+        std::ostringstream osFileName;
+        osFileName << "stash_" << m_manifest.size() << ".st";
+        
+        const boost::filesystem::path stashFile = m_stashDirectory / osFileName.str();
+
+        if( boost::filesystem::exists( stashFile ) )
+        {
+            boost::filesystem::remove( stashFile );
+        }
+        boost::filesystem::copy( file, stashFile );
+        
+        m_manifest[ std::make_pair( code, file ) ] = stashFile;
+        
+        saveManifest();
+    }
+
+    bool restore( const boost::filesystem::path& file, const HashCode& code )
+    {
+        std::lock_guard lock( m_mutex );
+        
+        Manifest::const_iterator iFind = m_manifest.find( std::make_pair( code, file ) );
+        if( iFind != m_manifest.end() )
+        {
+            boost::filesystem::path stashFile = iFind->second;
+            
+            if( boost::filesystem::exists( stashFile ) )
+            {
+                if( boost::filesystem::exists( file ) )
+                {
+                    boost::filesystem::remove( file );
+                }
+                //recheck the hash code??
+                boost::filesystem::copy( stashFile, file );
+                return true;
+            }
+        }
+        return false;
+    }
+};
+
+Stash::Stash( const Environment& environment, const boost::filesystem::path& stashDirectory )
+    :   m_pPimpl( std::make_shared< Pimpl >( environment, stashDirectory ) )
+{
+    
+}
+    
+void Stash::stash( const boost::filesystem::path& file, const HashCode& code )
+{
+    m_pPimpl->stash( file, code );
+}
+
+bool Stash::restore( const boost::filesystem::path& file, const HashCode& code )
+{
+    return m_pPimpl->restore( file, code );
+}
 
 }
 
