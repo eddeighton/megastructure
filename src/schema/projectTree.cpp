@@ -347,6 +347,16 @@ boost::filesystem::path ProjectTree::getIncludePCH() const
     return getInterfaceFolder() / "include.pch";
 }
 
+boost::filesystem::path ProjectTree::getGenericsHeader() const
+{
+    return getInterfaceFolder() / "generics.hpp";
+}
+
+boost::filesystem::path ProjectTree::getGenericsPCH() const
+{
+    return getInterfaceFolder() / "generics.pch";
+}
+
 boost::filesystem::path ProjectTree::getCoroutineFrameSourceFilePath( const Environment& environment ) const
 {
     return boost::filesystem::edsCannonicalise(
@@ -431,49 +441,14 @@ std::vector< boost::filesystem::path > ProjectTree::getIncludeDirectories( const
     return directories;
 }
 
-const ProjectName::Ptr ProjectTree::getCoordinatorHostnameProject( 
-    const std::string& strCoordinatorName, const std::string& strHostName, const std::string& strProjectName ) const
+std::vector< boost::filesystem::path > ProjectTree::getComponentIncludeDirectories( const Environment& environment, const Component& component ) const
 {
-    for( Coordinator::Ptr pCoordinator : getCoordinators() )
-    {
-        if( strCoordinatorName == pCoordinator->name() )
-        {
-            for( HostName::Ptr pHostName : pCoordinator->getHostNames() )
-            {
-                if( strHostName == pHostName->name() )
-                {
-                    for( ProjectName::Ptr pProjectName : pHostName->getProjectNames() )
-                    {
-                        if( pProjectName->name() == strProjectName )
-                        {
-                            //found it!
-                            return pProjectName;
-                        }
-                    }
-                }
-            }
-        }
-    }
+    VERIFY_RTE( component.pProjectName );
     
-    return nullptr;
-}
-
-std::vector< boost::filesystem::path > ProjectTree::getImplIncludeDirectories( const Environment& environment, 
-        const std::string& strCoordinatorName, const std::string& strHostName ) const
-{
     std::set< boost::filesystem::path > uniquified;
-    std::vector< boost::filesystem::path > directories;
-    
-    directories = getIncludeDirectories( environment );
-    
-    VERIFY_RTE( !strCoordinatorName.empty() );
-    VERIFY_RTE( !strHostName.empty() );
-    
-    const ProjectName::Ptr pProject = getCoordinatorHostnameProject( strCoordinatorName, strHostName, getProjectName() );
-    VERIFY_RTE( pProject );
-    
+    std::vector< boost::filesystem::path > directories = getIncludeDirectories( environment );
     {
-        const Project& project = pProject->getProject();
+        const Project& project = component.pProjectName->getProject();
         
         const megaxml::Host& xmlHost = project.getHost();
         if( xmlHost.Directories_present() )
@@ -485,26 +460,15 @@ std::vector< boost::filesystem::path > ProjectTree::getImplIncludeDirectories( c
     return directories;
 }
 
-std::vector< boost::filesystem::path > ProjectTree::getImplIncludeDirectories( const Environment& environment ) const
+std::vector< boost::filesystem::path > ProjectTree::getComponentIncludeFiles( const Environment& environment, const Component& component ) const
 {
-    VERIFY_RTE( m_coordinatorName && m_hostName );
-    return getImplIncludeDirectories( environment, m_coordinatorName.get(), m_hostName.get() );
-}
-
-std::vector< boost::filesystem::path > ProjectTree::getImplIncludeFiles( const Environment& environment, 
-    const std::string& strCoordinatorName, const std::string& strHostName ) const
-{
+    VERIFY_RTE( component.pProjectName );
+    
     std::set< boost::filesystem::path > uniquified;
     std::vector< boost::filesystem::path > includeFiles;
     
-    VERIFY_RTE( !strCoordinatorName.empty() );
-    VERIFY_RTE( !strHostName.empty() );
-    
-    const ProjectName::Ptr pProject = getCoordinatorHostnameProject( strCoordinatorName, strHostName, getProjectName() );
-    VERIFY_RTE( pProject );
-    
     {
-        const Project& project = pProject->getProject();
+        const Project& project = component.pProjectName->getProject();
         
         const megaxml::Project& xmlProject = project.getProject();
         if( xmlProject.Files_present() )
@@ -532,40 +496,38 @@ boost::filesystem::path ProjectTree::getTUDBName( const std::string& strTUName )
 }
 
 
-boost::filesystem::path ProjectTree::getGenericsHeader() const
+boost::filesystem::path constructComponentFile( const Component& component, const boost::filesystem::path& implFolder, const char* pszFileName )
 {
-    std::ostringstream os;
-    os << "generics.hpp";
+    VERIFY_RTE( component.pCoordinator && component.pHostName && component.pProjectName );
     return boost::filesystem::edsCannonicalise(
         boost::filesystem::absolute( 
-            getInterfaceFolder() / os.str() ) );
+            implFolder / component.pCoordinator->name() / component.pHostName->name() / 
+            component.pProjectName->name() / pszFileName ) );
 }
 
-boost::filesystem::path ProjectTree::getGenericsPCH() const
+boost::filesystem::path ProjectTree::getComponentParserDatabase( const Component& component ) const
 {
-    std::ostringstream os;
-    os << "generics.pch";
-    return boost::filesystem::edsCannonicalise(
-        boost::filesystem::absolute( 
-            getInterfaceFolder() / os.str() ) );
+    return constructComponentFile( component, getImplFolder(), "parser.db" );
+}
+    
+boost::filesystem::path ProjectTree::getComponentIncludeHeader( const Component& component ) const
+{
+    return constructComponentFile( component, getImplFolder(), "include.hpp" );
+}
+    
+boost::filesystem::path ProjectTree::getComponentIncludePCH( const Component& component ) const
+{
+    return constructComponentFile( component, getImplFolder(), "include.pch" );
 }
 
-boost::filesystem::path ProjectTree::getOperationsIncludeHeader( const std::string& strTUName ) const
+boost::filesystem::path ProjectTree::getComponentInterfacePCH( const Component& component ) const
 {
-    std::ostringstream os;
-    os << strTUName << "_include.hpp";
-    return boost::filesystem::edsCannonicalise(
-        boost::filesystem::absolute( 
-            getInterfaceFolder() / os.str() ) );
+    return constructComponentFile( component, getImplFolder(), "interface.pch" );
 }
 
-boost::filesystem::path ProjectTree::getOperationsIncludePCH( const std::string& strTUName ) const
+boost::filesystem::path ProjectTree::getComponentGenericsPCH( const Component& component ) const
 {
-    std::ostringstream os;
-    os << strTUName << "_include.pch";
-    return boost::filesystem::edsCannonicalise(
-        boost::filesystem::absolute( 
-            getInterfaceFolder() / os.str() ) );
+    return constructComponentFile( component, getImplFolder(), "generics.pch" );
 }
 
 boost::filesystem::path ProjectTree::getOperationsHeader( const std::string& strTUName ) const

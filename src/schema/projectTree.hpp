@@ -86,6 +86,21 @@ private:
 	HostName::PtrVector m_hostNames;
 };
 
+struct Component
+{
+    Coordinator::Ptr    pCoordinator;
+    HostName::Ptr       pHostName;
+    ProjectName::Ptr    pProjectName;
+    
+    inline bool operator<( const Component& cmp ) const
+    {
+        return
+            ( pCoordinator->name()  != cmp.pCoordinator->name() )   ? ( pCoordinator->name()    < cmp.pCoordinator->name() ) :
+            ( pHostName->name()     != cmp.pHostName->name() )      ? ( pHostName->name()       < cmp.pHostName->name()    ) :
+            ( pProjectName->name()  != cmp.pProjectName->name() )   ? ( pProjectName->name()    < cmp.pProjectName->name() ) :
+            false;
+    }
+};
 
 class ProjectTree
 {
@@ -129,30 +144,24 @@ public:
     boost::filesystem::path getInterfaceHeader() const;
     boost::filesystem::path getIncludeHeader() const;
     boost::filesystem::path getIncludePCH() const;
+    boost::filesystem::path getGenericsHeader() const;
+    boost::filesystem::path getGenericsPCH() const;
 	
     boost::filesystem::path getTUDBName( const std::string& strTUName ) const;
     
 	boost::filesystem::path getCoroutineFrameSourceFilePath( const Environment& environment ) const;
 	boost::filesystem::path getBasicSchedulerFilePath( const Environment& environment ) const;
 		
-	//static void collateIncludeDirectories( 
-	//	const Environment& environment,
-	//	std::set< boost::filesystem::path >& uniquified, 
-	//	std::vector< boost::filesystem::path >& directories,
-	//	const std::string& strDirectory );
-
 	std::vector< boost::filesystem::path > getIncludeDirectories( const Environment& environment ) const;
-	std::vector< boost::filesystem::path > getImplIncludeDirectories( const Environment& environment, 
-        const std::string& strCoordinatorName, const std::string& strHostName ) const;
-	std::vector< boost::filesystem::path > getImplIncludeDirectories( const Environment& environment ) const;
     
-	std::vector< boost::filesystem::path > getImplIncludeFiles( const Environment& environment, 
-        const std::string& strCoordinatorName, const std::string& strHostName ) const;
+	std::vector< boost::filesystem::path > getComponentIncludeDirectories( const Environment& environment, const Component& component ) const;
+	std::vector< boost::filesystem::path > getComponentIncludeFiles( const Environment& environment, const Component& component ) const;
+    boost::filesystem::path getComponentParserDatabase( const Component& component ) const;
+    boost::filesystem::path getComponentIncludeHeader( const Component& component ) const;
+    boost::filesystem::path getComponentIncludePCH( const Component& component ) const;
+    boost::filesystem::path getComponentInterfacePCH( const Component& component ) const;
+    boost::filesystem::path getComponentGenericsPCH( const Component& component ) const;
     
-    boost::filesystem::path getGenericsHeader() const;
-    boost::filesystem::path getGenericsPCH() const;
-	boost::filesystem::path getOperationsIncludeHeader( const std::string& strTUName ) const;
-	boost::filesystem::path getOperationsIncludePCH( const std::string& strTUName ) const;
 	boost::filesystem::path getOperationsHeader( const std::string& strTUName ) const;
 	boost::filesystem::path getOperationsPublicPCH( const std::string& strTUName ) const;
 	boost::filesystem::path getOperationsPrivatePCH( const std::string& strTUName ) const;

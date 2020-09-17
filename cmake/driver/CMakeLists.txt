@@ -31,6 +31,12 @@ set( DRIVER_SOURCES
 	${DRIVER_SOURCE_DIR}/command_run.cpp
 	${DRIVER_SOURCE_DIR}/main.cpp
 	${DRIVER_SOURCE_DIR}/stacktrace.cpp
+	${DRIVER_SOURCE_DIR}/build_tools.hpp
+	${DRIVER_SOURCE_DIR}/build_tools.cpp
+	${DRIVER_SOURCE_DIR}/build_interface.hpp
+	${DRIVER_SOURCE_DIR}/build_interface.cpp
+	${DRIVER_SOURCE_DIR}/build_implementation.hpp
+	${DRIVER_SOURCE_DIR}/build_implementation.cpp
 	)
 	
 set( GENERATOR_SOURCE_DIR ${MEGA_ROOT_DIR}/src/generators )
