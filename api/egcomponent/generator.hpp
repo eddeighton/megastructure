@@ -50,17 +50,31 @@ namespace megastructure
         };
         
         using HashInt = std::int32_t;
+        
+        template< class T >
+        struct CompareID
+        {
+            inline bool operator()( const T* pLeft, const T* pRight ) const
+            {
+                return pLeft->getIndex() < pRight->getIndex();
+            }
+        };
 
-        using HostNameBufferMap = std::map< const eg::Buffer*, std::shared_ptr< HostName > >;
-        using BufferTypes = std::map< const eg::Buffer*, BufferRelation >;
-        using DataTypeHashBases = std::map< const eg::DataMember*, HashInt >;
+        using HostNameBufferMap = std::map< const eg::Buffer*, std::shared_ptr< HostName >, CompareID< eg::Buffer > >;
+        using BufferTypes = std::map< const eg::Buffer*, BufferRelation, CompareID< eg::Buffer > >;
+        using DataTypeHashBases = std::map< const eg::DataMember*, HashInt, CompareID< eg::DataMember > >;
         
         struct HostStructures
         {
             std::string strWriteSetName, strIdentityEnumName;
             const eg::concrete::Action* pRoot;
         };
-        using HostStructureMap = std::map< std::shared_ptr< HostName >, HostStructures >;
+        
+        struct CompareHostNamePtr
+        {
+            inline bool operator()( const std::shared_ptr< HostName > pLeft, const std::shared_ptr< HostName > pRight ) const;
+        };
+        using HostStructureMap = std::map< std::shared_ptr< HostName >, HostStructures, CompareHostNamePtr >;
         
         NetworkAnalysis( const eg::ReadSession& session, const ProjectTree& project );
         

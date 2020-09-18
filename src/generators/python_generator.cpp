@@ -795,7 +795,7 @@ eg::ComponentInterop& getPythonInterop()
                 
                 if( pActionContext || pObjectContext || pLinkContext )
                 {
-                    const const eg::concrete::Dimension_Generated* pStateDim = pAction->getState();
+                    const eg::concrete::Dimension_Generated* pStateDim = pAction->getState();
                     VERIFY_RTE( pStateDim );
                     
                     const eg::DataMember* pStateDataMember = layout.getDataMember( pStateDim );

@@ -26,7 +26,20 @@ static DiagnosticsConfig m_config;
 void Task_CPPCompilation::run()
 {
     START_BENCHMARK( "Task_CPPCompilation: " << m_environment.printPath( m_sourceFile ) << " " << m_strAdditionalDefines );
-      
+    
+    std::size_t hashCode = build::hash_file( m_sourceFile );
+    hashCode = build::hash_combine( hashCode, build::hash_strings( { m_strCompilationFlags } ) );
+    hashCode = build::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getParserDatabaseFilePreInterfaceAnalysis() ) );
+    hashCode = build::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getIncludePCH() ) );
+    hashCode = build::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getComponentIncludePCH( m_component ) ) );
+    hashCode = build::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getComponentInterfacePCH( m_component ) ) );
+    hashCode = build::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getComponentGenericsPCH( m_component ) ) );
+    
+    if( m_stash.restore( m_projectTree.getObjectFile( m_sourceFile, m_binaryPath ), hashCode ) )
+    {
+        return;
+    }
+    
     build::Compilation cmd( m_sourceFile, 
                             m_projectTree.getObjectFile( m_sourceFile, m_binaryPath ), 
                             m_strCompilationFlags, 
@@ -41,50 +54,16 @@ void Task_CPPCompilation::run()
         cmd.includeDirs.push_back( m_projectTree.getInterfaceFolder() );
         cmd.defines.push_back( m_strAdditionalDefines );
     }
-    invokeCompiler( m_environment, cmd );        
+    invokeCompiler( m_environment, cmd );     
+
+    m_stash.stash( m_projectTree.getObjectFile( m_sourceFile, m_binaryPath ), hashCode );      
 }
 
-void Task_EGImplCompilation::run()
+void Task_PublicEGImplCompilation::run()
 {
-    const eg::TranslationUnitAnalysis& tuAnalysis = m_session.getTranslationUnitAnalysis();
+    const std::string strTUName = m_translationUnit.getName();
     
-    const eg::TranslationUnit* pTranslationUnit = nullptr;
-    {
-        for( const eg::TranslationUnit* pTUIter : tuAnalysis.getTranslationUnits() )
-        {
-            if( m_sourceFile == pTUIter->getName() )
-            {
-                pTranslationUnit = pTUIter;
-                break;
-            }
-            //if( pTUIter->getCoordinatorHostnameDefinitionFile().isCoordinator( m_projectTree.getCoordinatorName() ) &&
-            //    pTUIter->getCoordinatorHostnameDefinitionFile().isHost( m_projectTree.getHostName() ) )
-            //{
-            //}   
-        }
-    }
-    if( !pTranslationUnit )
-    {
-        START_BENCHMARK( "Task_EGImplCompilation: " << " COULD NOT LOCATE: " << m_environment.printPath( m_sourceFile ) );
-        return;
-    }
-    const std::string strTUName = pTranslationUnit->getName();
-    
-    START_BENCHMARK( "Task_EGImplCompilation: " << m_environment.printPath( m_projectTree.getImplementationSource( strTUName ) ) );
-    
-    //START_BENCHMARK( "Task_EGImplCompilation: " << m_environment.printPath( m_projectTree.getImplementationSource( strTUName ) ) << "\n" <<
-    //    "chd coordinator: "         << pTranslationUnit->getCHD().pCoordinator->getIdentifier() << "\n" <<
-    //    "chd hostname: "            << pTranslationUnit->getCHD().pHostName->getIdentifier() << "\n" <<
-    //    "component coordinator: "   << m_component.pCoordinator->name() << "\n" <<
-    //    "component hostname: "      << m_component.pHostName->name()
-    //);
-    
-    bool bPrivateOperations = false;
-    if( ( pTranslationUnit->getCHD().pCoordinator->getIdentifier() == m_component.pCoordinator->name() ) &&
-        ( pTranslationUnit->getCHD().pHostName->getIdentifier()    == m_component.pHostName->name() ) )
-    {
-        bPrivateOperations = true;
-    }
+    START_BENCHMARK( "Task_PublicEGImplCompilation: " << m_environment.printPath( m_projectTree.getImplementationSource( strTUName ) ) );
     
     std::vector< std::string > additionalIncludes = 
     { 
@@ -93,43 +72,91 @@ void Task_EGImplCompilation::run()
     };
     
     //generate the implementation source code
+    std::ostringstream osImpl;
+    eg::generateImplementationSource( osImpl, m_instructionCodeGenFactory, m_printerFactory, m_session, m_translationUnit, additionalIncludes );
+    
+    std::size_t hashCode = build::hash_strings( { osImpl.str(), m_strCompilationFlags } );
+    hashCode = build::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getParserDatabaseFilePreInterfaceAnalysis() ) );
+    hashCode = build::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getIncludePCH() ) );
+    hashCode = build::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getInterfacePCH() ) );
+    hashCode = build::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getGenericsPCH() ) );
+    hashCode = build::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getOperationsPublicPCH( strTUName ) ) );
+    
+    if( m_stash.restore( m_projectTree.getObjectName( strTUName, m_binaryPath ), hashCode ) )
     {
-        std::ostringstream osImpl;
-        eg::generateImplementationSource( osImpl, m_instructionCodeGenFactory, m_printerFactory, m_session, *pTranslationUnit, additionalIncludes );
-        boost::filesystem::updateFileIfChanged( m_projectTree.getImplementationSource( pTranslationUnit->getName() ), osImpl.str() );
+        return;
     }
     
+    boost::filesystem::updateFileIfChanged( m_projectTree.getImplementationSource( strTUName ), osImpl.str() );
     
+    build::Compilation cmd( m_projectTree.getImplementationSource( strTUName ), 
+                            m_projectTree.getObjectName( strTUName, m_binaryPath ), 
+                            m_strCompilationFlags, 
+                            build::Compilation::OutputOBJ{} );
+                            
+    cmd.inputPCH.push_back( m_projectTree.getIncludePCH() );
+    cmd.inputPCH.push_back( m_projectTree.getInterfacePCH() );
+    cmd.inputPCH.push_back( m_projectTree.getGenericsPCH() );
+    cmd.inputPCH.push_back( m_projectTree.getOperationsPublicPCH( strTUName ) );
+    cmd.includeDirs = m_projectTree.getIncludeDirectories( m_environment );
+    cmd.includeDirs.push_back( m_environment.getEGLibraryInclude() );
+    cmd.includeDirs.push_back( m_projectTree.getInterfaceFolder() );
+    cmd.defines.push_back( m_strAdditionalDefines );
+    
+    invokeCompiler( m_environment, cmd );
+
+    m_stash.stash( m_projectTree.getObjectName( strTUName, m_binaryPath ), hashCode );     
+}
+
+void Task_PrivateEGImplCompilation::run()
+{
+    const std::string strTUName = m_translationUnit.getName();
+    
+    START_BENCHMARK( "Task_PrivateEGImplCompilation: " << m_environment.printPath( m_projectTree.getImplementationSource( strTUName ) ) );
+    
+    std::vector< std::string > additionalIncludes = 
+    { 
+        m_projectTree.getStructuresInclude(), 
+        m_projectTree.getNetStateSourceInclude() 
+    };
+    
+    //generate the implementation source code
+    std::ostringstream osImpl;
+    eg::generateImplementationSource( osImpl, m_instructionCodeGenFactory, m_printerFactory, m_session, m_translationUnit, additionalIncludes );
+    
+    std::size_t hashCode = build::hash_strings( { osImpl.str(), m_strCompilationFlags } );
+    hashCode = build::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getParserDatabaseFilePreInterfaceAnalysis() ) );
+    hashCode = build::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getIncludePCH() ) );
+    hashCode = build::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getComponentIncludePCH( m_component ) ) );
+    hashCode = build::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getComponentInterfacePCH( m_component ) ) );
+    hashCode = build::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getComponentGenericsPCH( m_component ) ) );
+    hashCode = build::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getOperationsPrivatePCH( strTUName ) ) );
+    
+    if( m_stash.restore( m_projectTree.getObjectName( strTUName, m_binaryPath ), hashCode ) )
     {
-        build::Compilation cmd( m_projectTree.getImplementationSource( pTranslationUnit->getName() ), 
-                                m_projectTree.getObjectName( pTranslationUnit->getName(), m_binaryPath ), 
-                                m_strCompilationFlags, 
-                                build::Compilation::OutputOBJ{} );
-        if( bPrivateOperations )
-        {
-            cmd.inputPCH.push_back( m_projectTree.getIncludePCH() );
-            cmd.inputPCH.push_back( m_projectTree.getComponentIncludePCH( m_component ) );
-            cmd.inputPCH.push_back( m_projectTree.getComponentInterfacePCH( m_component ) );
-            cmd.inputPCH.push_back( m_projectTree.getComponentGenericsPCH( m_component ) );
-            cmd.inputPCH.push_back( m_projectTree.getOperationsPrivatePCH( pTranslationUnit->getName() ) );
-            cmd.includeDirs = m_projectTree.getComponentIncludeDirectories( m_environment, m_component );
-            cmd.includeDirs.push_back( m_environment.getEGLibraryInclude() );
-            cmd.includeDirs.push_back( m_projectTree.getInterfaceFolder() );
-            cmd.defines.push_back( m_strAdditionalDefines );
-        }
-        else
-        {
-            cmd.inputPCH.push_back( m_projectTree.getIncludePCH() );
-            cmd.inputPCH.push_back( m_projectTree.getInterfacePCH() );
-            cmd.inputPCH.push_back( m_projectTree.getGenericsPCH() );
-            cmd.inputPCH.push_back( m_projectTree.getOperationsPublicPCH( pTranslationUnit->getName() ) );
-            cmd.includeDirs = m_projectTree.getIncludeDirectories( m_environment );
-            cmd.includeDirs.push_back( m_environment.getEGLibraryInclude() );
-            cmd.includeDirs.push_back( m_projectTree.getInterfaceFolder() );
-            cmd.defines.push_back( pTranslationUnit->getCHD().getHostDefine() );
-        }
-        invokeCompiler( m_environment, cmd );
+        return;
     }
+    
+    boost::filesystem::updateFileIfChanged( m_projectTree.getImplementationSource( strTUName ), osImpl.str() );
+    
+    build::Compilation cmd( m_projectTree.getImplementationSource( strTUName), 
+                            m_projectTree.getObjectName( strTUName, m_binaryPath ), 
+                            m_strCompilationFlags, 
+                            build::Compilation::OutputOBJ{} );
+                            
+    cmd.inputPCH.push_back( m_projectTree.getIncludePCH() );
+    cmd.inputPCH.push_back( m_projectTree.getComponentIncludePCH( m_component ) );
+    cmd.inputPCH.push_back( m_projectTree.getComponentInterfacePCH( m_component ) );
+    cmd.inputPCH.push_back( m_projectTree.getComponentGenericsPCH( m_component ) );
+    cmd.inputPCH.push_back( m_projectTree.getOperationsPrivatePCH( strTUName ) );
+    cmd.includeDirs = m_projectTree.getComponentIncludeDirectories( m_environment, m_component );
+    cmd.includeDirs.push_back( m_environment.getEGLibraryInclude() );
+    cmd.includeDirs.push_back( m_projectTree.getInterfaceFolder() );
+    cmd.defines.push_back( m_strAdditionalDefines );
+    
+    invokeCompiler( m_environment, cmd );
+
+    m_stash.stash( m_projectTree.getObjectName( strTUName, m_binaryPath ), hashCode );     
 }
 
 void generateMegaBufferStructures( std::ostream& os, const eg::ReadSession& program, const ProjectTree& projectTree )
@@ -484,7 +511,10 @@ void build_implementation( const boost::filesystem::path& projectDirectory,
         strAdditionalDefines = osDefines.str();
     }
     
-    BuildState buildState( environment, projectTree, m_config, strCompilationFlags, strAdditionalDefines, binPath, session );
+    build::Stash stash( environment, projectDirectory / "stash" );
+    stash.loadHashCodes( projectTree.getBuildInfoFile() );
+    
+    BuildState buildState( environment, projectTree, m_config, strCompilationFlags, strAdditionalDefines, binPath, stash, session );
     
     build::Task::PtrVector tasks;
     {
@@ -494,10 +524,51 @@ void build_implementation( const boost::filesystem::path& projectDirectory,
             tasks.push_back( build::Task::Ptr( pTask ) );
         }
         
+        const eg::TranslationUnitAnalysis& tuAnalysis = session.getTranslationUnitAnalysis();
         for( const boost::filesystem::path& egFilePath : inputSourceFileNameSet )
         {
-            Task_EGImplCompilation* pTask = new Task_EGImplCompilation( buildState, component, egFilePath, instructionCodeGenFactory, *pPrinterFactory );
-            tasks.push_back( build::Task::Ptr( pTask ) );
+            const eg::TranslationUnit* pTranslationUnit = nullptr;
+            {
+                for( const eg::TranslationUnit* pTUIter : tuAnalysis.getTranslationUnits() )
+                {
+                    if( egFilePath == pTUIter->getName() )
+                    {
+                        pTranslationUnit = pTUIter;
+                        break;
+                    }
+                }
+            }
+            if( !pTranslationUnit )
+            {
+                THROW_RTE( "Task_EGImplCompilation: " << " COULD NOT LOCATE: " << environment.printPath( egFilePath ) );
+                return;
+            }
+            
+            if( ( pTranslationUnit->getCHD().pCoordinator->getIdentifier() == component.pCoordinator->name() ) &&
+                ( pTranslationUnit->getCHD().pHostName->getIdentifier()    == component.pHostName->name() ) )
+            {
+                Task_PrivateEGImplCompilation* pTask = new Task_PrivateEGImplCompilation( 
+                    buildState, 
+                    component, 
+                    egFilePath, 
+                    instructionCodeGenFactory, 
+                    *pPrinterFactory, 
+                    *pTranslationUnit );
+                tasks.push_back( build::Task::Ptr( pTask ) );
+            }
+            else
+            {
+                Task_PublicEGImplCompilation* pTask = new Task_PublicEGImplCompilation( 
+                    buildState, 
+                    component, 
+                    egFilePath, 
+                    instructionCodeGenFactory, 
+                    *pPrinterFactory, 
+                    *pTranslationUnit );
+                tasks.push_back( build::Task::Ptr( pTask ) );
+            }
+            
+            
         }
     }
     

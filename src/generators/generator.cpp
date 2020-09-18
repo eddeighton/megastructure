@@ -62,6 +62,11 @@ inline std::ostream& operator<<( std::ostream& os, const NetworkAnalysis::Buffer
     return os << g_NetworkAnalysisRelationTypes[ type ];
 }
 
+bool NetworkAnalysis::CompareHostNamePtr::operator()( const std::shared_ptr< HostName > pLeft, const std::shared_ptr< HostName > pRight ) const
+{
+    return pLeft->getPath() < pRight->getPath();
+}
+
 NetworkAnalysis::NetworkAnalysis( const eg::ReadSession& session, const ProjectTree& project )
     :   m_session( session ),
         m_project( project )
@@ -296,7 +301,6 @@ void NetworkAnalysis::getHostStructures()
     
 const NetworkAnalysis::HostStructures* NetworkAnalysis::getHostStructures( const eg::concrete::Action* pAction ) const
 {
-    
     const eg::concrete::Action* pIter = pAction;
     while( pIter )
     {

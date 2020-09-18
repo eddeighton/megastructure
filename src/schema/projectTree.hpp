@@ -46,6 +46,7 @@ public:
 
 	HostName( const boost::filesystem::path& root );
 	
+    const boost::filesystem::path& getPath() const { return m_path; }
 	std::string name() const { return m_path.filename().string(); }
 	const ProjectName::PtrVector& getProjectNames() const { return m_projects; }
 	

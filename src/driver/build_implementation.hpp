@@ -28,6 +28,7 @@ struct BuildState
     const std::string&              m_strCompilationFlags;
     const std::string&              m_strAdditionalDefines;
     const boost::filesystem::path&  m_binaryPath;
+    build::Stash&                   m_stash;
     const eg::ReadSession&          m_session;
     
     BuildState( const Environment&              environment,
@@ -36,14 +37,16 @@ struct BuildState
                 const std::string&              strCompilationFlags,
                 const std::string&              strAdditionalDefines,
                 const boost::filesystem::path&  binaryPath,
+                build::Stash&                   stash,
                 const eg::ReadSession&          session  )
-        :   m_environment          ( environment         ),
-            m_projectTree          ( projectTree         ),
-            m_config               ( config              ),
-            m_strCompilationFlags  ( strCompilationFlags ),
-            m_strAdditionalDefines ( strAdditionalDefines ),
-            m_binaryPath           ( binaryPath          ),
-            m_session              ( session             )
+        :   m_environment          ( environment            ),
+            m_projectTree          ( projectTree            ),
+            m_config               ( config                 ),
+            m_strCompilationFlags  ( strCompilationFlags    ),
+            m_strAdditionalDefines ( strAdditionalDefines   ),
+            m_binaryPath           ( binaryPath             ),
+            m_stash                ( stash                  ),
+            m_session              ( session                )
     {
         
     }
@@ -59,8 +62,9 @@ public:
             m_projectTree           ( buildState.m_projectTree              ),
             m_config                ( buildState.m_config                   ),
             m_strCompilationFlags   ( buildState.m_strCompilationFlags      ),
-            m_strAdditionalDefines  ( buildState.m_strAdditionalDefines      ),
+            m_strAdditionalDefines  ( buildState.m_strAdditionalDefines     ),
             m_binaryPath            ( buildState.m_binaryPath               ),
+            m_stash                 ( buildState.m_stash                    ),
             m_session               ( buildState.m_session                  )
     {
     }
@@ -72,6 +76,7 @@ protected:
     const std::string&              m_strCompilationFlags;
     const std::string&              m_strAdditionalDefines;
     const boost::filesystem::path&  m_binaryPath;
+    build::Stash&                   m_stash;
     const eg::ReadSession&          m_session;
 };
 
@@ -91,24 +96,53 @@ public:
     virtual void run();
 };
 
-class Task_EGImplCompilation : public BaseTask
+class Task_PublicEGImplCompilation : public BaseTask
 {
     const Component m_component;
     const boost::filesystem::path m_sourceFile;
     megastructure::InstructionCodeGeneratorFactoryImpl& m_instructionCodeGenFactory;
     eg::PrinterFactory& m_printerFactory;
+    const eg::TranslationUnit& m_translationUnit;
 public:
-    Task_EGImplCompilation( const BuildState& buildState, 
+    Task_PublicEGImplCompilation( const BuildState& buildState, 
             const Component& component, 
             const boost::filesystem::path& sourceFile,
             megastructure::InstructionCodeGeneratorFactoryImpl& instructionCodeGenFactory,
-            eg::PrinterFactory& printerFactory
+            eg::PrinterFactory& printerFactory,
+            const eg::TranslationUnit& translationUnit
     )
         :   BaseTask( buildState, {} ),
             m_component( component ),
             m_sourceFile( sourceFile ),
             m_instructionCodeGenFactory( instructionCodeGenFactory ),
-            m_printerFactory( printerFactory )
+            m_printerFactory( printerFactory ),
+            m_translationUnit( translationUnit )
+    {
+    }
+    
+    virtual void run();
+};
+class Task_PrivateEGImplCompilation : public BaseTask
+{
+    const Component m_component;
+    const boost::filesystem::path m_sourceFile;
+    megastructure::InstructionCodeGeneratorFactoryImpl& m_instructionCodeGenFactory;
+    eg::PrinterFactory& m_printerFactory;
+    const eg::TranslationUnit& m_translationUnit;
+public:
+    Task_PrivateEGImplCompilation( const BuildState& buildState, 
+            const Component& component, 
+            const boost::filesystem::path& sourceFile,
+            megastructure::InstructionCodeGeneratorFactoryImpl& instructionCodeGenFactory,
+            eg::PrinterFactory& printerFactory,
+            const eg::TranslationUnit& translationUnit
+    )
+        :   BaseTask( buildState, {} ),
+            m_component( component ),
+            m_sourceFile( sourceFile ),
+            m_instructionCodeGenFactory( instructionCodeGenFactory ),
+            m_printerFactory( printerFactory ),
+            m_translationUnit( translationUnit )
     {
     }
     
