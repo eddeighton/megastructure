@@ -138,7 +138,7 @@ namespace build
         }
     };
     
-    void invokeCachedCompiler( const Environment& environment, const Compilation& compilation );
+    void invokeCompiler( const Environment& environment, const Compilation& compilation );
     
     class Task
     {
@@ -179,14 +179,20 @@ namespace build
         std::mutex m_mutex;
     };
     
-    std::size_t hash( const std::vector< std::string >& strings );
+    using HashCode = std::size_t;
+    HashCode hash_strings( const std::vector< std::string >& strings );
+    HashCode hash_file( const boost::filesystem::path& file );
+    HashCode hash_combine( HashCode left, HashCode right );
     
     class Stash
     {
     public:
         Stash( const Environment& environment, const boost::filesystem::path& stashDirectory );
         
-        using HashCode = std::size_t;
+        HashCode getHashCode( const boost::filesystem::path& key ) const;
+        void setHashCode( const boost::filesystem::path& key, HashCode hashCode );
+        void loadHashCodes( const boost::filesystem::path& file );
+        void saveHashCodes( const boost::filesystem::path& file ) const;
         
         void stash( const boost::filesystem::path& file, const HashCode& code );
         bool restore( const boost::filesystem::path& file, const HashCode& code );

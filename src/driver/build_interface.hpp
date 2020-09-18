@@ -25,6 +25,7 @@ struct BuildState
     const DiagnosticsConfig&    m_config;
     const std::string&          m_strCompilationFlags;
     build::Stash&               m_stash;
+    bool                        m_parserChanged;
     
     mutable std::unique_ptr< eg::ParserSession >            m_session_parser;
     mutable std::unique_ptr< eg::InterfaceSession >         m_session_interface;
@@ -39,12 +40,12 @@ struct BuildState
             m_projectTree         ( projectTree         ),
             m_config              ( config              ),
             m_strCompilationFlags ( strCompilationFlags ),
-            m_stash               ( stash )
+            m_stash               ( stash ),
+            m_parserChanged       ( false )
     {
         
     }
 };
-
 
 class BaseTask : public build::Task
 {
@@ -55,6 +56,7 @@ public:
             m_projectTree           ( buildState.m_projectTree              ),
             m_config                ( buildState.m_config                   ),
             m_stash                 ( buildState.m_stash                    ),
+            m_parserChanged         ( buildState.m_parserChanged            ),
             m_strCompilationFlags   ( buildState.m_strCompilationFlags      ),
             m_session_parser        ( buildState.m_session_parser           ),
             m_session_interface     ( buildState.m_session_interface        ),
@@ -63,11 +65,13 @@ public:
     }
     
 protected:
+    
     const Environment&          m_environment;
     const ProjectTree&          m_projectTree;
     const DiagnosticsConfig&    m_config;
     const std::string&          m_strCompilationFlags;
     build::Stash&               m_stash;
+    const bool&                 m_parserChanged;
     
     std::unique_ptr< eg::ParserSession >&           m_session_parser;
     std::unique_ptr< eg::InterfaceSession >&        m_session_interface;
@@ -158,8 +162,12 @@ class Task_ComponentInterfacePCH : public BaseTask
 {
     const Component m_component;
 public:
-    Task_ComponentInterfacePCH( const BuildState& buildState, Task_ComponentIncludePCH* pDependency, Task_ParserSessionCopy* pDependency2, const Component& component )
-        :   BaseTask( buildState, { pDependency, pDependency2 } ),
+    Task_ComponentInterfacePCH( const BuildState& buildState, 
+        Task_ComponentIncludePCH* pDependency, 
+        Task_ParserSessionCopy* pDependency2, 
+        Task_MainInterfacePCH* pDependency3, 
+        const Component& component )
+        :   BaseTask( buildState, { pDependency, pDependency2, pDependency3 } ),
             m_component( component )
     {
     }
@@ -171,8 +179,12 @@ class Task_ComponentGenericsPCH : public BaseTask
 {
     const Component m_component;
 public:
-    Task_ComponentGenericsPCH( const BuildState& buildState, Task_ComponentInterfacePCH* pDependency, Task_InterfaceSession* pDependency2, const Component& component )
-        :   BaseTask( buildState, { pDependency, pDependency2 } ),
+    Task_ComponentGenericsPCH( const BuildState& buildState, 
+                Task_ComponentInterfacePCH* pDependency, 
+                Task_InterfaceSession* pDependency2, 
+                Task_MainGenericsPCH* pDependency3,
+                const Component& component )
+        :   BaseTask( buildState, { pDependency, pDependency2, pDependency3 } ),
             m_component( component )
     {
     }

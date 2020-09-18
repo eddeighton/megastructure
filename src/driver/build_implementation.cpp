@@ -41,7 +41,7 @@ void Task_CPPCompilation::run()
         cmd.includeDirs.push_back( m_projectTree.getInterfaceFolder() );
         cmd.defines.push_back( m_strAdditionalDefines );
     }
-    invokeCachedCompiler( m_environment, cmd );        
+    invokeCompiler( m_environment, cmd );        
 }
 
 void Task_EGImplCompilation::run()
@@ -128,7 +128,7 @@ void Task_EGImplCompilation::run()
             cmd.includeDirs.push_back( m_projectTree.getInterfaceFolder() );
             cmd.defines.push_back( pTranslationUnit->getCHD().getHostDefine() );
         }
-        invokeCachedCompiler( m_environment, cmd );
+        invokeCompiler( m_environment, cmd );
     }
 }
 

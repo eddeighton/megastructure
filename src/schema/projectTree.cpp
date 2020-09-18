@@ -320,6 +320,10 @@ boost::filesystem::path ProjectTree::getBuildFolder() const
     return m_path / "build" / m_projectName;
 }
 
+boost::filesystem::path ProjectTree::getParserDatabaseFilePreInterfaceAnalysis() const
+{
+    return getInterfaceFolder() / "parser_pre.db";
+}
 boost::filesystem::path ProjectTree::getParserDatabaseFile() const
 {
     return getInterfaceFolder() / "parser.db";
@@ -355,6 +359,10 @@ boost::filesystem::path ProjectTree::getGenericsHeader() const
 boost::filesystem::path ProjectTree::getGenericsPCH() const
 {
     return getInterfaceFolder() / "generics.pch";
+}
+boost::filesystem::path ProjectTree::getBuildInfoFile() const
+{
+    return getInterfaceFolder() / "build.txt";
 }
 
 boost::filesystem::path ProjectTree::getCoroutineFrameSourceFilePath( const Environment& environment ) const
@@ -528,6 +536,10 @@ boost::filesystem::path ProjectTree::getComponentInterfacePCH( const Component& 
 boost::filesystem::path ProjectTree::getComponentGenericsPCH( const Component& component ) const
 {
     return constructComponentFile( component, getImplFolder(), "generics.pch" );
+}
+boost::filesystem::path ProjectTree::getComponentBuildInfoFile( const Component& component ) const
+{
+    return constructComponentFile( component, getImplFolder(), "build.info" );
 }
 
 boost::filesystem::path ProjectTree::getOperationsHeader( const std::string& strTUName ) const

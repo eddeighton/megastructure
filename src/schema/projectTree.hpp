@@ -138,6 +138,7 @@ public:
 	boost::filesystem::path getInterfaceFolder() const;
 	boost::filesystem::path getImplFolder() const;
 	boost::filesystem::path getBuildFolder() const;
+	boost::filesystem::path getParserDatabaseFilePreInterfaceAnalysis() const;
 	boost::filesystem::path getParserDatabaseFile() const;
 	boost::filesystem::path getInterfaceDatabaseFile() const;
 	boost::filesystem::path getInterfacePCH() const;
@@ -146,6 +147,7 @@ public:
     boost::filesystem::path getIncludePCH() const;
     boost::filesystem::path getGenericsHeader() const;
     boost::filesystem::path getGenericsPCH() const;
+    boost::filesystem::path getBuildInfoFile() const;
 	
     boost::filesystem::path getTUDBName( const std::string& strTUName ) const;
     
@@ -161,6 +163,7 @@ public:
     boost::filesystem::path getComponentIncludePCH( const Component& component ) const;
     boost::filesystem::path getComponentInterfacePCH( const Component& component ) const;
     boost::filesystem::path getComponentGenericsPCH( const Component& component ) const;
+    boost::filesystem::path getComponentBuildInfoFile( const Component& component ) const;
     
 	boost::filesystem::path getOperationsHeader( const std::string& strTUName ) const;
 	boost::filesystem::path getOperationsPublicPCH( const std::string& strTUName ) const;
