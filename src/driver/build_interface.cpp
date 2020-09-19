@@ -79,6 +79,7 @@ void Task_ParserSessionCopy::run()
         boost::filesystem::ensureFoldersExist( targetFile );
         boost::filesystem::copy( sourceFile, targetFile );
     }
+    m_taskInfo.cached( true );
     m_taskInfo.complete( true );
 }
 
@@ -436,6 +437,7 @@ void Task_OperationsHeader::run()
         
     boost::filesystem::updateFileIfChanged( m_projectTree.getOperationsHeader( pTranslationUnit->getName() ), osOperations.str() );
     
+    m_taskInfo.cached( true );
     m_taskInfo.complete( true );
 }
 

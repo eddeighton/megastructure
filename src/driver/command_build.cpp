@@ -78,9 +78,8 @@ void command_build( bool bHelp, const std::string& strBuildCommand, const std::v
     std::string strDirectory, strProject, strCoordinator, strHost, strBin;
     
 	boost::filesystem::path binPath;
-    bool bBenchCommands = false;
-    bool bLogCommands = false;
-    bool bNoPCH = false;
+    //bool bBenchCommands = false;
+    //bool bLogCommands = false;
     bool bFullRebuild = false;
 	std::vector< std::string > flags;
     std::string names;
@@ -94,9 +93,8 @@ void command_build( bool bHelp, const std::string& strBuildCommand, const std::v
 			("coordinator", po::value< std::string >( &strCoordinator ), "Coordinator Name" )
 			("host", 		po::value< std::string >( &strHost ), "Host Name" )
 			("bin",         po::value< boost::filesystem::path >( &binPath ), "Binary Directory" )
-            ("bench",   	po::bool_switch( &bBenchCommands ), "Benchmark compilation steps" )
-            ("trace",   	po::bool_switch( &bLogCommands ), "Trace compilation commands" )
-            ("nopch",   	po::bool_switch( &bNoPCH ), "Force regeneration of precompiled header file" )
+            //("bench",   	po::bool_switch( &bBenchCommands ), "Benchmark compilation steps" )
+            //("trace",   	po::bool_switch( &bLogCommands ), "Trace compilation commands" )
             ("full",    	po::bool_switch( &bFullRebuild ), "Full rebuild - do not reuse previous objects or precompiled headers" )
 			("flags",   	po::value< std::vector< std::string > >( &flags ), "C++ Compilation Flags" )
 			("names",   	po::value< std::string >( &names ), "eg source file names ( no extension, semicolon delimited )" )
@@ -156,13 +154,27 @@ void command_build( bool bHelp, const std::string& strBuildCommand, const std::v
             THROW_RTE( "Specified path is not a directory: " << projectDirectory.generic_string() );
         }
 		
-		//if( bFullRebuild && boost::filesystem::exists( project.getIntermediateFolder() ) )
-		//{
-		//    std::cout << "Removing: " << project.getIntermediateFolder().generic_string() << std::endl;
-		//    boost::filesystem::remove_all( project.getIntermediateFolder() );
-		//}
+		if( bFullRebuild )
+		{
+            Environment environment;
+            ProjectTree projectTree( environment, projectDirectory, strProject );
+            if( boost::filesystem::exists( projectTree.getInterfaceFolder() ) )
+            {
+                std::cout << "Removing: " << projectTree.getInterfaceFolder().generic_string() << std::endl;
+                boost::filesystem::remove_all( projectTree.getInterfaceFolder() );
+            }
+            if( boost::filesystem::exists( projectTree.getImplFolder() ) )
+            {
+                std::cout << "Removing: " << projectTree.getImplFolder().generic_string() << std::endl;
+                boost::filesystem::remove_all( projectTree.getImplFolder() );
+            }
+            if( boost::filesystem::exists( projectTree.getStashFolder() ) )
+            {
+                std::cout << "Removing: " << projectTree.getStashFolder().generic_string() << std::endl;
+                boost::filesystem::remove_all( projectTree.getStashFolder() );
+            }
+		}
 		
-        boost::timer::cpu_timer timer_internal;
 		if( strCoordinator.empty() && strHost.empty() )
 		{
 			build::Interface::build_interface( projectDirectory, strProject, strCompilationFlags );
@@ -189,8 +201,6 @@ void command_build( bool bHelp, const std::string& strBuildCommand, const std::v
 			build::Implementation::build_implementation( 
                 projectDirectory, strCoordinator, strHost, strProject, strCompilationFlags, egFileNames, binPath );
 		}
-        
-        std::cout << "Total time: " << timer_internal.format( 3, "%w" ) << std::endl;
     }
     
 }

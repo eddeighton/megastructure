@@ -44,11 +44,11 @@ public:
         if( m_taskInfo.cached() )
         {
             timer_internal.stop();
-            std::cout << 
-                std::left << std::setw( taskPadding ) << m_taskInfo.taskName() << " " << 
-                std::right << std::setw( pathPadding ) << m_taskInfo.source() << " -> " << 
-                std::left << std::setw( pathPadding ) << m_taskInfo.target() << " " << 
-                std::left << std::setw( timePadding ) << timer_internal.format( 3, "%w" ) << " CACHED" << std::endl;
+            //std::cout << 
+            //    std::left << std::setw( taskPadding ) << m_taskInfo.taskName() << " " << 
+            //    std::right << std::setw( pathPadding ) << m_taskInfo.source() << " -> " << 
+            //    std::left << std::setw( pathPadding ) << m_taskInfo.target() << " " << 
+            //    std::left << std::setw( timePadding ) << timer_internal.format( 3, "%w" ) << " CACHED" << std::endl;
         }
         else if( m_taskInfo.complete() )
         {
@@ -57,7 +57,7 @@ public:
                 std::left << std::setw( taskPadding ) << m_taskInfo.taskName() << " " << 
                 std::right << std::setw( pathPadding ) << m_taskInfo.source() << " -> " << 
                 std::left << std::setw( pathPadding ) << m_taskInfo.target() << " " << 
-                std::left << std::setw( timePadding ) << timer_internal.format( 3, "%w" ) << " NEW" << std::endl;
+                std::left << std::setw( timePadding ) << timer_internal.format( 3, "%w" ) << std::endl;
         }
         else 
         {
