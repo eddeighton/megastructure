@@ -320,6 +320,11 @@ boost::filesystem::path ProjectTree::getBuildFolder() const
     return m_path / "build" / m_projectName;
 }
 
+boost::filesystem::path ProjectTree::getStashFolder() const
+{
+    return m_path / "stash" / m_projectName;
+}
+
 boost::filesystem::path ProjectTree::getParserDatabaseFilePreInterfaceAnalysis() const
 {
     return getInterfaceFolder() / "parser_pre.db";

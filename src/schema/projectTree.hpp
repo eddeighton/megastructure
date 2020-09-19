@@ -139,6 +139,7 @@ public:
 	boost::filesystem::path getInterfaceFolder() const;
 	boost::filesystem::path getImplFolder() const;
 	boost::filesystem::path getBuildFolder() const;
+	boost::filesystem::path getStashFolder() const;
 	boost::filesystem::path getParserDatabaseFilePreInterfaceAnalysis() const;
 	boost::filesystem::path getParserDatabaseFile() const;
 	boost::filesystem::path getInterfaceDatabaseFile() const;

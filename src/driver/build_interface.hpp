@@ -18,6 +18,11 @@
 
 #include "boost/filesystem/path.hpp"
 
+namespace build
+{
+namespace Interface
+{
+
 struct BuildState
 {
     const Environment&          m_environment;
@@ -249,7 +254,8 @@ public:
     virtual void run();
 };
 
-
+}
+}
 
 
 

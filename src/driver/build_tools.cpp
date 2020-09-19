@@ -7,6 +7,7 @@
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/iostreams/device/mapped_file.hpp>
+#include <boost/timer/timer.hpp>
 
 #pragma warning( push )
 #pragma warning( disable : 4996) //iterator thing
@@ -22,6 +23,64 @@
 namespace build
 {
     
+class TaskInfo::TaskInfoPimpl
+{
+    const TaskInfo& m_taskInfo;
+    boost::timer::cpu_timer timer_internal;
+public:
+    TaskInfoPimpl( const TaskInfo& taskInfo )
+        :   m_taskInfo( taskInfo )
+    {
+    }
+    
+    void TaskInfoPimpl::update()
+    {
+        static std::mutex globalMutex;
+        std::lock_guard< std::mutex > lock( globalMutex );
+        
+        static const int taskPadding = 25;
+        static const int pathPadding = 110;
+        static const int timePadding = 10;
+        if( m_taskInfo.cached() )
+        {
+            timer_internal.stop();
+            std::cout << 
+                std::left << std::setw( taskPadding ) << m_taskInfo.taskName() << " " << 
+                std::right << std::setw( pathPadding ) << m_taskInfo.source() << " -> " << 
+                std::left << std::setw( pathPadding ) << m_taskInfo.target() << " " << 
+                std::left << std::setw( timePadding ) << timer_internal.format( 3, "%w" ) << " CACHED" << std::endl;
+        }
+        else if( m_taskInfo.complete() )
+        {
+            timer_internal.stop();
+            std::cout << 
+                std::left << std::setw( taskPadding ) << m_taskInfo.taskName() << " " << 
+                std::right << std::setw( pathPadding ) << m_taskInfo.source() << " -> " << 
+                std::left << std::setw( pathPadding ) << m_taskInfo.target() << " " << 
+                std::left << std::setw( timePadding ) << timer_internal.format( 3, "%w" ) << " NEW" << std::endl;
+        }
+        else 
+        {
+            timer_internal.start();
+        }
+    }
+    
+};
+    
+    
+//////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
+TaskInfo::TaskInfo()
+    :   m_pPimpl( std::make_shared< TaskInfoPimpl >( *this ) )
+{
+    
+}
+    
+void TaskInfo::update()
+{
+    m_pPimpl->update();
+}
+        
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 Task::Task( const RawPtrSet& dependencies )
@@ -98,11 +157,12 @@ void Scheduler::thread_run()
                 
                 std::lock_guard< std::mutex > lock( m_mutex );
                 m_finished.insert( pTaskTodo );
+                pTaskTodo->updateProgress();
             }
             else
             {
                 using namespace std::chrono_literals;
-                std::this_thread::sleep_for( 1ms );
+                std::this_thread::sleep_for( 0ms );
             }
         }
         else

@@ -21,6 +21,7 @@
 
 
 #include "schema/project.hpp"
+#include "schema/projectTree.hpp"
 
 #include "megaxml/mega_schema.hxx"
 #include "megaxml/mega_schema-pimpl.hxx"
@@ -28,8 +29,6 @@
 
 #include "common/file.hpp"
 #include "common/assert_verify.hpp"
-
-#include "indicators/progress_bar.hpp"
 
 #include <boost/program_options.hpp>
 #include <boost/optional.hpp>
@@ -39,13 +38,14 @@
 
 void command_clean( bool bHelp, const std::vector< std::string >& args )
 {
-    std::string strDirectory;
+    std::string strDirectory, strProject;
     
     namespace po = boost::program_options;
     po::options_description commandOptions(" Read Project Log");
     {
         commandOptions.add_options()
-            ("dir",         po::value< std::string >( &strDirectory ),              "Project directory")
+            ("dir",         po::value< std::string >( &strDirectory ), "Project directory")
+			("project", 	po::value< std::string >( &strProject ),   "Project Name" )
         ;
     }
     
@@ -62,30 +62,6 @@ void command_clean( bool bHelp, const std::vector< std::string >& args )
     }
     else
     {
-        /*
-        indicators::ProgressBar bar;
-        {
-            // Configure the bar
-            bar.set_bar_width( 50 );
-            bar.start_bar_with("[");
-            bar.fill_bar_progress_with("=");
-            bar.lead_bar_progress_with(">");
-            bar.fill_bar_remainder_with(" ");
-            bar.end_bar_with("]");
-            bar.set_postfix_text("Cleaning up");
-            bar.set_foreground_color( indicators::Color::GREEN ); 
-        }
-        
-        int iProgress = 0;
-        while (true) 
-        {
-            bar.set_progress( iProgress += 10 );
-            if (bar.is_completed())
-                break;
-            using namespace std::literals;
-            std::this_thread::sleep_for( 100ms );
-        }*/
-        /*
         const boost::filesystem::path projectDirectory = 
             boost::filesystem::edsCannonicalise(
                 boost::filesystem::absolute( strDirectory ) );
@@ -98,30 +74,31 @@ void command_clean( bool bHelp, const std::vector< std::string >& args )
         {
             THROW_RTE( "Specified path is not a directory: " << projectDirectory.generic_string() );
         }
+		
+		if( strProject.empty() )
+		{
+            std::cout << "Missing project name" << std::endl;
+            return;
+		}
         
-        const boost::filesystem::path projectFile = projectDirectory / Environment::EG_FILE_EXTENSION;
+        Environment environment;
+        ProjectTree projectTree( environment, projectDirectory, strProject );
         
-        if( !boost::filesystem::exists( projectFile ) )
+        if( boost::filesystem::exists( projectTree.getInterfaceFolder() ) )
         {
-            THROW_RTE( "Could not locate " << Environment::EG_FILE_EXTENSION << " file in directory: " << projectDirectory.generic_string() );
+            std::cout << "Removing: " << projectTree.getInterfaceFolder().generic_string() << std::endl;
+            boost::filesystem::remove_all( projectTree.getInterfaceFolder() );
+        }
+        if( boost::filesystem::exists( projectTree.getImplFolder() ) )
+        {
+            std::cout << "Removing: " << projectTree.getImplFolder().generic_string() << std::endl;
+            boost::filesystem::remove_all( projectTree.getImplFolder() );
+        }
+        if( boost::filesystem::exists( projectTree.getStashFolder() ) )
+        {
+            std::cout << "Removing: " << projectTree.getStashFolder().generic_string() << std::endl;
+            boost::filesystem::remove_all( projectTree.getStashFolder() );
         }
         
-        XMLManager::XMLDocPtr pDocument = XMLManager::load( projectFile );
-        
-        Environment environment( projectDirectory );
-        
-        Project project( projectDirectory, environment, pDocument->Project() );
-        
-        if( boost::filesystem::exists( project.getIntermediateFolder() ) )
-        {
-            std::cout << "Removing: " << project.getIntermediateFolder().generic_string() << std::endl;
-            boost::filesystem::remove_all( project.getIntermediateFolder() );
-        }
-        
-        if( boost::filesystem::exists( projectDirectory / "log" ) )
-        {
-            std::cout << "Removing: " << projectDirectory / "log" << std::endl;
-            boost::filesystem::remove_all( projectDirectory / "log" );
-        }*/
     }
 }

@@ -4,7 +4,6 @@
 
 #include "eg_compiler/io/indexed_object.hpp"
 
-#include <boost/timer/timer.hpp>
 #include <boost/filesystem/path.hpp>
 
 #include <optional>
@@ -23,77 +22,6 @@ struct DiagnosticsConfig
     bool bShowBenchmarks = true;
     mutable std::mutex mut;
 };
-
-struct Benchmark
-{
-private:
-    std::ostream& os;
-    const std::string msgBegin, msgEnd;
-    boost::timer::cpu_timer timer_internal;
-    const DiagnosticsConfig& config;
-public:
-    Benchmark( std::ostream& os, const DiagnosticsConfig& _config, const std::string& strBegin )
-        :   os( os ),
-            msgBegin( strBegin ),
-            config( _config )
-    {
-        //if( config.bShowMessages )
-        //{
-        //    if( !msgBegin.empty() )
-        //    {
-        //        os << msgBegin;
-        //    }
-        //}
-    }
-    
-    Benchmark( std::ostream& os, const DiagnosticsConfig& _config, const std::string& strBegin, const std::string& strEnd )
-        :   os( os ),
-            msgBegin( strBegin ),
-            msgEnd( strEnd ),
-            config( _config )
-    {
-        //if( config.bShowMessages )
-        //{
-        //    if( !msgBegin.empty() )
-        //    {
-        //        os << msgBegin;
-        //        os.flush();
-        //    }
-        //}
-    }
-    
-    ~Benchmark()
-    {
-        if( config.bShowBenchmarks )
-        {
-            std::lock_guard< std::mutex > lock( config.mut );
-            if( !msgBegin.empty() )
-            {
-                os << timer_internal.format( 3, "%w" ) << ": " << msgBegin << std::endl;
-            }
-            else
-            {
-                os << timer_internal.format( 3, "%w" ) << std::endl;
-            }
-        }
-    }
-};
-
-#define START_BENCHMARK_EXPLICIT_ENDMSG( outputStream, config, msgBegin, msgEnd )\
-std::ostringstream _osBegin, _osEnd;\
-_osBegin << std::setw( 30 ) << msgBegin;\
-_isEnd << msgEnd;\
-Benchmark _benchmark( outputStream, config, _osBegin.str(), msgEnd.str() );\
-
-#define START_BENCHMARK_EXPLICIT( outputStream, config, msgBegin )\
-std::ostringstream _osBegin, _osEnd;\
-_osBegin << std::setw( 30 ) << msgBegin;\
-Benchmark _benchmark( outputStream, config, _osBegin.str() );\
-
-#define START_BENCHMARK( msgBegin )\
-std::ostringstream _osBegin, _osEnd;\
-_osBegin << std::setw( 30 ) << msgBegin;\
-Benchmark _benchmark( std::cout, m_config, _osBegin.str() );\
 
 class Environment;
 
@@ -140,6 +68,40 @@ namespace build
     
     void invokeCompiler( const Environment& environment, const Compilation& compilation );
     
+    class TaskInfo
+    {
+        
+        std::string m_strTaskName, m_strSource, m_strTarget;
+        bool m_bCached = false, m_bComplete = false;
+        std::vector< std::string > m_msgs;
+        struct TaskInfoPimpl;
+        std::shared_ptr< TaskInfoPimpl > m_pPimpl;
+        mutable std::mutex m_mutex;
+    public:
+        using Ptr = std::shared_ptr< TaskInfo >;
+        using PtrVector = std::vector< Ptr >;
+        
+        TaskInfo();
+        
+        void update();
+        
+        const std::string& taskName() const             { std::lock_guard< std::mutex > lock( m_mutex ); return m_strTaskName;         }
+        const std::string& source() const               { std::lock_guard< std::mutex > lock( m_mutex ); return m_strSource;           }
+        const std::string& target() const               { std::lock_guard< std::mutex > lock( m_mutex ); return m_strTarget;           }
+        const bool cached() const                       { std::lock_guard< std::mutex > lock( m_mutex ); return m_bCached;             }
+        const bool complete() const                     { std::lock_guard< std::mutex > lock( m_mutex ); return m_bComplete;           }
+        const std::vector< std::string >& msgs() const  { std::lock_guard< std::mutex > lock( m_mutex ); return m_msgs;                }
+        
+        void taskName( const std::string& strTaskName )         { std::lock_guard< std::mutex > lock( m_mutex ); m_strTaskName = strTaskName;   }
+        void source( const std::string& strSource )             { std::lock_guard< std::mutex > lock( m_mutex ); m_strSource = strSource;       }
+        void source( const boost::filesystem::path& file )      { std::lock_guard< std::mutex > lock( m_mutex ); m_strSource = file.string();   }
+        void target( const std::string& strTarget )             { std::lock_guard< std::mutex > lock( m_mutex ); m_strTarget = strTarget;       }
+        void target( const boost::filesystem::path& file )      { std::lock_guard< std::mutex > lock( m_mutex ); m_strTarget = file.string();   }
+        void cached( bool bCached )                             { std::lock_guard< std::mutex > lock( m_mutex ); m_bCached = bCached;           }
+        void complete( bool bComplete )                         { std::lock_guard< std::mutex > lock( m_mutex ); m_bComplete = bComplete;       }
+        void msg( const std::string& strMsg )                   { std::lock_guard< std::mutex > lock( m_mutex ); m_msgs.push_back( strMsg );    }
+    };
+    
     class Task
     {
     public:
@@ -155,16 +117,19 @@ namespace build
         virtual bool isReady( const RawPtrSet& finished );
         virtual void run() = 0;
         
+        TaskInfo& getTaskInfo() { return m_taskInfo; }
+        
+        void updateProgress() { m_taskInfo.update(); }
+        
     protected:
         RawPtrSet m_dependencies;
-        
+        TaskInfo m_taskInfo;
     };
-    
     
     class Scheduler
     {
     public:
-        static const int m_total_threads = 16;
+        static const int m_total_threads = 11;
     
         Scheduler( const Task::PtrVector& tasks );
         

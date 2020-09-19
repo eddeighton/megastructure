@@ -21,11 +21,23 @@
 #include <memory>
 #include <map>
 
-static DiagnosticsConfig m_config;
 
+extern void generatePythonBindings( std::ostream&, const eg::ReadSession&, const megastructure::NetworkAnalysis&, const Environment&, const ProjectTree&, eg::PrinterFactory::Ptr );
+extern void generateUnrealInterface( std::ostream&, const eg::ReadSession&, const Environment&, const ProjectTree&, eg::PrinterFactory::Ptr );
+extern void generateUnrealCode( std::ostream&, const eg::ReadSession&, const Environment&, const ProjectTree&, eg::PrinterFactory::Ptr );
+
+namespace build
+{
+namespace Implementation
+{
+static DiagnosticsConfig m_config;
+    
 void Task_CPPCompilation::run()
 {
-    START_BENCHMARK( "Task_CPPCompilation: " << m_environment.printPath( m_sourceFile ) << " " << m_strAdditionalDefines );
+    m_taskInfo.taskName( "CPPCompilation" );
+    m_taskInfo.source( m_sourceFile );
+    m_taskInfo.target( m_projectTree.getObjectFile( m_sourceFile, m_binaryPath ) );
+    updateProgress();
     
     std::size_t hashCode = build::hash_file( m_sourceFile );
     hashCode = build::hash_combine( hashCode, build::hash_strings( { m_strCompilationFlags } ) );
@@ -37,6 +49,8 @@ void Task_CPPCompilation::run()
     
     if( m_stash.restore( m_projectTree.getObjectFile( m_sourceFile, m_binaryPath ), hashCode ) )
     {
+        m_taskInfo.cached( true );
+        m_taskInfo.complete( true );
         return;
     }
     
@@ -56,14 +70,19 @@ void Task_CPPCompilation::run()
     }
     invokeCompiler( m_environment, cmd );     
 
-    m_stash.stash( m_projectTree.getObjectFile( m_sourceFile, m_binaryPath ), hashCode );      
+    m_stash.stash( m_projectTree.getObjectFile( m_sourceFile, m_binaryPath ), hashCode );
+    
+    m_taskInfo.complete( true );    
 }
 
 void Task_PublicEGImplCompilation::run()
 {
     const std::string strTUName = m_translationUnit.getName();
     
-    START_BENCHMARK( "Task_PublicEGImplCompilation: " << m_environment.printPath( m_projectTree.getImplementationSource( strTUName ) ) );
+    m_taskInfo.taskName( "PublicEGImplCompilation" );
+    m_taskInfo.source( m_projectTree.getImplementationSource( strTUName ) );
+    m_taskInfo.target( m_projectTree.getObjectName( strTUName, m_binaryPath ) );
+    updateProgress();
     
     std::vector< std::string > additionalIncludes = 
     { 
@@ -84,6 +103,8 @@ void Task_PublicEGImplCompilation::run()
     
     if( m_stash.restore( m_projectTree.getObjectName( strTUName, m_binaryPath ), hashCode ) )
     {
+        m_taskInfo.cached( true );
+        m_taskInfo.complete( true );
         return;
     }
     
@@ -105,14 +126,19 @@ void Task_PublicEGImplCompilation::run()
     
     invokeCompiler( m_environment, cmd );
 
-    m_stash.stash( m_projectTree.getObjectName( strTUName, m_binaryPath ), hashCode );     
+    m_stash.stash( m_projectTree.getObjectName( strTUName, m_binaryPath ), hashCode );
+    
+    m_taskInfo.complete( true );        
 }
 
 void Task_PrivateEGImplCompilation::run()
 {
     const std::string strTUName = m_translationUnit.getName();
     
-    START_BENCHMARK( "Task_PrivateEGImplCompilation: " << m_environment.printPath( m_projectTree.getImplementationSource( strTUName ) ) );
+    m_taskInfo.taskName( "PrivateEGImplCompilation" );
+    m_taskInfo.source( m_projectTree.getImplementationSource( strTUName ) );
+    m_taskInfo.target( m_projectTree.getObjectName( strTUName, m_binaryPath ) );
+    updateProgress();
     
     std::vector< std::string > additionalIncludes = 
     { 
@@ -134,6 +160,8 @@ void Task_PrivateEGImplCompilation::run()
     
     if( m_stash.restore( m_projectTree.getObjectName( strTUName, m_binaryPath ), hashCode ) )
     {
+        m_taskInfo.cached( true );
+        m_taskInfo.complete( true );
         return;
     }
     
@@ -156,7 +184,9 @@ void Task_PrivateEGImplCompilation::run()
     
     invokeCompiler( m_environment, cmd );
 
-    m_stash.stash( m_projectTree.getObjectName( strTUName, m_binaryPath ), hashCode );     
+    m_stash.stash( m_projectTree.getObjectName( strTUName, m_binaryPath ), hashCode );   
+    
+    m_taskInfo.complete( true );     
 }
 
 void generateMegaBufferStructures( std::ostream& os, const eg::ReadSession& program, const ProjectTree& projectTree )
@@ -330,10 +360,6 @@ void clock::next()
 
 }
 
-extern void generatePythonBindings( std::ostream&, const eg::ReadSession&, const megastructure::NetworkAnalysis&, const Environment&, const ProjectTree&, eg::PrinterFactory::Ptr );
-extern void generateUnrealInterface( std::ostream&, const eg::ReadSession&, const Environment&, const ProjectTree&, eg::PrinterFactory::Ptr );
-extern void generateUnrealCode( std::ostream&, const eg::ReadSession&, const Environment&, const ProjectTree&, eg::PrinterFactory::Ptr );
-
 void build_implementation( const boost::filesystem::path& projectDirectory, 
         const std::string& strCoordinator, 
         const std::string& strHost, 
@@ -344,8 +370,6 @@ void build_implementation( const boost::filesystem::path& projectDirectory,
 {
     Environment environment;
             
-    START_BENCHMARK( "Total time compiling megastructure implementation for: " << strCoordinator << " " << strHost << " " << strProject );
-        
     ProjectTree projectTree( environment, projectDirectory, strCoordinator, strHost, strProject );
     
     Coordinator::Ptr    pCoordinator;
@@ -511,7 +535,7 @@ void build_implementation( const boost::filesystem::path& projectDirectory,
         strAdditionalDefines = osDefines.str();
     }
     
-    build::Stash stash( environment, projectDirectory / "stash" );
+    build::Stash stash( environment, projectTree.getStashFolder() );
     stash.loadHashCodes( projectTree.getBuildInfoFile() );
     
     BuildState buildState( environment, projectTree, m_config, strCompilationFlags, strAdditionalDefines, binPath, stash, session );
@@ -578,4 +602,8 @@ void build_implementation( const boost::filesystem::path& projectDirectory,
     
     
 }
+
+}//namespace Implementation
+}//namespace build
+
 

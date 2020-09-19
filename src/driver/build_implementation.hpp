@@ -20,6 +20,11 @@
 
 #include "boost/filesystem/path.hpp"
 
+namespace build
+{
+namespace Implementation
+{
+
 struct BuildState
 {
     const Environment&              m_environment;
@@ -148,5 +153,8 @@ public:
     
     virtual void run();
 };
+
+}
+}
 
 #endif //BUILD_IMPLEMENTATION_TASKS_16_SEPT_2020

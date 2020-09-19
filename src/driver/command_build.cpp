@@ -42,6 +42,7 @@
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/tokenizer.hpp>
+#include <boost/timer/timer.hpp>
 
 #pragma warning( push )
 #pragma warning( disable : 4996) //iterator thing
@@ -53,15 +54,24 @@
 #include <memory>
 #include <map>
 
-extern void build_interface( const boost::filesystem::path& projectDirectory, const std::string& strProject, const std::string& strCompilationFlags );
+namespace build
+    {
+    namespace Interface
+    {
+        extern void build_interface( const boost::filesystem::path& projectDirectory, const std::string& strProject, const std::string& strCompilationFlags );
+    }
 
-extern void build_implementation( const boost::filesystem::path& projectDirectory, 
-        const std::string& strCoordinator, 
-        const std::string& strHost, 
-        const std::string& strProject, 
-        const std::string& strCompilationFlags,
-        const std::vector< std::string >& egSourceFiles, 
-        const boost::filesystem::path& binPath );
+    namespace Implementation
+    {
+        extern void build_implementation( const boost::filesystem::path& projectDirectory, 
+                const std::string& strCoordinator, 
+                const std::string& strHost, 
+                const std::string& strProject, 
+                const std::string& strCompilationFlags,
+                const std::vector< std::string >& egSourceFiles, 
+                const boost::filesystem::path& binPath );
+    }
+}
 
 void command_build( bool bHelp, const std::string& strBuildCommand, const std::vector< std::string >& args )
 {
@@ -119,6 +129,13 @@ void command_build( bool bHelp, const std::string& strBuildCommand, const std::v
 				osFlags << str << " ";
 			strCompilationFlags = osFlags.str();
 		}
+        
+        if( strCompilationFlags.empty() )
+        {
+            //use defaults
+            std::cout << "Warning using default compiler flags as none specified" << std::endl;
+            strCompilationFlags = "-O3 -mllvm -polly -MD -DNDEBUG -D_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH -DWIN32_LEAN_AND_MEAN -D_DLL -DNOMINMAX -DBOOST_ALL_NO_LIB -D_CRT_SECURE_NO_WARNINGS -DBOOST_USE_WINDOWS_H -D_WIN32_WINNT=0x0601 -DWIN32 -D_WINDOWS -Xclang -std=c++17 -Xclang -fcoroutines-ts -Xclang -flto-visibility-public-std -Xclang -Wno-deprecated -Xclang -fexceptions -Xclang -Wno-inconsistent-missing-override";
+        }
 		
 		if( strProject.empty() )
 		{
@@ -145,9 +162,10 @@ void command_build( bool bHelp, const std::string& strBuildCommand, const std::v
 		//    boost::filesystem::remove_all( project.getIntermediateFolder() );
 		//}
 		
+        boost::timer::cpu_timer timer_internal;
 		if( strCoordinator.empty() && strHost.empty() )
 		{
-			build_interface( projectDirectory, strProject, strCompilationFlags );
+			build::Interface::build_interface( projectDirectory, strProject, strCompilationFlags );
 		}
 		else
 		{
@@ -168,8 +186,11 @@ void command_build( bool bHelp, const std::string& strBuildCommand, const std::v
 			VERIFY_RTE_MSG( !strCoordinator.empty(), "Missing Coordinator" );
 			VERIFY_RTE_MSG( !strHost.empty(), "Missing Host Name" );
             
-			build_implementation( projectDirectory, strCoordinator, strHost, strProject, strCompilationFlags, egFileNames, binPath );
+			build::Implementation::build_implementation( 
+                projectDirectory, strCoordinator, strHost, strProject, strCompilationFlags, egFileNames, binPath );
 		}
+        
+        std::cout << "Total time: " << timer_internal.format( 3, "%w" ) << std::endl;
     }
     
 }
