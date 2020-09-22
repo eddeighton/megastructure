@@ -768,15 +768,7 @@ void generate_eg_component( std::ostream& os,
 {
     
     os << "//ed was here\n";
-    os << "#include <chrono>\n";
-    os << "#include <thread>\n";
-    os << "#include <vector>\n";
-    os << "#include <set>\n";
-
     os << "\n";
-    
-    os << "#include \"egcomponent/egcomponent.hpp\"\n";
-    os << "#include \"egcomponent/traits.hpp\"\n";
     os << "#include \"" << project.getStructuresInclude() << "\"\n";
     os << "#include \"" << project.getNetStateSourceInclude() << "\"\n\n";
     

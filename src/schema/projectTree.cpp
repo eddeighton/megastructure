@@ -284,19 +284,33 @@ std::vector< boost::filesystem::path > ProjectTree::getSystemIncludes() const
 {
     std::vector< boost::filesystem::path > includes;
     
+    includes.push_back( "<cstddef>" );
+    includes.push_back( "<cstdint>" );
+    includes.push_back( "<type_traits>" );
+    includes.push_back( "<chrono>" );
+    includes.push_back( "<vector>" );
+    includes.push_back( "<set>" );
+    includes.push_back( "<bitset>" );
+    
     return includes;
 }
 std::vector< boost::filesystem::path > ProjectTree::getUserIncludes( const Environment& environment ) const
 {
     std::vector< boost::filesystem::path > includes;
     
-    includes.push_back( "boost/filesystem.hpp" );
+    //unreal
+    includes.push_back( "unreal/unreal.hpp" );
     
+    //msgpach has a "check" function - and unreal defines a "check" macro
     includes.push_back( environment.expand( "egcomponent/traits.hpp" ) );
+    
+    includes.push_back( "boost/filesystem.hpp" );
     
     includes.push_back( "eg/include.hpp" );
     includes.push_back( "eg_runtime/eg_runtime.hpp" );
 
+    includes.push_back( "egcomponent/egcomponent.hpp" );
+    
     return includes;
 }
 
@@ -445,6 +459,11 @@ std::vector< boost::filesystem::path > ProjectTree::getIncludeDirectories( const
     collatePaths( environment, uniquified, directories, "${MEGA}/include" );
     collatePaths( environment, uniquified, directories, "${PROTOBUF}/include" );
     collatePaths( environment, uniquified, directories, "${MESSAGEPACK}/include" );
+    
+    collatePaths( environment, uniquified, directories, "${UNREAL}/Engine/Source" );
+    collatePaths( environment, uniquified, directories, "${UNREAL}/Engine/Source/Runtime" );
+    collatePaths( environment, uniquified, directories, "${UNREAL}/Engine/Source/Runtime/Core/Public" );
+    collatePaths( environment, uniquified, directories, "${UNREAL}/Engine/Source/Runtime/TraceLog/Public" );
     
     directories.push_back( 
         boost::filesystem::edsCannonicalise(

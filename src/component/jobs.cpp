@@ -29,13 +29,17 @@ void LoadProgramJob::run()
         }
         else
         {
-            std::cout << "Unloading program" << std::endl;
+            if( m_pNewProgram )
+            {
+                m_pNewProgram.reset();
+                SPDLOG_INFO( "Unloaded program" );
+            }
         }
         m_bSuccess = true;
     }
     catch( std::exception& ex )
     {
-        std::cout << "Encountered error while attempting to load program: " << ex.what() << std::endl;
+        SPDLOG_ERROR( "Encountered error while attempting to load program: {}", ex.what() );
         m_pNewProgram.reset();
     }        
 

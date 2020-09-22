@@ -6,10 +6,6 @@
 
 #include "traits.hpp"
 
-#include "boost/config.hpp"
-
-#include <string>
-#include <vector>
 #include <cstddef>
 #include <cstdint>
 

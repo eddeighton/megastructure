@@ -659,13 +659,15 @@ void build_interface( const boost::filesystem::path& projectDirectory, const std
         }
         
         Task_MainIncludePCH*   pMainIncludePCH     = new Task_MainIncludePCH( buildState, pParserSession );
-        Task_MainInterfacePCH* pMainInterfacePCH   = new Task_MainInterfacePCH( buildState, pMainIncludePCH );
-        Task_InterfaceSession* pInterfaceSession   = new Task_InterfaceSession( buildState, pMainInterfacePCH, parserSessionCopies );
-        Task_MainGenericsPCH*  pMainGenericsPCH    = new Task_MainGenericsPCH( buildState, pInterfaceSession );
-        
         tasks.push_back( build::Task::Ptr( pMainIncludePCH     ) );
+        
+        Task_MainInterfacePCH* pMainInterfacePCH   = new Task_MainInterfacePCH( buildState, pMainIncludePCH );
         tasks.push_back( build::Task::Ptr( pMainInterfacePCH   ) );
+        
+        Task_InterfaceSession* pInterfaceSession   = new Task_InterfaceSession( buildState, pMainInterfacePCH, parserSessionCopies );
         tasks.push_back( build::Task::Ptr( pInterfaceSession   ) );
+        
+        Task_MainGenericsPCH*  pMainGenericsPCH    = new Task_MainGenericsPCH( buildState, pInterfaceSession );
         tasks.push_back( build::Task::Ptr( pMainGenericsPCH    ) );
         
         build::Task::RawPtrSet publicOperationsTasks;
@@ -689,15 +691,14 @@ void build_interface( const boost::filesystem::path& projectDirectory, const std
                         
                         Task_ComponentIncludePCH* pComponentIncludePCH = 
                             new Task_ComponentIncludePCH( buildState, pMainIncludePCH, component );
+                        tasks.push_back( build::Task::Ptr( pComponentIncludePCH ) );
                         
                         Task_ComponentInterfacePCH* pComponentInterfacePCH = 
                             new Task_ComponentInterfacePCH( buildState, pComponentIncludePCH, pParserDBCopy, pMainInterfacePCH, component );
+                        tasks.push_back( build::Task::Ptr( pComponentInterfacePCH ) );
                         
                         Task_ComponentGenericsPCH* pComponentGenericsPCH = 
                             new Task_ComponentGenericsPCH( buildState, pComponentInterfacePCH, pInterfaceSession, pMainGenericsPCH, component );
-                            
-                        tasks.push_back( build::Task::Ptr( pComponentIncludePCH ) );
-                        tasks.push_back( build::Task::Ptr( pComponentInterfacePCH ) );
                         tasks.push_back( build::Task::Ptr( pComponentGenericsPCH ) );
                         
                         const std::vector< boost::filesystem::path >& sourceFiles = pProjectName->sourceFiles();
@@ -705,16 +706,15 @@ void build_interface( const boost::filesystem::path& projectDirectory, const std
                         {
                             Task_OperationsHeader* pOperationsHeader =
                                 new Task_OperationsHeader( buildState, pInterfaceSession, sourceFile );
+                            tasks.push_back( build::Task::Ptr( pOperationsHeader ) );
                             
                             Task_OperationsPublicPCH* pOperationsPublicPCH = 
                                 new Task_OperationsPublicPCH( buildState, pMainGenericsPCH, pOperationsHeader, sourceFile );
+                            tasks.push_back( build::Task::Ptr( pOperationsPublicPCH ) );
                                 
                             Task_OperationsPrivatePCH* pOperationsPrivatePCH = 
                                 new Task_OperationsPrivatePCH( buildState, pComponentGenericsPCH, pOperationsPublicPCH, component, sourceFile );
-                                
-                            tasks.push_back( build::Task::Ptr( pOperationsHeader ) );
                             tasks.push_back( build::Task::Ptr( pOperationsPrivatePCH ) );
-                            tasks.push_back( build::Task::Ptr( pOperationsPublicPCH ) );
                             
                             publicOperationsTasks.insert( pOperationsPublicPCH );
                         }

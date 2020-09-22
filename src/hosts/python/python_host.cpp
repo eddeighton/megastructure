@@ -1,8 +1,12 @@
 
+#include "unreal/unreal.hpp"
+
 #include <cstdio>
 #include <memory>
+#include <sstream>
 
 #include <pybind11/pybind11.h>
+#include <pybind11/operators.h>
 
 #include "megastructure/component.hpp"
 #include "megastructure/program.hpp"
@@ -197,7 +201,6 @@ PYBIND11_MODULE( python_host, phModule )
             )
         ;
         
-        
     pybind11::class_< megastructure::Host, std::shared_ptr< megastructure::Host > >( phModule, "Host" )
         
        //.def( pybind11::init<
@@ -216,8 +219,205 @@ PYBIND11_MODULE( python_host, phModule )
        ;
        
        
-   phModule.def( "NewHost", &megastructure::NewHost, "Construct a new host" );
+    phModule.def( "NewHost", &megastructure::NewHost, "Construct a new host" );
    
-   phModule.def( "GetHost", &megastructure::GetHost, "Get the host" );
+    phModule.def( "GetHost", &megastructure::GetHost, "Get the host" );
    
+   //unreal math bindings
+   
+    pybind11::class_< FVector2D >( phModule, "FVector2D" )
+        .def( pybind11::init<float,float>() )
+        .def( pybind11::init<FVector2D>() )
+        .def_readwrite("X", &FVector2D::X)
+        .def_readwrite("Y", &FVector2D::Y)
+        
+        .def("__repr__",
+            []( const FVector2D& v ) {
+                std::ostringstream os;
+                os << "< FVector2D: " << v.X << ',' << v.Y << " >";
+                return os.str();
+            })
+            
+        .def( "Equals", &FVector2D::Equals )
+        .def( "Set", &FVector2D::Set )
+        
+        .def( pybind11::self + pybind11::self )
+        .def( pybind11::self += pybind11::self )
+        .def( pybind11::self - pybind11::self )
+        .def( pybind11::self -= pybind11::self )
+        .def( pybind11::self * float() )
+        .def( pybind11::self / float() )
+        .def( pybind11::self + float() )
+        .def( pybind11::self - float() )
+        ;
+   
+    pybind11::class_< FVector >( phModule, "FVector" )
+        .def( pybind11::init<float,float,float>() )
+        .def( pybind11::init<FVector2D,float>() )
+        .def( pybind11::init<FVector>() )
+        .def( pybind11::init<FVector4>() )
+        .def_readwrite("X", &FVector::X)
+        .def_readwrite("Y", &FVector::Y)
+        .def_readwrite("Z", &FVector::Z)
+        
+        .def("__repr__",
+            []( const FVector& v ) {
+                std::ostringstream os;
+                os << "< FVector: " << v.X << ',' << v.Y << ',' << v.Z << " >";
+                return os.str();
+            })
+            
+        .def( "Equals", &FVector::Equals )
+        .def( "Set", &FVector::Set )
+        
+        .def( pybind11::self + pybind11::self )
+        .def( pybind11::self += pybind11::self )
+        .def( pybind11::self - pybind11::self )
+        .def( pybind11::self -= pybind11::self )
+        .def( pybind11::self * float() )
+        .def( pybind11::self / float() )
+        .def( pybind11::self + float() )
+        .def( pybind11::self - float() )
+        ;
+        
+    pybind11::class_< FVector4 >( phModule, "FVector4" )
+        .def( pybind11::init<float,float,float,float>() )
+        .def( pybind11::init<FVector2D,FVector2D>() )
+        .def( pybind11::init<FVector,float>() )
+        .def( pybind11::init<FVector4>() )
+        .def_readwrite("X", &FVector4::X)
+        .def_readwrite("Y", &FVector4::Y)
+        .def_readwrite("Z", &FVector4::Z)
+        .def_readwrite("W", &FVector4::W)
+        
+        .def("__repr__",
+            []( const FVector4& v ) {
+                std::ostringstream os;
+                os << "< FVector4: " << v.X << ',' << v.Y << ',' << v.Z << ',' << v.W << " >";
+                return os.str();
+            })
+            
+        .def( "Equals", &FVector4::Equals )
+        .def( "Set", &FVector4::Set )
+        
+        .def( pybind11::self + pybind11::self )
+        .def( pybind11::self += pybind11::self )
+        .def( pybind11::self - pybind11::self )
+        .def( pybind11::self -= pybind11::self )
+        /*
+        .def( pybind11::self * float() )
+        .def( pybind11::self / float() )
+        .def( pybind11::self + float() )
+        .def( pybind11::self - float() )
+        */
+        ;
+   
+    pybind11::class_< FQuat >( phModule, "FQuat" )
+        .def( pybind11::init<float,float,float,float>() )
+        .def( pybind11::init<FVector,float>() )
+        .def( pybind11::init<FQuat>() )
+        .def_readwrite("X", &FQuat::X)
+        .def_readwrite("Y", &FQuat::Y)
+        .def_readwrite("Z", &FQuat::Z)
+        .def_readwrite("W", &FQuat::W)
+        
+        .def("__repr__",
+            []( const FQuat& v ) {
+                std::ostringstream os;
+                os << "< FQuat: " << v.X << ',' << v.Y << ',' << v.Z << ',' << v.W << " >";
+                return os.str();
+            })
+            
+        .def( "Equals", &FQuat::Equals )
+        
+        .def( pybind11::self + pybind11::self )
+        .def( pybind11::self += pybind11::self )
+        .def( pybind11::self - pybind11::self )
+        .def( pybind11::self -= pybind11::self )
+        /*.def( pybind11::self * float() )
+        .def( pybind11::self / float() )
+        .def( pybind11::self + float() )
+        .def( pybind11::self - float() )*/
+        ;
+        
+   
+    pybind11::class_< FMatrix >( phModule, "FMatrix" )
+        .def( pybind11::init<FMatrix>() )
+        .def( pybind11::init<FVector,FVector,FVector,FVector>() )
+        
+        
+        .def("__repr__",
+            []( const FMatrix& v ) {
+                std::ostringstream os;
+                os << "< FMatrix: ";
+                for( int r = 0; r != 4; ++r )
+                {
+                    os << "{";
+                    for( int c = 0; c != 4; ++c )
+                    {
+                        if( c > 0 ) 
+                            os << ",";
+                        os << v.M[r][c];
+                    }
+                    os << "}";
+                }
+                os << " >";
+                return os.str();
+            })
+            
+        .def( "Equals", &FMatrix::Equals )
+        .def( pybind11::self * pybind11::self )
+        .def( pybind11::self *= pybind11::self )
+        .def( pybind11::self + pybind11::self )
+        .def( pybind11::self += pybind11::self )
+        
+        .def( "TransformFVector4", &FMatrix::TransformFVector4 )
+        .def( "TransformPosition", &FMatrix::TransformPosition )
+        .def( "InverseTransformPosition", &FMatrix::InverseTransformPosition )
+        .def( "TransformVector", &FMatrix::TransformVector )
+        .def( "InverseTransformVector", &FMatrix::InverseTransformVector )
+        .def( "Inverse", &FMatrix::Inverse )
+        ;
+        
+    pybind11::class_< FTransform >( phModule, "FTransform" )
+        .def( pybind11::init<FTransform>() )
+        .def( pybind11::init<FVector>() )
+        .def( pybind11::init<FQuat>() )
+        .def( pybind11::init<FQuat,FVector,FVector>() )
+        
+        .def("__repr__",
+            []( const FTransform& v ) {
+                std::ostringstream os;
+                os << "< FTransform: ";
+                const FQuat   fq = v.GetRotation();
+                const FVector ft = v.GetTranslation();
+                const FVector fs = v.GetScale3D();
+                os << " rotat{ " << fq.X << ',' << fq.Y << ',' << fq.Z << ',' << fq.W << " }";
+                os << " trans{ " << ft.X << ',' << ft.Y << ',' << ft.Z << " }";
+                os << " scale{ " << fs.X << ',' << fs.Y << ',' << fs.Z << " }";
+                os << " >";
+                return os.str();
+            })
+            
+        .def( "Equals", &FTransform::Equals )
+        .def( pybind11::self + pybind11::self )
+        .def( pybind11::self += pybind11::self )
+        .def( pybind11::self * pybind11::self )
+        .def( pybind11::self *= pybind11::self )
+        .def( pybind11::self * FQuat() )
+        .def( pybind11::self *= FQuat() )
+        
+        .def( "ToMatrixWithScale", &FTransform::ToMatrixWithScale )
+        .def( "ToInverseMatrixWithScale", &FTransform::ToInverseMatrixWithScale )
+        .def( "GetLocation", &FTransform::GetLocation )
+        .def( "SetLocation", &FTransform::SetLocation )
+        .def( "SetComponents", &FTransform::SetComponents )
+        .def( "SetIdentity", &FTransform::SetIdentity )
+        .def( "GetRotation", &FTransform::GetRotation )
+        .def( "GetTranslation", &FTransform::GetTranslation )
+        .def( "GetScale3D", &FTransform::GetScale3D )
+        .def( "SetRotation", &FTransform::SetRotation )
+        .def( "SetTranslation", &FTransform::SetTranslation )
+        .def( "SetScale3D", &FTransform::SetScale3D )
+        ;
 }

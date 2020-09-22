@@ -995,12 +995,6 @@ void generateRuntimeTypeInterop( std::ostream& os, const eg::ReadSession& sessio
 void generatePythonBindings( std::ostream& os, const eg::ReadSession& session, const megastructure::NetworkAnalysis& networkAnalysis, 
         const Environment& environment, const ProjectTree& projectTree, eg::PrinterFactory::Ptr pPrinterFactory )
 {
-    os << "#include \"python_lib/python_reference.hpp\"\n";
-    os << "#include \"python_lib/python_reference_factory.hpp\"\n";
-    os << "#include \"python_lib/python_iterator.hpp\"\n\n";
-    os << "#include <pybind11/pybind11.h>\n\n";
-    //os << "#include <pybind11/embed.h>\n\n";
-    
     os << "#include \"" << projectTree.getStructuresInclude() << "\"\n";
     os << "#include \"" << projectTree.getNetStateSourceInclude() << "\"\n";
     

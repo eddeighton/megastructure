@@ -1,6 +1,9 @@
 
 cmake_minimum_required( VERSION 3.1...3.16 )
 
+#get unreal
+include( ${MEGA_ROOT_DIR}/cmake/unreal_include.cmake )
+
 #get boost
 include( ${MEGA_ROOT_DIR}/cmake/boost_include.cmake )
 
@@ -30,6 +33,7 @@ add_library( python_host MODULE ${MEGA_PYTHON_HOST_SOURCES} )
 set_target_properties( python_host PROPERTIES FOLDER python )
 set_target_properties( python_host PROPERTIES DEBUG_POSTFIX d )
 
+link_unreal_math( python_host )
 link_boost( python_host program_options )
 link_boost( python_host filesystem )
 link_boost( python_host system )

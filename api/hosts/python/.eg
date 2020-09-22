@@ -3,9 +3,7 @@
 	<Host>
         <Type>python</Type>
         <Files>
-            <Include>${PYBIND}/include/pybind11/pybind11.h</Include>
-            <Include>${PYBIND}/include/pybind11/stl.h</Include>
-            <Include>${PYBIND}/include/pybind11/stl_bind.h</Include>
+            <Include>${PYBIND}/include/eg_pybind11.hpp</Include>
         </Files>
 		<Command>${MEGA}/bin/python_host.exe</Command>
 	</Host>
