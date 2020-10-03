@@ -284,6 +284,7 @@ std::vector< boost::filesystem::path > ProjectTree::getSystemIncludes() const
 {
     std::vector< boost::filesystem::path > includes;
     
+    includes.push_back( "<cmath>" );
     includes.push_back( "<cstddef>" );
     includes.push_back( "<cstdint>" );
     includes.push_back( "<type_traits>" );

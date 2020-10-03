@@ -6,10 +6,12 @@
             <Include>${COMMON}/include</Include>
             <Include>${ED}/include</Include>
             <Include>${BLUEPRINT}/include</Include>
+            <!--<Include>${HOUDINI}/toolkit/include</Include>-->
         </Directories>
         <Files>
             <Include>ed/ed.hpp</Include>
             <Include>blueprint/factory.h</Include>
+            <!--<Include>GU/GU_Detail.h</Include>-->
         </Files>
 		<Command>${MEGA}/bin/geometry_host.exe</Command>
 	</Host>
