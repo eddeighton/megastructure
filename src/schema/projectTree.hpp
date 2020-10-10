@@ -186,6 +186,9 @@ public:
 	std::string getUnrealInterfaceInclude() const;
 	boost::filesystem::path getUnrealInterface() const;
 	boost::filesystem::path getUnrealSource() const;
+	std::string getGeometryInclude() const;
+	boost::filesystem::path getGeometryInterface() const;
+	boost::filesystem::path getGeometrySource() const;
 	boost::filesystem::path getObjectName( const std::string& strTUName, const boost::filesystem::path& binPath ) const;
 	boost::filesystem::path getObjectFile( const boost::filesystem::path& sourceFile, const boost::filesystem::path& binPath ) const;
 	boost::filesystem::path getEGComponentSource() const;

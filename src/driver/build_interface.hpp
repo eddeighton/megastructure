@@ -2,8 +2,9 @@
 #ifndef BUILD_INTERFACE_TASKS_16_SEPT_2020
 #define BUILD_INTERFACE_TASKS_16_SEPT_2020
 
-
 #include "build_tools.hpp"
+
+#include "egcomponent/generator.hpp"
 
 #include "schema/project.hpp"
 #include "schema/projectTree.hpp"

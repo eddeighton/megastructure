@@ -18,6 +18,8 @@
 #include <map>
 #include <functional>
 
+extern void generateGeometryInterface( std::ostream& os, const Environment& environment );
+
 namespace build
 {
 namespace Interface
@@ -302,6 +304,17 @@ void Task_ComponentIncludePCH::run()
     std::size_t hashCode;
     {
         std::ostringstream os;
+        
+        if( m_component.pProjectName->getProject().getHost().Type() == 
+            megastructure::szComponentTypeNames[ megastructure::eComponent_Geometry ] )
+        {
+            //generate the geometry interface
+            std::ostringstream osGeometryInterface;
+            generateGeometryInterface( osGeometryInterface, m_environment );
+            boost::filesystem::updateFileIfChanged( m_projectTree.getGeometryInterface(), osGeometryInterface.str() );
+            os << "#include \"" << m_projectTree.getGeometryInclude() << "\"\n";
+        }
+        
         for( const boost::filesystem::path& includePath : m_projectTree.getComponentIncludeFiles( m_environment, m_component ) )
         {
             os << "#include \"" << includePath.string() << "\"\n";

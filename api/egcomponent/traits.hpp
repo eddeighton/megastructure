@@ -4,6 +4,7 @@
 #define MEGA_TRAITS_05_MAY_2020
 
 #include "eg/common.hpp"
+#include "eg/event.hpp"
 #include "eg/allocator.hpp"
 
 #include "msgpack.hpp"
@@ -72,6 +73,17 @@ inline void decode( Decoder& decoder, eg::reference& value )
 	decode( decoder, value.timestamp );
 }
 
+template<>
+inline void encode( Encoder& encoder, const eg::Event& value )
+{
+	encode( encoder, value.data );
+}
+
+template<>
+inline void decode( Decoder& decoder, eg::Event& value )
+{
+	decode( decoder, value.data );
+}
 
 template< typename T >
 struct DimensionTraits

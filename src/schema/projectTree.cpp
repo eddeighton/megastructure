@@ -685,6 +685,28 @@ boost::filesystem::path ProjectTree::getUnrealSource() const
             getImplFolder() / m_coordinatorName.get() / m_hostName.get() / m_projectName / "unreal.cpp" ) );
 }
 
+std::string ProjectTree::getGeometryInclude() const
+{
+    std::ostringstream os;
+    os << "geometry_interface.hpp";
+    return os.str();
+}
+
+boost::filesystem::path ProjectTree::getGeometryInterface() const
+{
+    return boost::filesystem::edsCannonicalise(
+        boost::filesystem::absolute( 
+            getInterfaceFolder() / getGeometryInclude() ) );
+}
+
+boost::filesystem::path ProjectTree::getGeometrySource() const
+{
+    VERIFY_RTE( m_coordinatorName && m_hostName );
+    return boost::filesystem::edsCannonicalise(
+        boost::filesystem::absolute( 
+            getImplFolder() / m_coordinatorName.get() / m_hostName.get() / m_projectName / "geometry_interface.cpp" ) );
+}
+    
 boost::filesystem::path ProjectTree::getObjectName( const std::string& strTUName, const boost::filesystem::path& binPath ) const
 {
     VERIFY_RTE( m_coordinatorName && m_hostName );

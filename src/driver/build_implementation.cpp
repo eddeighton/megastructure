@@ -25,6 +25,8 @@
 extern void generatePythonBindings( std::ostream&, const eg::ReadSession&, const megastructure::NetworkAnalysis&, const Environment&, const ProjectTree&, eg::PrinterFactory::Ptr );
 extern void generateUnrealInterface( std::ostream&, const eg::ReadSession&, const Environment&, const ProjectTree&, eg::PrinterFactory::Ptr );
 extern void generateUnrealCode( std::ostream&, const eg::ReadSession&, const Environment&, const ProjectTree&, eg::PrinterFactory::Ptr );
+extern void generateGeometryInterface( std::ostream&, const eg::ReadSession&, const Environment&, const ProjectTree&, eg::PrinterFactory::Ptr );
+extern void generateGeometryCode( std::ostream&, const eg::ReadSession&, const Environment&, const ProjectTree&, eg::PrinterFactory::Ptr );
 
 namespace build
 {
@@ -512,6 +514,12 @@ void build_implementation( const boost::filesystem::path& projectDirectory,
     }
     else if( strProjectType == megastructure::szComponentTypeNames[ megastructure::eComponent_Geometry ] )
     {
+        //generate the geometry implementation
+		std::ostringstream osGeometry;
+        generateGeometryCode( osGeometry, session, environment, projectTree, pPrinterFactory );
+		boost::filesystem::updateFileIfChanged( projectTree.getGeometrySource(), osGeometry.str() );
+		sourceFiles.push_back( projectTree.getGeometrySource() );
+        
 		std::ostringstream osEGComponent;
 		megastructure::generate_eg_component( 
             osEGComponent, 

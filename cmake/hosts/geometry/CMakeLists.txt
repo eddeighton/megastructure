@@ -14,12 +14,16 @@ include( ${MEGA_ROOT_DIR}/cmake/common_include.cmake )
 include( ${MEGA_ROOT_DIR}/cmake/eg_include.cmake )
 
 #get the sources
-set( MEGA_TEST_HOST_SOURCES
+set( MEGA_GEOMETRY_HOST_SOURCES
 	${MEGA_SRC_DIR}/hosts/geometry/geometry_host.cpp
+    )
+    
+set( MEGA_GEOMETRY_HOST_HEADERS
+	${MEGA_SRC_DIR}/hosts/geometry/config_conversions.hpp
     )
 	
 add_executable( geometry_host 
-					${MEGA_TEST_HOST_SOURCES}
+					${MEGA_GEOMETRY_HOST_SOURCES}
 				)
 		
 set_target_properties( geometry_host PROPERTIES FOLDER tests )
@@ -38,3 +42,4 @@ target_link_libraries( geometry_host megastructureprotocollib )
 target_link_libraries( geometry_host componentlib )
 
 install( TARGETS geometry_host DESTINATION bin)
+install( FILES ${MEGA_GEOMETRY_HOST_HEADERS} DESTINATION include/geometry ) 
