@@ -9,7 +9,10 @@
 #pragma clang diagnostic ignored "-Wswitch"
 #endif
 
-#include "X:/UNrealPRojects_4_25/UIProto/Intermediate/Build/Win64/UE4Editor/Development/UIProto/Definitions.UIProto.h"
+//massive hack here to get the unreal engine preprocessor definitions ( all 300 )
+#include "X:/tsp/src/tsp/Intermediate/Build/Win64/UE4Editor/Development/tsp/Definitions.tsp.h"
+
+//get the required unreal engine maths stuff
 #include "Runtime/Core/Public/CoreTypes.h"
 #include "Runtime/Core/Public/Math/UnrealMath.h"
 

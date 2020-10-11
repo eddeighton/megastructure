@@ -106,12 +106,13 @@ int main( int argc, const char* argv[] )
 	
 	try
 	{
-        Environment environment;
 		
 		boost::filesystem::path workspacePath;
 		std::string strSlaveName;
 		slave::getWorkspaceAndSlaveNameFromPath( 
 			args.slave_path, workspacePath, strSlaveName );
+            
+        Environment environment( workspacePath );
             
         auto logThreadPool = megastructure::configureLog( environment.getLogFolderPath(), strSlaveName );
 		

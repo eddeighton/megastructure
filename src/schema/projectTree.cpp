@@ -320,6 +320,11 @@ boost::filesystem::path ProjectTree::getSourceFolder() const
     return m_path / "src";
 }
 
+boost::filesystem::path ProjectTree::getDataFolder() const
+{
+    return getSourceFolder() / "data";
+}
+
 boost::filesystem::path ProjectTree::getInterfaceFolder() const
 {
     return m_path / "interface" / m_projectName;
@@ -338,6 +343,26 @@ boost::filesystem::path ProjectTree::getBuildFolder() const
 boost::filesystem::path ProjectTree::getStashFolder() const
 {
     return m_path / "stash" / m_projectName;
+}
+
+boost::filesystem::path ProjectTree::getManifestFile() const
+{
+    return getDataFolder() / "manifest.ed";
+}
+
+std::string ProjectTree::getResourceInclude() const
+{
+    return "resource.hpp";
+}
+
+boost::filesystem::path ProjectTree::getResourceHeader() const
+{
+    return getInterfaceFolder() / getResourceInclude();
+}
+
+boost::filesystem::path ProjectTree::getResourceSource() const
+{
+    return getInterfaceFolder() / "resource.cpp";
 }
 
 boost::filesystem::path ProjectTree::getParserDatabaseFilePreInterfaceAnalysis() const

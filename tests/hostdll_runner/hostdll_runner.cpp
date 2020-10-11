@@ -18,6 +18,7 @@
 
 struct Args
 {
+	boost::filesystem::path workspace_path;
 };
 
 bool parse_args( int argc, const char* argv[], Args& args )
@@ -30,6 +31,7 @@ bool parse_args( int argc, const char* argv[], Args& args )
 		
 		options.add_options()
 			("help", "produce help message")
+			("path",  po::value< boost::filesystem::path >( &args.workspace_path ), "Workspace Path" )
 		;
 
 		po::positional_options_description p;
@@ -72,15 +74,19 @@ int main( int argc, const char* argv[] )
 	
 	try
 	{	
+        if( !boost::filesystem::exists( args.workspace_path ) )
+        {
+            THROW_RTE( "Invalid workspace path specified" );
+        }
+        const std::string strFilePath = args.workspace_path.string();
+    
 		std::future< std::string > inputStringFuture =
 			std::async( std::launch::async, readInput );
             
         std::shared_ptr< megastructure::IMegaHost > pMegaHost( 
-            createMegaHost( nullptr ),
+            createMegaHost( strFilePath.c_str(), nullptr ),
             []( const megastructure::IMegaHost* pMegaHost ){ destroyMegaHost( pMegaHost ); } );
             
-        
-			
         //SPDLOG_INFO( "Host: {} pid: {}", args.programName, Common::getProcessID() );
 			
 		while( true )

@@ -15,7 +15,7 @@ struct Args
 {
 	std::string port;
 	boost::filesystem::path master_path;
-	bool bWait;
+	bool bWait = false;
 };
 
 bool parse_args( int argc, const char* argv[], Args& args )
@@ -79,7 +79,7 @@ int main( int argc, const char* argv[] )
 	
     try 
     {
-        Environment environment;
+        Environment environment( args.master_path );
             
         //configure log
         auto logThreadPool = megastructure::configureLog( environment.getLogFolderPath(), "master" );
@@ -128,6 +128,10 @@ int main( int argc, const char* argv[] )
     catch (const spdlog::spdlog_ex &ex)
     {
         std::cout << "Log configuration failed" << std::endl;
+    }
+    catch( std::runtime_error& ex )
+    {
+        std::cout << "Runtime error: " << ex.what() << std::endl;
     }
 	
 	return 0;

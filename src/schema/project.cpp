@@ -61,7 +61,7 @@ const boost::filesystem::path Environment::WIZARD_FILE = std::string( "wizard.xm
 const boost::filesystem::path Environment::PYTHON_FILE_EXTENSION = std::string( ".py" );
 
 const std::string Environment::ENV_KEY_EG_INSTALLATION = "EG";
-const std::string Environment::ENV_KEY_LOG_FOLDER = "MEGALOG";
+//const std::string Environment::ENV_KEY_LOG_FOLDER = "MEGALOG";
 
 /*
 const std::string Environment::ENV_KEY_WINDOWS_10_SDK = "WINDOWS_10_SDK";
@@ -294,11 +294,21 @@ const boost::filesystem::path& Environment::getLogFolderPath() const
     static boost::filesystem::path LOG_FOLDER_PATH;
     if( LOG_FOLDER_PATH.empty() )
     {
-        LOG_FOLDER_PATH = boost::filesystem::path( get( ENV_KEY_LOG_FOLDER ) );
+        LOG_FOLDER_PATH = boost::filesystem::path( get( ENV_KEY_CURRENT_PROJECT ) ) / "log";
     }
     return LOG_FOLDER_PATH;
 }
 
+const boost::filesystem::path& Environment::getDataFolderPath() const
+{
+    static boost::filesystem::path LOG_FOLDER_PATH;
+    if( LOG_FOLDER_PATH.empty() )
+    {
+        LOG_FOLDER_PATH = boost::filesystem::path( get( ENV_KEY_CURRENT_PROJECT ) ) / "src/data";
+    }
+    return LOG_FOLDER_PATH;
+}
+    
 const megaxml::Host& Environment::getHost( const std::string& strHost ) const
 {
     VERIFY_RTE_MSG( !strHost.empty(), "Empty host specification" );

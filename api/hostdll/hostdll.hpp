@@ -19,14 +19,14 @@ struct MEGAHOST_API IMegaHost
     virtual void* getRoot() = 0;
 };
 
-typedef IMegaHost* (*CreateMegaHostFPtr)( void* );
+typedef IMegaHost* (*CreateMegaHostFPtr)( char*, void* );
 typedef void (*DestroyMegaHostFPtr)( IMegaHost* );
 
 }
 
 extern "C"
 {
-    MEGAHOST_API megastructure::IMegaHost* createMegaHost( void* pEngineInterface );
+    MEGAHOST_API megastructure::IMegaHost* createMegaHost( const char* pszProjectDir, void* pEngineInterface );
     MEGAHOST_API void destroyMegaHost( const megastructure::IMegaHost* );
 }
 

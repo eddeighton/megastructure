@@ -136,10 +136,15 @@ public:
     std::vector< boost::filesystem::path > getUserIncludes( const Environment& environment ) const;
 	
 	boost::filesystem::path getSourceFolder() const;
+	boost::filesystem::path getDataFolder() const;
 	boost::filesystem::path getInterfaceFolder() const;
 	boost::filesystem::path getImplFolder() const;
 	boost::filesystem::path getBuildFolder() const;
 	boost::filesystem::path getStashFolder() const;
+    boost::filesystem::path getManifestFile() const;
+    std::string getResourceInclude() const;
+    boost::filesystem::path getResourceHeader() const;
+    boost::filesystem::path getResourceSource() const;
 	boost::filesystem::path getParserDatabaseFilePreInterfaceAnalysis() const;
 	boost::filesystem::path getParserDatabaseFile() const;
 	boost::filesystem::path getInterfaceDatabaseFile() const;

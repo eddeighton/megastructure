@@ -54,6 +54,33 @@ struct ParserCallbackImpl : eg::EG_PARSER_CALLBACK, eg::FunctionBodyGenerator
 };
 ParserCallbackImpl m_functionBodyHandler;
 
+void Task_ResourceID::run()
+{
+    m_taskInfo.taskName( "Task_ResourceID" );
+    m_taskInfo.source( m_projectTree.getManifestFile() );
+    m_taskInfo.target( m_projectTree.getResourceHeader() );
+    updateProgress();
+    
+    std::ostringstream osCmd;
+    
+    static boost::filesystem::path resid = 
+        boost::process::search_path( "resid.exe" );
+    
+    osCmd << m_environment.printPath( resid ) << " ";
+    
+    osCmd << "--path " << m_environment.printPath( m_projectTree.getRootPath() ) << " ";
+    osCmd << "--project " << m_environment.printPath( m_projectTree.getProjectName() ) << " ";
+    
+    const int iResult = boost::process::system( osCmd.str() );
+    if( iResult )
+    {
+        THROW_RTE( "Error invoking clang++ " << iResult );
+    }
+    
+    m_taskInfo.cached( false );
+    m_taskInfo.complete( true );
+}
+
 void Task_ParserSession::run()
 {
     //do nothing since doing this in main function
@@ -589,7 +616,7 @@ void Task_ImplementationSession::run()
 
 void build_interface( const boost::filesystem::path& projectDirectory, const std::string& strProject, const std::string& strCompilationFlags )
 {
-    Environment environment;
+    Environment environment( projectDirectory );
     
     ProjectTree projectTree( environment, projectDirectory, strProject );
     
@@ -644,6 +671,9 @@ void build_interface( const boost::filesystem::path& projectDirectory, const std
     build::Task::PtrVector tasks;
     
     {
+        Task_ResourceID*       pMainResourceID     = new Task_ResourceID( buildState );
+        tasks.push_back( build::Task::Ptr( pMainResourceID     ) );
+        
         Task_ParserSession* pParserSession = new Task_ParserSession( buildState );
         tasks.push_back( build::Task::Ptr( pParserSession ) );
         

@@ -84,6 +84,15 @@ protected:
     std::unique_ptr< eg::ImplementationSession >&   m_session_implementation;
 };
 
+class Task_ResourceID : public BaseTask
+{
+public:
+    Task_ResourceID( const BuildState& buildState )
+        :   BaseTask( buildState, {} )
+    {
+    }
+    virtual void run();
+};
 
 class Task_ParserSession : public BaseTask
 {

@@ -370,7 +370,7 @@ void build_implementation( const boost::filesystem::path& projectDirectory,
         const std::vector< std::string >& inputSourceFileNameSet, 
         const boost::filesystem::path& binPath )
 {
-    Environment environment;
+    Environment environment( projectDirectory );
             
     ProjectTree projectTree( environment, projectDirectory, strCoordinator, strHost, strProject );
     

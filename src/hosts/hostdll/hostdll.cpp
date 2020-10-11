@@ -20,11 +20,13 @@ namespace
         Environment m_environment;
         megastructure::Component m_component;
     public:
-        HostImpl(   const std::string& strMegaPort, 
+        HostImpl(   const boost::filesystem::path& projectDirectory,
+                    const std::string& strMegaPort, 
                     const std::string& strEGPort, 
                     const std::string& strProgramName,
                     void* pEngineInterface )
-            :   m_component( m_environment, strMegaPort, strEGPort, strProgramName, pEngineInterface )
+            :   m_environment( projectDirectory ),
+                m_component( m_environment, strMegaPort, strEGPort, strProgramName, pEngineInterface )
         {
         }
         
@@ -56,9 +58,11 @@ IMegaHost::~IMegaHost()
 
 }
 
-megastructure::IMegaHost* createMegaHost( void* pEngineInterface )
+megastructure::IMegaHost* createMegaHost( const char* pszProjectDir, void* pEngineInterface )
 {
-    return new HostImpl( "1001", "1002", "test_host_dll.exe", pEngineInterface );
+    const std::string strDir( pszProjectDir );
+    const boost::filesystem::path projectDirectory( strDir );
+    return new HostImpl( projectDirectory, "1001", "1002", "test_host_dll.exe", pEngineInterface );
 }
 
 void destroyMegaHost( const megastructure::IMegaHost* pHost )
