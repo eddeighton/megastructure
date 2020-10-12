@@ -33,6 +33,9 @@ namespace Unreal
     void log( const wchar_t* msg );
 }
 
+using F2 = FVector2D;
+using F3 = FVector;
+using F4 = FVector4;
 
 // User defined class template specialization
 namespace msgpack {

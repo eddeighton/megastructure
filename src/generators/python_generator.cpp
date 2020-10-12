@@ -113,26 +113,24 @@ void generateTypeCasters( std::ostream& os, const eg::ReadSession& session,
     os << "                return g_pEGRefType->create( src.data );\n";
     os << "            }\n";
     os << "        };\n";
-
-    //os << "        template <> struct type_caster< std::vector< eg::Event > >\n";
-    //os << "        {\n";
-    //os << "        public:\n";
-    //os << "            PYBIND11_TYPE_CASTER( std::vector< eg::Event >, _(\"" << strReferenceTypeName << "\"));\n";
-    //os << "        \n";
-    //os << "            bool load( handle src, bool )\n";
-    //os << "            {\n";
-    //os << "                //const megastructure::PythonEGReference* pEGReference =\n";
-    //os << "                //    megastructure::PythonEGReferenceFactory::getReference( src.ptr() );\n";
-    //os << "                //value.data = pEGReference->getEGReference();\n";
-    //os << "                //value.data = std::vector< eg::Event >();\n";
-    //os << "                return !PyErr_Occurred();\n";
-    //os << "            }\n";
-    //os << "        \n";
-    //os << "            static handle cast( std::vector< eg::Event > src, return_value_policy /* policy */, handle /* parent */)\n";
-    //os << "            {\n";
-    //os << "                return nullptr;//g_pEGRefType->create( src.data );\n";
-    //os << "            }\n";
-    //os << "        };\n";
+    os << "        template < typename... Ts > struct type_caster< __eg_variant< Ts... > >\n";
+    os << "        {\n";
+    os << "        public:\n";
+    os << "            PYBIND11_TYPE_CASTER( __eg_variant< Ts... >, _(\"" << strReferenceTypeName << "\"));\n";
+    os << "        \n";
+    os << "            bool load( handle src, bool )\n";
+    os << "            {\n";
+    os << "                const megastructure::PythonEGReference* pEGReference =\n";
+    os << "                    megastructure::PythonEGReferenceFactory::getReference( src.ptr() );\n";
+    os << "                value.data = pEGReference->getEGReference();\n";
+    os << "                return !PyErr_Occurred();\n";
+    os << "            }\n";
+    os << "        \n";
+    os << "            static handle cast( eg::Event src, return_value_policy /* policy */, handle /* parent */)\n";
+    os << "            {\n";
+    os << "                return g_pEGRefType->create( src.data );\n";
+    os << "            }\n";
+    os << "        };\n";
 
     for( ActionTypeMap::const_iterator 
             i = actionTypeMap.begin(),

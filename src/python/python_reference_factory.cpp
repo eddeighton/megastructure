@@ -184,24 +184,31 @@ eg::TypeID PythonEGReferenceFactory::getTypeID( const char* pszIdentity )
 
 PyObject* PythonEGReferenceFactory::invoke( const eg::reference& reference, const std::vector< eg::TypeID >& typePath, PyObject *args, PyObject *kwargs )
 {
-    if( reference.type != 0 )
+    try
     {
-        eg::RuntimeTypeInterop::Evaluation::Ptr pEvaluation = 
-            m_runtimeInterop.begin( args, kwargs );
-        
-        pybind11::args pyArgs = pybind11::reinterpret_borrow< pybind11::args >( args );
-        
-        //actually invoke the emulator to evaluate the invocation
-        m_egRuntime.invoke( reference, typePath, pyArgs.size() != 0 );
-        
-        if( pEvaluation->isResult() )
+        if( reference.type != 0 )
         {
-            return reinterpret_cast< PyObject* >( pEvaluation->getResult() );
+            eg::RuntimeTypeInterop::Evaluation::Ptr pEvaluation = 
+                m_runtimeInterop.begin( args, kwargs );
+            
+            pybind11::args pyArgs = pybind11::reinterpret_borrow< pybind11::args >( args );
+            
+            //actually invoke the emulator to evaluate the invocation
+            m_egRuntime.invoke( reference, typePath, pyArgs.size() != 0 );
+            
+            if( pEvaluation->isResult() )
+            {
+                return reinterpret_cast< PyObject* >( pEvaluation->getResult() );
+            }
+        }
+        else
+        {
+            ERR( "Invalid reference used in invocation" );
         }
     }
-    else
+    catch( std::exception& ex )
     {
-        ERR( "Invalid reference used in invocation" );
+        ERR( "Invocation Error: " << ex.what() );
     }
     Py_INCREF( Py_None );
     return Py_None;

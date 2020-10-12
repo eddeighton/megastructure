@@ -8,6 +8,7 @@
 #include "megastructure/log.hpp"
 
 #include "common/assert_verify.hpp"
+#include "common/processID.hpp"
 
 #include <boost/dll/runtime_symbol_info.hpp>
 #include <boost/filesystem.hpp>
@@ -39,7 +40,8 @@ namespace megastructure
 	{
         m_logThreadPool = megastructure::configureLog( m_environment.getLogFolderPath(), strProgramName );
         
-        SPDLOG_INFO( "Created megastructure component with mega port:{} eg port:{} program name:{}", strMegaPort, strEGPort, strProgramName );
+        SPDLOG_INFO( "Created megastructure component with mega port:{} eg port:{} program name:{} process id:{}", 
+            strMegaPort, strEGPort, strProgramName, Common::getProcessID() );
         
 		m_zeromq1 = std::thread( 
 			std::bind( &megastructure::readClient< megastructure::Client >, 

@@ -7,6 +7,12 @@
 #include "eg/event.hpp"
 #include "eg/allocator.hpp"
 
+#ifdef EG_CLANG_COMPILATION
+//requires result type
+#include "eg/result_type.hpp"
+#include "eg/variant.hpp"
+#endif
+
 #include "msgpack.hpp"
 
 #include <vector>
@@ -113,6 +119,38 @@ struct DimensionTraits
 		::eg::decode< T >( decoder, value );
 	}
 };
+
+#ifdef EG_CLANG_COMPILATION
+template< typename... Ts >
+struct DimensionTraits< __eg_variant< Ts... > >
+{
+    using T = __eg_variant< Ts... >;
+    using Read  = const T&;
+    using Write = T;
+    using Get   = T&;
+    static const std::size_t Size = sizeof( T );
+    static const std::size_t Simple = std::is_trivially_copyable< T >::value;
+	
+    static inline void initialise( T& value )
+    {
+        new (&value ) T;
+    }
+    static void uninitialise( T& value )
+    {
+        value.~T();
+    }
+	
+	static inline void encode( Encoder& encoder, const T& value )
+	{
+		::eg::encode< eg::reference >( encoder, value.data );
+	}
+	
+	static inline void decode( Decoder& decoder, T& value )
+	{
+		::eg::decode< eg::reference >( decoder, value.data );
+	}
+};
+#endif
 
 template< std::size_t _Size >
 struct DimensionTraits< eg::Bitmask32Allocator< _Size > >

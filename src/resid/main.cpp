@@ -264,7 +264,7 @@ int main( int argc, const char* argv[] )
         ProjectTree projectTree( environment, args.workspace_path, args.strProject );
             
         //configure log
-        auto logThreadPool = megastructure::configureLog( environment.getLogFolderPath(), "resid" );
+        //auto logThreadPool = megastructure::configureLog( environment.getLogFolderPath(), "resid" );
         const boost::filesystem::path& dataFolderPath = environment.getDataFolderPath();
         
         ResourceNamespace::Ptr pResourceTree( new ResourceNamespace( "res" ) );
