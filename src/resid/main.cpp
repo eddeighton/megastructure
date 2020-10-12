@@ -19,6 +19,7 @@
 
 #include <iostream>
 #include <map>
+#include <memory>
 
 struct Args
 {
@@ -77,18 +78,74 @@ bool parse_args( int argc, const char* argv[], Args& args )
 	return true;
 }
 
-
-
-
-void recurseFolders( const boost::filesystem::path& folderPath, int iDepth, std::ostream& os )
+class ResourceID
 {
-    os << std::string( iDepth * 2, '#' ) << folderPath.string() << "\n";
+public:
+    using Ptr = std::shared_ptr< ResourceID >;
+    using PtrVector = std::vector< Ptr >;
     
+    ResourceID( const std::string& strPath )
+        :   m_strPath( strPath )
+    {}
+    
+    const std::string& getPath() const { return m_strPath; }
+    
+protected:
+    std::string m_strPath;
+};
+
+class ResourceIDRange : public ResourceID
+{
+public:
+    ResourceIDRange( const std::string& strPath, std::size_t szSize )
+        :   ResourceID( strPath ),
+            m_szSize( szSize )
+    {}
+    
+protected:
+    std::size_t m_szSize;
+};
+
+class ResourceNamespace
+{
+public:
+    using Ptr = std::shared_ptr< ResourceNamespace >;
+    using PtrVector = std::vector< Ptr >;
+    
+    ResourceNamespace( const std::string& strName )
+        :   m_strName( strName )
+    {
+        
+    }
+
+    void addNamespace( Ptr pNamespace ) { m_children.push_back( pNamespace ); }
+    void addResource( ResourceID::Ptr pResource ) { m_resources.push_back( pResource ); }
+    
+    const std::string& getName() const { return m_strName; }
+    const PtrVector& getChildren() const { return m_children; }
+    const ResourceID::PtrVector& getResources() const { return m_resources; }
+    
+private:
+    std::string m_strName;
+    PtrVector m_children;
+    ResourceID::PtrVector m_resources;
+};
+
+
+void recurseFolders( const Environment& environment, const boost::filesystem::path& folderPath, ResourceNamespace::Ptr pResourceTree )
+{
     for( auto& directoryItem : boost::filesystem::directory_iterator( folderPath ) )
     {
         if( boost::filesystem::is_directory( directoryItem ) )
         {
-            recurseFolders( directoryItem, iDepth + 1, os );
+            const boost::filesystem::path filePath = directoryItem;
+            const std::string strIdentity = filePath.stem().string();
+            
+            ResourceNamespace::Ptr pNestedNamespace( 
+                new ResourceNamespace( strIdentity ) );
+            pResourceTree->addNamespace( pNestedNamespace );
+            
+            recurseFolders( environment, directoryItem, pNestedNamespace );
         }
         else if( boost::filesystem::is_regular_file( directoryItem ) )
         {
@@ -103,23 +160,89 @@ void recurseFolders( const boost::filesystem::path& folderPath, int iDepth, std:
                     boost::dynamic_pointer_cast< Blueprint::Blueprint >( pTestSite );
                 VERIFY_RTE_MSG( pBlueprint, "Failed to get blueprint: " << filePath.string() );
                 
-                os << filePath.string() << "\n";
                 
             }
         }
     }
 }
 
-void recurseManifest( const Ed::Node& node, std::ostream& os )
+void recurseManifest( const Environment& environment, const Ed::Node& node, ResourceNamespace::Ptr pResourceTree )
 {
-    os << "Node: " << node.statement.declarator.identifier.get() << "\n";
+    const std::string strIdentity = node.statement.declarator.identifier.get();
     
-    for( const Ed::Node& n : node.children )
+    if( node.children.empty() )
     {
-        recurseManifest( n, os );
+        if( strIdentity == "id" )
+        {
+            std::string strFilePath;
+            Ed::IShorthandStream is( node.statement.shorthand.get() );
+            is >> strFilePath;
+            
+            ResourceID::Ptr pResourceID( 
+                new ResourceID( environment.expand( strFilePath ) ) );
+            pResourceTree->addResource( pResourceID );
+        }
+        else if( strIdentity == "range" )
+        {
+            THROW_RTE( "Unsupported range resource specifier: " << node );
+        }
+        else
+        {
+            THROW_RTE( "Unknown resource specifier: " << node );
+        }
+    }
+    else
+    {
+        ResourceNamespace::Ptr pNestedNamespace( 
+            new ResourceNamespace( strIdentity ) );
+        pResourceTree->addNamespace( pNestedNamespace );
+    
+        for( const Ed::Node& n : node.children )
+        {
+            recurseManifest( environment, n, pNestedNamespace );
+        }
     }
 }
 
+void generateResourceHeader( ResourceNamespace::Ptr pResourceTree, std::string& strIndent, int& resID, std::ostream& os )
+{
+    os << strIndent << "namespace " << pResourceTree->getName() << "\n";
+    os << strIndent << "{\n";
+    strIndent.push_back( ' ' );
+    strIndent.push_back( ' ' );
+    
+    const ResourceID::PtrVector& resources = pResourceTree->getResources();
+    for( ResourceID::Ptr pResource : resources )
+    {
+        os << strIndent << "static const int ID = " << resID++ << ";\n";
+    }
+    
+    const ResourceNamespace::PtrVector& children = pResourceTree->getChildren();
+    for( ResourceNamespace::Ptr pChildNamespace : children )
+    {
+        generateResourceHeader( pChildNamespace, strIndent, resID, os );
+    }
+    
+    strIndent.pop_back();
+    strIndent.pop_back();
+    os << strIndent << "} //" << pResourceTree->getName() << "\n";
+}
+
+void generateResourceSource( ResourceNamespace::Ptr pResourceTree, int& resID, std::ostream& os )
+{
+    const ResourceID::PtrVector& resources = pResourceTree->getResources();
+    for( ResourceID::Ptr pResource : resources )
+    {
+        os << "    case " << resID++ << ": return TEXT(\"" << pResource->getPath() << "\");\n";
+    }
+    
+    const ResourceNamespace::PtrVector& children = pResourceTree->getChildren();
+    for( ResourceNamespace::Ptr pChildNamespace : children )
+    {
+        generateResourceSource( pChildNamespace, resID, os );
+    }
+    
+}
 
 int main( int argc, const char* argv[] )
 {
@@ -138,22 +261,15 @@ int main( int argc, const char* argv[] )
     try 
     {
         Environment environment( args.workspace_path );
-        
         ProjectTree projectTree( environment, args.workspace_path, args.strProject );
             
         //configure log
         auto logThreadPool = megastructure::configureLog( environment.getLogFolderPath(), "resid" );
-    
-        //spdlog::info( "resid tool started with pid:{}", Common::getProcessID() );
-    
         const boost::filesystem::path& dataFolderPath = environment.getDataFolderPath();
         
-        //spdlog::info( "Analysing data for workspace: {} project: {} data folder: {}", 
-        //    args.workspace_path.string(), args.strProject, dataFolderPath.string() );
+        ResourceNamespace::Ptr pResourceTree( new ResourceNamespace( "res" ) );
             
-        std::ostringstream os;
-            
-        recurseFolders( dataFolderPath, 1, os );
+        recurseFolders( environment, dataFolderPath, pResourceTree );
         
         {
             Ed::Node manifest;
@@ -166,13 +282,36 @@ int main( int argc, const char* argv[] )
             }
             for( const Ed::Node& n : manifest )
             {
-                recurseManifest( n, os );
+                recurseManifest( environment, n, pResourceTree );
             }
         }
             
-        
-        boost::filesystem::updateFileIfChanged( 
-            projectTree.getResourceHeader(), os.str() );
+            
+        {
+            std::string strIndent;
+            int resID = 1;
+            std::ostringstream osResourceHeader;
+            generateResourceHeader( pResourceTree, strIndent, resID, osResourceHeader );
+            boost::filesystem::updateFileIfChanged( 
+                projectTree.getResourceHeader(), osResourceHeader.str() );
+        }
+        {
+            std::ostringstream os;
+            os << "#include \"interface/" << projectTree.getProjectName() << "/resource.hpp\"\n";
+            os << "#include \"CoreMinimal.h\"\n";
+            os << "\n";
+            os << "const TCHAR* getResource( int iResourceID )\n";
+            os << "{\n";
+            os << "  switch( iResourceID )\n";
+            os << "  {\n";
+            int resID = 1;
+            generateResourceSource( pResourceTree, resID, os );
+            os << "    default: return nullptr;\n";
+            os << "  }\n";
+            os << "}\n";
+            boost::filesystem::updateFileIfChanged( 
+                projectTree.getResourceSource(), os.str() );
+        }
         
         spdlog::drop_all(); 
     }

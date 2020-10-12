@@ -312,6 +312,8 @@ std::vector< boost::filesystem::path > ProjectTree::getUserIncludes( const Envir
 
     includes.push_back( "egcomponent/egcomponent.hpp" );
     
+    includes.push_back( "resource.hpp" );
+    
     return includes;
 }
 
@@ -345,6 +347,11 @@ boost::filesystem::path ProjectTree::getStashFolder() const
     return m_path / "stash" / m_projectName;
 }
 
+boost::filesystem::path ProjectTree::getUnrealSourceFolder() const
+{
+    return m_path / "src" / m_projectName / "Source" / m_projectName;
+}
+    
 boost::filesystem::path ProjectTree::getManifestFile() const
 {
     return getDataFolder() / "manifest.ed";
@@ -362,7 +369,7 @@ boost::filesystem::path ProjectTree::getResourceHeader() const
 
 boost::filesystem::path ProjectTree::getResourceSource() const
 {
-    return getInterfaceFolder() / "resource.cpp";
+    return getUnrealSourceFolder() / "resource.cpp";
 }
 
 boost::filesystem::path ProjectTree::getParserDatabaseFilePreInterfaceAnalysis() const

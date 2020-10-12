@@ -119,8 +119,8 @@ public:
 class Task_MainIncludePCH : public BaseTask
 {
 public:
-    Task_MainIncludePCH( const BuildState& buildState, Task_ParserSession* pDependency )
-        :   BaseTask( buildState, { pDependency } )
+    Task_MainIncludePCH( const BuildState& buildState, Task_ParserSession* pDependency, Task_ResourceID* pDependency2 )
+        :   BaseTask( buildState, { pDependency, pDependency2 } )
     {
     }
     virtual void run();
