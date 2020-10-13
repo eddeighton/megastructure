@@ -42,4 +42,5 @@ set_target_properties( megastructureprotocollib PROPERTIES DEBUG_POSTFIX d )
 link_protobuf( megastructureprotocollib )
 
 install( FILES ${MEGASTRUCTURE_PROTOCOL_API} DESTINATION include/megastructureprotocol )
-install( TARGETS megastructureprotocollib DESTINATION lib )
+install( TARGETS megastructureprotocollib EXPORT mega DESTINATION lib )
+install( EXPORT mega NAMESPACE Mega:: FILE mega-config.cmake DESTINATION share )

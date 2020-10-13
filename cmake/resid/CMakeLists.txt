@@ -29,15 +29,15 @@ include( ${MEGA_ROOT_DIR}/cmake/eg_include.cmake )
 include( ${MEGA_ROOT_DIR}/cmake/core/megastructure_include.cmake )
 
 #get the sources
-set( MEGA_MASTER_SOURCES
+set( MEGA_RESID_SOURCES
 	${MEGA_SRC_DIR}/resid/main.cpp
     )
 	
 add_executable( resid 
-					${MEGA_MASTER_SOURCES}
+					${MEGA_RESID_SOURCES}
 				)
 		
-set_target_properties( resid PROPERTIES FOLDER core )
+set_target_properties( resid PROPERTIES FOLDER resource )
 set_target_properties( resid PROPERTIES DEBUG_POSTFIX d )
 
 link_boost( resid program_options )
@@ -52,5 +52,7 @@ link_ed( resid )
 link_blueprint( resid )
 link_eg_runtime( resid )
 link_megastructure( resid )
+
+target_link_libraries( resid resource_lib )
 
 install( TARGETS resid DESTINATION bin)

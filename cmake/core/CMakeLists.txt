@@ -66,4 +66,5 @@ link_eg( megastructurelib )
 target_link_libraries( megastructurelib megastructureprotocollib )
 
 install( FILES ${MEGA_LIBRARY} DESTINATION include/megastructure )
-install( TARGETS megastructurelib DESTINATION lib)
+install( TARGETS megastructurelib EXPORT mega DESTINATION lib)
+install( EXPORT mega NAMESPACE Mega:: FILE mega-config.cmake DESTINATION share )

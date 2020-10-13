@@ -67,7 +67,8 @@ link_common( schemalib )
 
 install( FILES  ${OTHER_HEADERS} DESTINATION include/schema )
 install( FILES  ${MEGA_SCHEMA_GENERATED_HEADERS} DESTINATION include/schema/megaxml )
-install( TARGETS schemalib DESTINATION lib )
+install( TARGETS schemalib EXPORT mega DESTINATION lib )
+install( EXPORT mega NAMESPACE Mega:: FILE mega-config.cmake DESTINATION share )
 install( FILES  ${MEGA_ROOT_DIR}/src/schema/.eg DESTINATION include/schema )
                 
                 
