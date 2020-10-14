@@ -81,7 +81,7 @@ void Task_ResourceID::run()
     }
     
     //then compute the hash for the header file ( ignor source file )
-    const std::size_t hashCode = hash_file( m_projectTree.getResourceHeader() );
+    const std::size_t hashCode = task::hash_file( m_projectTree.getResourceHeader() );
     m_stash.setHashCode( m_projectTree.getResourceHeader(), hashCode );
     if( m_stash.restore( m_projectTree.getResourceHeader(), hashCode ) )
     {
@@ -147,9 +147,9 @@ void Task_MainIncludePCH::run()
             m_projectTree.getSystemIncludes(), 
             m_projectTree.getUserIncludes( m_environment ) );
             
-        hashCode = build::hash_strings( { osInclude.str(), m_strCompilationFlags } );
-        hashCode = build::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getParserDatabaseFilePreInterfaceAnalysis() ) );
-        hashCode = build::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getResourceHeader() ) );
+        hashCode = task::hash_strings( { osInclude.str(), m_strCompilationFlags } );
+        hashCode = task::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getParserDatabaseFilePreInterfaceAnalysis() ) );
+        hashCode = task::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getResourceHeader() ) );
         m_stash.setHashCode( m_projectTree.getIncludePCH(), hashCode );
             
         if( m_stash.restore( m_projectTree.getIncludePCH(), hashCode ) )
@@ -196,12 +196,12 @@ void Task_MainInterfacePCH::run()
         m_session_parser->getTreeRoot(), 
         m_session_parser->getIdentifiers() );
     
-    std::size_t interfaceHash = build::hash_strings( { m_strCompilationFlags, osInterface.str() } );
+    std::size_t interfaceHash = task::hash_strings( { m_strCompilationFlags, osInterface.str() } );
     m_stash.setHashCode( m_projectTree.getInterfaceHeader(), interfaceHash );
     
-    interfaceHash = build::hash_combine( interfaceHash, 
+    interfaceHash = task::hash_combine( interfaceHash, 
         m_stash.getHashCode( m_projectTree.getParserDatabaseFilePreInterfaceAnalysis() ) );
-    interfaceHash = build::hash_combine( interfaceHash, m_stash.getHashCode( m_projectTree.getIncludePCH() ) );
+    interfaceHash = task::hash_combine( interfaceHash, m_stash.getHashCode( m_projectTree.getIncludePCH() ) );
     m_stash.setHashCode( m_projectTree.getInterfacePCH(), interfaceHash );
     
     if( m_stash.restore( m_projectTree.getInterfacePCH(), interfaceHash ) )
@@ -237,11 +237,11 @@ void Task_InterfaceSession::run()
     
     VERIFY_RTE( m_session_parser );
     
-    std::size_t interfaceDBHash = build::hash_strings( { m_strCompilationFlags } );
-    interfaceDBHash = build::hash_combine( interfaceDBHash, 
+    std::size_t interfaceDBHash = task::hash_strings( { m_strCompilationFlags } );
+    interfaceDBHash = task::hash_combine( interfaceDBHash, 
         m_stash.getHashCode( m_projectTree.getParserDatabaseFilePreInterfaceAnalysis() ) );
-    interfaceDBHash = build::hash_combine( interfaceDBHash, m_stash.getHashCode( m_projectTree.getIncludePCH() ) );
-    interfaceDBHash = build::hash_combine( interfaceDBHash, m_stash.getHashCode( m_projectTree.getInterfacePCH() ) );
+    interfaceDBHash = task::hash_combine( interfaceDBHash, m_stash.getHashCode( m_projectTree.getIncludePCH() ) );
+    interfaceDBHash = task::hash_combine( interfaceDBHash, m_stash.getHashCode( m_projectTree.getInterfacePCH() ) );
     m_stash.setHashCode( m_projectTree.getInterfaceDatabaseFile(), interfaceDBHash );
     
     if( m_stash.restore( m_projectTree.getInterfaceDatabaseFile(), interfaceDBHash ) )
@@ -301,13 +301,13 @@ void Task_MainGenericsPCH::run()
         std::ostringstream osImpl;
         eg::generateGenericsHeader( osImpl, *m_session_interface );
         
-        hashCode = build::hash_strings( { osImpl.str(), m_strCompilationFlags } );
+        hashCode = task::hash_strings( { osImpl.str(), m_strCompilationFlags } );
         m_stash.setHashCode( m_projectTree.getGenericsHeader(), hashCode );
         
-        hashCode = build::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getParserDatabaseFilePreInterfaceAnalysis() ) );
-        hashCode = build::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getIncludePCH() ) );
-        hashCode = build::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getInterfacePCH() ) );
-        hashCode = build::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getInterfaceDatabaseFile() ) );
+        hashCode = task::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getParserDatabaseFilePreInterfaceAnalysis() ) );
+        hashCode = task::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getIncludePCH() ) );
+        hashCode = task::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getInterfacePCH() ) );
+        hashCode = task::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getInterfaceDatabaseFile() ) );
         m_stash.setHashCode( m_projectTree.getGenericsPCH(), hashCode );
         
         if( m_stash.restore( m_projectTree.getGenericsPCH(), hashCode ) )
@@ -361,9 +361,9 @@ void Task_ComponentIncludePCH::run()
             os << "#include \"" << includePath.string() << "\"\n";
         }
 
-        hashCode = build::hash_strings( { os.str(), m_strCompilationFlags } );
-        hashCode = build::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getParserDatabaseFilePreInterfaceAnalysis() ) );
-        hashCode = build::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getIncludePCH() ) );
+        hashCode = task::hash_strings( { os.str(), m_strCompilationFlags } );
+        hashCode = task::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getParserDatabaseFilePreInterfaceAnalysis() ) );
+        hashCode = task::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getIncludePCH() ) );
         m_stash.setHashCode( m_projectTree.getComponentIncludePCH( m_component ), hashCode );
             
         if( m_stash.restore( m_projectTree.getComponentIncludePCH( m_component ), hashCode ) )
@@ -400,10 +400,10 @@ void Task_ComponentInterfacePCH::run()
     updateProgress();
     
     std::size_t hashCode = m_stash.getHashCode( m_projectTree.getInterfaceHeader() );
-    hashCode = build::hash_combine( hashCode, build::hash_strings( { m_strCompilationFlags } ) );
-    hashCode = build::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getParserDatabaseFilePreInterfaceAnalysis() ) );
-    hashCode = build::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getIncludePCH() ) );
-    hashCode = build::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getComponentIncludePCH( m_component ) ) );
+    hashCode = task::hash_combine( hashCode, task::hash_strings( { m_strCompilationFlags } ) );
+    hashCode = task::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getParserDatabaseFilePreInterfaceAnalysis() ) );
+    hashCode = task::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getIncludePCH() ) );
+    hashCode = task::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getComponentIncludePCH( m_component ) ) );
     m_stash.setHashCode( m_projectTree.getComponentInterfacePCH( m_component ), hashCode );
     
     if( m_stash.restore( m_projectTree.getComponentInterfacePCH( m_component ), hashCode ) )
@@ -439,11 +439,11 @@ void Task_ComponentGenericsPCH::run()
     updateProgress();
     
     std::size_t hashCode = m_stash.getHashCode( m_projectTree.getGenericsHeader() );
-    hashCode = build::hash_combine( hashCode, build::hash_strings( { m_strCompilationFlags } ) );
-    hashCode = build::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getParserDatabaseFilePreInterfaceAnalysis() ) );
-    hashCode = build::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getIncludePCH() ) );
-    hashCode = build::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getComponentIncludePCH( m_component ) ) );
-    hashCode = build::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getComponentInterfacePCH( m_component ) ) );
+    hashCode = task::hash_combine( hashCode, task::hash_strings( { m_strCompilationFlags } ) );
+    hashCode = task::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getParserDatabaseFilePreInterfaceAnalysis() ) );
+    hashCode = task::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getIncludePCH() ) );
+    hashCode = task::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getComponentIncludePCH( m_component ) ) );
+    hashCode = task::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getComponentInterfacePCH( m_component ) ) );
     m_stash.setHashCode( m_projectTree.getComponentGenericsPCH( m_component ), hashCode );
     
     if( m_stash.restore( m_projectTree.getComponentGenericsPCH( m_component ), hashCode ) )
@@ -486,7 +486,7 @@ void Task_OperationsHeader::run()
     std::ostringstream osOperations;
     eg::generateOperationSource( osOperations, m_session_interface->getTreeRoot(), *pTranslationUnit, m_functionBodyHandler );
     
-    std::size_t hashCode = build::hash_strings( { m_strCompilationFlags, osOperations.str() } );
+    std::size_t hashCode = task::hash_strings( { m_strCompilationFlags, osOperations.str() } );
     m_stash.setHashCode( m_projectTree.getOperationsHeader( pTranslationUnit->getName() ), hashCode );
         
     boost::filesystem::updateFileIfChanged( m_projectTree.getOperationsHeader( pTranslationUnit->getName() ), osOperations.str() );
@@ -509,11 +509,11 @@ void Task_OperationsPublicPCH::run()
     updateProgress();
     
     std::size_t hashCode = m_stash.getHashCode( m_projectTree.getOperationsHeader( pTranslationUnit->getName() ) );
-    hashCode = build::hash_combine( hashCode, build::hash_strings( { m_strCompilationFlags } ) );
-    hashCode = build::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getParserDatabaseFilePreInterfaceAnalysis() ) );
-    hashCode = build::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getIncludePCH() ) );
-    hashCode = build::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getInterfacePCH() ) );
-    hashCode = build::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getGenericsPCH() ) );
+    hashCode = task::hash_combine( hashCode, task::hash_strings( { m_strCompilationFlags } ) );
+    hashCode = task::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getParserDatabaseFilePreInterfaceAnalysis() ) );
+    hashCode = task::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getIncludePCH() ) );
+    hashCode = task::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getInterfacePCH() ) );
+    hashCode = task::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getGenericsPCH() ) );
     m_stash.setHashCode( m_projectTree.getOperationsPublicPCH( strTUName ), hashCode );
     
     if( m_stash.restore( m_projectTree.getOperationsPublicPCH( strTUName ), hashCode ) )
@@ -556,12 +556,12 @@ void Task_OperationsPrivatePCH::run()
     updateProgress();
     
     std::size_t hashCode = m_stash.getHashCode( m_projectTree.getOperationsHeader( pTranslationUnit->getName() ) );
-    hashCode = build::hash_combine( hashCode, build::hash_strings( { m_strCompilationFlags } ) );
-    hashCode = build::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getParserDatabaseFilePreInterfaceAnalysis() ) );
-    hashCode = build::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getIncludePCH() ) );
-    hashCode = build::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getComponentIncludePCH( m_component ) ) );
-    hashCode = build::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getComponentInterfacePCH( m_component ) ) );
-    hashCode = build::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getComponentGenericsPCH( m_component ) ) );
+    hashCode = task::hash_combine( hashCode, task::hash_strings( { m_strCompilationFlags } ) );
+    hashCode = task::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getParserDatabaseFilePreInterfaceAnalysis() ) );
+    hashCode = task::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getIncludePCH() ) );
+    hashCode = task::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getComponentIncludePCH( m_component ) ) );
+    hashCode = task::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getComponentInterfacePCH( m_component ) ) );
+    hashCode = task::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getComponentGenericsPCH( m_component ) ) );
     m_stash.setHashCode( m_projectTree.getOperationsPrivatePCH( strTUName ), hashCode );
     
     if( m_stash.restore( m_projectTree.getOperationsPrivatePCH( strTUName ), hashCode ) )
@@ -634,9 +634,9 @@ void build_interface( const boost::filesystem::path& projectDirectory, const std
     
     ProjectTree projectTree( environment, projectDirectory, strProject );
     
-    build::Stash stash( environment, projectTree.getStashFolder() );
+    task::Stash stash( projectTree.getStashFolder() );
     
-    BuildState buildState( environment, projectTree, m_config, strCompilationFlags, stash );
+    BuildState buildState( environment, projectTree, m_config, strCompilationFlags, stash, std::cout );
     
     //parse the input source code generating the parser.db
     {
@@ -656,8 +656,8 @@ void build_interface( const boost::filesystem::path& projectDirectory, const std
             buildState.m_session_parser->buildAbstractTree();
             buildState.m_session_parser->store( projectTree.getParserDatabaseFile() );
             
-            std::size_t parserHash = build::hash_file( projectTree.getParserDatabaseFile() );
-            parserHash = build::hash_combine( parserHash, build::hash_strings( { strCompilationFlags } ) );
+            std::size_t parserHash = task::hash_file( projectTree.getParserDatabaseFile() );
+            parserHash = task::hash_combine( parserHash, task::hash_strings( { strCompilationFlags } ) );
             stash.setHashCode( projectTree.getParserDatabaseFilePreInterfaceAnalysis(), parserHash );
             
             if( stash.restore( projectTree.getParserDatabaseFilePreInterfaceAnalysis(), parserHash ) )
@@ -682,18 +682,18 @@ void build_interface( const boost::filesystem::path& projectDirectory, const std
         }
     }
     
-    build::Task::PtrVector tasks;
+    task::Task::PtrVector tasks;
     
     {
         Task_ResourceID* pMainResourceID = new Task_ResourceID( buildState );
-        tasks.push_back( build::Task::Ptr( pMainResourceID ) );
+        tasks.push_back( task::Task::Ptr( pMainResourceID ) );
         
         Task_ParserSession* pParserSession = new Task_ParserSession( buildState );
-        tasks.push_back( build::Task::Ptr( pParserSession ) );
+        tasks.push_back( task::Task::Ptr( pParserSession ) );
         
         using ComponentTaskMap = std::map< Component, Task_ParserSessionCopy* >;
         ComponentTaskMap componentDBCopies;
-        build::Task::RawPtrSet parserSessionCopies;
+        task::Task::RawPtrSet parserSessionCopies;
         for( Coordinator::Ptr pCoordinator : projectTree.getCoordinators() )
         {
             const std::string& strCoordinatorName = pCoordinator->name();
@@ -707,7 +707,7 @@ void build_interface( const boost::filesystem::path& projectDirectory, const std
                     {
                         Component component = { pCoordinator, pHostName, pProjectName };
                         Task_ParserSessionCopy* pParserSessionCopy = new Task_ParserSessionCopy( buildState, pParserSession, component );
-                        tasks.push_back( build::Task::Ptr( pParserSessionCopy ) );
+                        tasks.push_back( task::Task::Ptr( pParserSessionCopy ) );
                         parserSessionCopies.insert( pParserSessionCopy );
                         componentDBCopies.insert( std::make_pair( component, pParserSessionCopy ) );
                     }
@@ -716,18 +716,18 @@ void build_interface( const boost::filesystem::path& projectDirectory, const std
         }
         
         Task_MainIncludePCH*   pMainIncludePCH     = new Task_MainIncludePCH( buildState, pParserSession, pMainResourceID );
-        tasks.push_back( build::Task::Ptr( pMainIncludePCH     ) );
+        tasks.push_back( task::Task::Ptr( pMainIncludePCH     ) );
         
         Task_MainInterfacePCH* pMainInterfacePCH   = new Task_MainInterfacePCH( buildState, pMainIncludePCH );
-        tasks.push_back( build::Task::Ptr( pMainInterfacePCH   ) );
+        tasks.push_back( task::Task::Ptr( pMainInterfacePCH   ) );
         
         Task_InterfaceSession* pInterfaceSession   = new Task_InterfaceSession( buildState, pMainInterfacePCH, parserSessionCopies );
-        tasks.push_back( build::Task::Ptr( pInterfaceSession   ) );
+        tasks.push_back( task::Task::Ptr( pInterfaceSession   ) );
         
         Task_MainGenericsPCH*  pMainGenericsPCH    = new Task_MainGenericsPCH( buildState, pInterfaceSession );
-        tasks.push_back( build::Task::Ptr( pMainGenericsPCH    ) );
+        tasks.push_back( task::Task::Ptr( pMainGenericsPCH    ) );
         
-        build::Task::RawPtrSet publicOperationsTasks;
+        task::Task::RawPtrSet publicOperationsTasks;
         publicOperationsTasks.insert( pMainGenericsPCH );
         
         for( Coordinator::Ptr pCoordinator : projectTree.getCoordinators() )
@@ -748,30 +748,30 @@ void build_interface( const boost::filesystem::path& projectDirectory, const std
                         
                         Task_ComponentIncludePCH* pComponentIncludePCH = 
                             new Task_ComponentIncludePCH( buildState, pMainIncludePCH, component );
-                        tasks.push_back( build::Task::Ptr( pComponentIncludePCH ) );
+                        tasks.push_back( task::Task::Ptr( pComponentIncludePCH ) );
                         
                         Task_ComponentInterfacePCH* pComponentInterfacePCH = 
                             new Task_ComponentInterfacePCH( buildState, pComponentIncludePCH, pParserDBCopy, pMainInterfacePCH, component );
-                        tasks.push_back( build::Task::Ptr( pComponentInterfacePCH ) );
+                        tasks.push_back( task::Task::Ptr( pComponentInterfacePCH ) );
                         
                         Task_ComponentGenericsPCH* pComponentGenericsPCH = 
                             new Task_ComponentGenericsPCH( buildState, pComponentInterfacePCH, pInterfaceSession, pMainGenericsPCH, component );
-                        tasks.push_back( build::Task::Ptr( pComponentGenericsPCH ) );
+                        tasks.push_back( task::Task::Ptr( pComponentGenericsPCH ) );
                         
                         const std::vector< boost::filesystem::path >& sourceFiles = pProjectName->sourceFiles();
                         for( const boost::filesystem::path& sourceFile : sourceFiles )
                         {
                             Task_OperationsHeader* pOperationsHeader =
                                 new Task_OperationsHeader( buildState, pInterfaceSession, sourceFile );
-                            tasks.push_back( build::Task::Ptr( pOperationsHeader ) );
+                            tasks.push_back( task::Task::Ptr( pOperationsHeader ) );
                             
                             Task_OperationsPublicPCH* pOperationsPublicPCH = 
                                 new Task_OperationsPublicPCH( buildState, pMainGenericsPCH, pOperationsHeader, sourceFile );
-                            tasks.push_back( build::Task::Ptr( pOperationsPublicPCH ) );
+                            tasks.push_back( task::Task::Ptr( pOperationsPublicPCH ) );
                                 
                             Task_OperationsPrivatePCH* pOperationsPrivatePCH = 
                                 new Task_OperationsPrivatePCH( buildState, pComponentGenericsPCH, pOperationsPublicPCH, component, sourceFile );
-                            tasks.push_back( build::Task::Ptr( pOperationsPrivatePCH ) );
+                            tasks.push_back( task::Task::Ptr( pOperationsPrivatePCH ) );
                             
                             publicOperationsTasks.insert( pOperationsPublicPCH );
                         }
@@ -782,10 +782,10 @@ void build_interface( const boost::filesystem::path& projectDirectory, const std
         
         
         Task_ImplementationSession* pImplementationSession = new Task_ImplementationSession( buildState, publicOperationsTasks );
-        tasks.push_back( build::Task::Ptr( pImplementationSession ) );
+        tasks.push_back( task::Task::Ptr( pImplementationSession ) );
     }
     
-    build::Scheduler scheduler( tasks );
+    task::Scheduler scheduler( std::cout, tasks );
     
     scheduler.run();
     

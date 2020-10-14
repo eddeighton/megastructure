@@ -78,6 +78,9 @@ void recurseFolders( const Environment& environment, const boost::filesystem::pa
                 Tokeniser::iterator tokenIter = tokens.begin();
                 VERIFY_RTE( tokenIter != tokens.end() );
                 
+                std::ostringstream osUnrealResourcePath;
+                osUnrealResourcePath << "/content/";
+                
                 if( *tokenIter == ShipID::ID )
                 {
                     VERIFY_RTE( ++tokenIter != tokens.end() );
@@ -86,28 +89,28 @@ void recurseFolders( const Environment& environment, const boost::filesystem::pa
                     {
                         std::ostringstream os;
                         os << strFolderName << ShipID::ID_interior;
-                        ResourceID::Ptr pResourceID( new ShipID( os.str(), filePath.string(), ShipID::eInterior ) );
+                        ResourceID::Ptr pResourceID( new ShipID( os.str(), osUnrealResourcePath.str(), filePath, ShipID::eInterior ) );
                         pResourceTree->addResource( pResourceID );
                     }
                     else if( *tokenIter == ShipID::ID_interior_contour )
                     {
                         std::ostringstream os;
                         os << strFolderName << ShipID::ID_interior_contour;
-                        ResourceID::Ptr pResourceID( new ShipID( os.str(), filePath.string(), ShipID::eInteriorContour ) );
+                        ResourceID::Ptr pResourceID( new ShipID( os.str(), osUnrealResourcePath.str(), filePath, ShipID::eInteriorContour ) );
                         pResourceTree->addResource( pResourceID );
                     }
                     else if( *tokenIter == ShipID::ID_exterior )
                     {
                         std::ostringstream os;
                         os << strFolderName << ShipID::ID_exterior;
-                        ResourceID::Ptr pResourceID( new ShipID( os.str(), filePath.string(), ShipID::eExterior ) );
+                        ResourceID::Ptr pResourceID( new ShipID( os.str(), osUnrealResourcePath.str(), filePath, ShipID::eExterior ) );
                         pResourceTree->addResource( pResourceID );
                     }
                     else if( *tokenIter == ShipID::ID_exterior_contour )
                     {
                         std::ostringstream os;
                         os << strFolderName << ShipID::ID_exterior_contour;
-                        ResourceID::Ptr pResourceID( new ShipID( os.str(), filePath.string(), ShipID::eExteriorContour ) );
+                        ResourceID::Ptr pResourceID( new ShipID( os.str(), osUnrealResourcePath.str(), filePath, ShipID::eExteriorContour ) );
                         pResourceTree->addResource( pResourceID );
                     }
                     else
@@ -122,19 +125,19 @@ void recurseFolders( const Environment& environment, const boost::filesystem::pa
                     if( *tokenIter == RoomID::ID_shape )
                     {
                         VERIFY_RTE( ++tokenIter != tokens.end() );
-                        ResourceID::Ptr pResourceID( new RoomID( strFileName, filePath.string(), true ) );
+                        ResourceID::Ptr pResourceID( new RoomID( strFileName, osUnrealResourcePath.str(), filePath, true ) );
                         pResourceTree->addResource( pResourceID );
                     }
                     else
                     {
-                        ResourceID::Ptr pResourceID( new RoomID( strFileName, filePath.string(), false ) );
+                        ResourceID::Ptr pResourceID( new RoomID( strFileName, osUnrealResourcePath.str(), filePath, false ) );
                         pResourceTree->addResource( pResourceID );
                     }
                 }
                 else if( *tokenIter == ObjectID::ID )
                 {
                     VERIFY_RTE( ++tokenIter != tokens.end() );
-                    ResourceID::Ptr pResourceID( new ObjectID( strFileName, filePath.string() ) );
+                    ResourceID::Ptr pResourceID( new ObjectID( strFileName, osUnrealResourcePath.str(), filePath ) );
                     pResourceTree->addResource( pResourceID );
                 }
                 else

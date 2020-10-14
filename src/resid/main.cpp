@@ -111,7 +111,7 @@ void generateResourceSource( ResourceNamespace::Ptr pResourceTree, std::ostream&
     const ResourceID::PtrVector& resources = pResourceTree->getResources();
     for( ResourceID::Ptr pResource : resources )
     {
-        os << "    case " << pResource->getID() << ": return TEXT(\"" << pResource->getPath() << "\");\n";
+        os << "    case " << pResource->getID() << ": return TEXT(\"" << pResource->getUnrealResourcePath() << "\");\n";
     }
     
     const ResourceNamespace::PtrVector& children = pResourceTree->getChildren();

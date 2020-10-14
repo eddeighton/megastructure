@@ -23,6 +23,13 @@ namespace build
 {
 namespace Interface
 {
+    
+struct DiagnosticsConfig
+{
+    bool bShowMessages = true;
+    bool bShowBenchmarks = true;
+    mutable std::mutex mut;
+};
 
 struct BuildState
 {
@@ -30,7 +37,8 @@ struct BuildState
     const ProjectTree&          m_projectTree;
     const DiagnosticsConfig&    m_config;
     const std::string&          m_strCompilationFlags;
-    build::Stash&               m_stash;
+    task::Stash&                m_stash;
+    std::ostream&               m_log;
     bool                        m_parserChanged;
     
     mutable std::unique_ptr< eg::ParserSession >            m_session_parser;
@@ -41,23 +49,25 @@ struct BuildState
                 const ProjectTree&          projectTree,
                 const DiagnosticsConfig&    config,
                 const std::string&          strCompilationFlags,
-                build::Stash&               stash )
+                task::Stash&                stash,
+                std::ostream&               log )
         :   m_environment         ( environment         ),
             m_projectTree         ( projectTree         ),
             m_config              ( config              ),
             m_strCompilationFlags ( strCompilationFlags ),
             m_stash               ( stash ),
+            m_log                 ( log ),
             m_parserChanged       ( false )
     {
         
     }
 };
 
-class BaseTask : public build::Task
+class BaseTask : public task::Task
 {
 public:
     BaseTask( const BuildState& buildState, const RawPtrSet& dependencies )
-        :   build::Task( dependencies ), 
+        :   task::Task( buildState.m_log, dependencies ), 
             m_environment           ( buildState.m_environment              ),
             m_projectTree           ( buildState.m_projectTree              ),
             m_config                ( buildState.m_config                   ),
@@ -76,7 +86,7 @@ protected:
     const ProjectTree&          m_projectTree;
     const DiagnosticsConfig&    m_config;
     const std::string&          m_strCompilationFlags;
-    build::Stash&               m_stash;
+    task::Stash&                m_stash;
     const bool&                 m_parserChanged;
     
     std::unique_ptr< eg::ParserSession >&           m_session_parser;
@@ -140,7 +150,7 @@ public:
 class Task_InterfaceSession : public BaseTask
 {
 public:
-    Task_InterfaceSession( const BuildState& buildState, Task_MainInterfacePCH* pDependency, const build::Task::RawPtrSet& copies )
+    Task_InterfaceSession( const BuildState& buildState, Task_MainInterfacePCH* pDependency, const task::Task::RawPtrSet& copies )
         :   BaseTask( buildState, copies )
     {
         m_dependencies.insert( pDependency );
@@ -256,7 +266,7 @@ public:
 class Task_ImplementationSession : public BaseTask
 {
 public:
-    Task_ImplementationSession( const BuildState& buildState, const build::Task::RawPtrSet& dependencies )
+    Task_ImplementationSession( const BuildState& buildState, const task::Task::RawPtrSet& dependencies )
         :   BaseTask( buildState, dependencies )
     {
     }

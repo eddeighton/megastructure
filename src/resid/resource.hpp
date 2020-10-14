@@ -10,6 +10,7 @@
 
 namespace resource
 {
+    
 
 class ResourceID
 {
@@ -17,22 +18,43 @@ public:
     using Ptr = std::shared_ptr< ResourceID >;
     using PtrVector = std::vector< Ptr >;
     
-    ResourceID( const std::string& strName, const std::string& strPath )
-        :   m_strName( strName ), m_strPath( strPath )
+    ResourceID( const std::string& strName, 
+                const std::string& strUnrealResourcePath )
+        :   m_strName( strName ),
+            m_strUnrealResourcePath( strUnrealResourcePath )
     {}
     virtual ~ResourceID();
     
     const std::string& getName() const { return m_strName; }
-    const std::string& getPath() const { return m_strPath; }
+    const std::string& getUnrealResourcePath() const { return m_strUnrealResourcePath; }
     int getID() const { return m_id; }
+    
     void setID( int id ) { m_id = id; }
 
 protected:
-    std::string m_strName, m_strPath;
+    std::string m_strName;
+    std::string m_strUnrealResourcePath;
     int m_id;
 };
 
-class ShipID : public ResourceID
+
+class BlueprintResourceID : public ResourceID
+{
+public:
+    BlueprintResourceID( const std::string& strName, 
+                const std::string& strUnrealResourcePath, 
+                const boost::filesystem::path& blueprintFilePath )
+        :   ResourceID( strName, strUnrealResourcePath ),
+            m_blueprintFilePath( blueprintFilePath )
+    {}
+
+    const boost::filesystem::path& getBlueprintPath() const { return m_blueprintFilePath; }
+
+protected:
+    boost::filesystem::path m_blueprintFilePath;
+};
+
+class ShipID : public BlueprintResourceID
 {
 public:
     static const std::string ID;
@@ -40,6 +62,7 @@ public:
     static const std::string ID_interior_contour;
     static const std::string ID_exterior;
     static const std::string ID_exterior_contour;
+    
     enum Part
     {
         eInterior,
@@ -48,8 +71,11 @@ public:
         eExteriorContour
     };
     
-    ShipID( const std::string& strName, const std::string& strPath, Part part )
-        :   ResourceID( strName, strPath ),
+    ShipID( const std::string& strName, 
+                const std::string& strUnrealResourcePath, 
+                const boost::filesystem::path& blueprintFilePath, 
+                Part part )
+        :   BlueprintResourceID( strName, strUnrealResourcePath, blueprintFilePath ),
             m_part( part )
     {}
     
@@ -60,13 +86,17 @@ private:
     Part m_part;
 };
 
-class RoomID : public ResourceID
+class RoomID : public BlueprintResourceID
 {
 public:
     static const std::string ID;
     static const std::string ID_shape;
-    RoomID( const std::string& strName, const std::string& strPath, bool bIsShape )
-        :   ResourceID( strName, strPath ),
+    
+    RoomID( const std::string& strName, 
+                const std::string& strUnrealResourcePath, 
+                const boost::filesystem::path& blueprintFilePath, 
+                bool bIsShape )
+        :   BlueprintResourceID( strName, strUnrealResourcePath, blueprintFilePath ),
             m_isShape( bIsShape )
     {}
     
@@ -76,12 +106,15 @@ private:
     bool m_isShape;
 };
 
-class ObjectID : public ResourceID
+class ObjectID : public BlueprintResourceID
 {
 public:
     static const std::string ID;
-    ObjectID( const std::string& strName, const std::string& strPath )
-        :   ResourceID( strName, strPath )
+    
+    ObjectID( const std::string& strName, 
+                const std::string& strUnrealResourcePath, 
+                const boost::filesystem::path& blueprintFilePath )
+        :   BlueprintResourceID( strName, strUnrealResourcePath, blueprintFilePath )
     {}
     
 };

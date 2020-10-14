@@ -24,6 +24,12 @@ namespace build
 {
 namespace Implementation
 {
+struct DiagnosticsConfig
+{
+    bool bShowMessages = true;
+    bool bShowBenchmarks = true;
+    mutable std::mutex mut;
+};
 
 struct BuildState
 {
@@ -33,7 +39,8 @@ struct BuildState
     const std::string&              m_strCompilationFlags;
     const std::string&              m_strAdditionalDefines;
     const boost::filesystem::path&  m_binaryPath;
-    build::Stash&                   m_stash;
+    task::Stash&                    m_stash;
+    std::ostream&                   m_log;
     const eg::ReadSession&          m_session;
     
     BuildState( const Environment&              environment,
@@ -42,7 +49,8 @@ struct BuildState
                 const std::string&              strCompilationFlags,
                 const std::string&              strAdditionalDefines,
                 const boost::filesystem::path&  binaryPath,
-                build::Stash&                   stash,
+                task::Stash&                    stash,
+                std::ostream&                   log,
                 const eg::ReadSession&          session  )
         :   m_environment          ( environment            ),
             m_projectTree          ( projectTree            ),
@@ -51,6 +59,7 @@ struct BuildState
             m_strAdditionalDefines ( strAdditionalDefines   ),
             m_binaryPath           ( binaryPath             ),
             m_stash                ( stash                  ),
+            m_log                  ( log ),
             m_session              ( session                )
     {
         
@@ -58,11 +67,11 @@ struct BuildState
 };
 
 
-class BaseTask : public build::Task
+class BaseTask : public task::Task
 {
 public:
     BaseTask( const BuildState& buildState, const RawPtrSet& dependencies )
-        :   build::Task( dependencies ), 
+        :   task::Task( buildState.m_log, dependencies ), 
             m_environment           ( buildState.m_environment              ),
             m_projectTree           ( buildState.m_projectTree              ),
             m_config                ( buildState.m_config                   ),
@@ -81,7 +90,7 @@ protected:
     const std::string&              m_strCompilationFlags;
     const std::string&              m_strAdditionalDefines;
     const boost::filesystem::path&  m_binaryPath;
-    build::Stash&                   m_stash;
+    task::Stash&                    m_stash;
     const eg::ReadSession&          m_session;
 };
 
