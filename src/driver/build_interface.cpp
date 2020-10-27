@@ -54,45 +54,6 @@ struct ParserCallbackImpl : eg::EG_PARSER_CALLBACK, eg::FunctionBodyGenerator
 };
 ParserCallbackImpl m_functionBodyHandler;
 
-void Task_ResourceID::run()
-{
-    m_taskInfo.taskName( "Task_ResourceID" );
-    m_taskInfo.source( m_projectTree.getManifestFile() );
-    m_taskInfo.target( m_projectTree.getResourceHeader() );
-    updateProgress();
-    
-    //always run the tool
-    {
-        std::ostringstream osCmd;
-        
-        static boost::filesystem::path resid = 
-            boost::process::search_path( "resid.exe" );
-        
-        osCmd << m_environment.printPath( resid ) << " ";
-        
-        osCmd << "--path " << m_environment.printPath( m_projectTree.getRootPath() ) << " ";
-        osCmd << "--project " << m_environment.printPath( m_projectTree.getProjectName() ) << " ";
-        
-        const int iResult = boost::process::system( osCmd.str() );
-        if( iResult )
-        {
-            THROW_RTE( "Error invoking clang++ " << iResult );
-        }
-    }
-    
-    //then compute the hash for the header file ( ignor source file )
-    const std::size_t hashCode = task::hash_file( m_projectTree.getResourceHeader() );
-    m_stash.setHashCode( m_projectTree.getResourceHeader(), hashCode );
-    if( m_stash.restore( m_projectTree.getResourceHeader(), hashCode ) )
-    {
-        m_taskInfo.cached( true );
-        m_taskInfo.complete( true );
-        return;
-    }
-        
-    m_stash.stash( m_projectTree.getResourceHeader(), hashCode );
-    m_taskInfo.complete( true );
-}
 
 void Task_ParserSession::run()
 {
@@ -133,6 +94,8 @@ void Task_MainIncludePCH::run()
     updateProgress();
     
     VERIFY_RTE( m_session_parser );
+    VERIFY_RTE_MSG( boost::filesystem::exists( m_projectTree.getResourceHeader() ), 
+        "Resource header missing: " << m_projectTree.getResourceHeader().string() );
     
     const eg::interface::Root* pInterfaceRoot = m_session_parser->getTreeRoot();
     
@@ -148,8 +111,8 @@ void Task_MainIncludePCH::run()
             m_projectTree.getUserIncludes( m_environment ) );
             
         hashCode = task::hash_strings( { osInclude.str(), m_strCompilationFlags } );
+        hashCode = task::hash_combine( hashCode, task::hash_file( m_projectTree.getResourceHeader() ) );
         hashCode = task::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getParserDatabaseFilePreInterfaceAnalysis() ) );
-        hashCode = task::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getResourceHeader() ) );
         m_stash.setHashCode( m_projectTree.getIncludePCH(), hashCode );
             
         if( m_stash.restore( m_projectTree.getIncludePCH(), hashCode ) )
@@ -685,9 +648,6 @@ void build_interface( const boost::filesystem::path& projectDirectory, const std
     task::Task::PtrVector tasks;
     
     {
-        Task_ResourceID* pMainResourceID = new Task_ResourceID( buildState );
-        tasks.push_back( task::Task::Ptr( pMainResourceID ) );
-        
         Task_ParserSession* pParserSession = new Task_ParserSession( buildState );
         tasks.push_back( task::Task::Ptr( pParserSession ) );
         
@@ -715,7 +675,7 @@ void build_interface( const boost::filesystem::path& projectDirectory, const std
             }
         }
         
-        Task_MainIncludePCH*   pMainIncludePCH     = new Task_MainIncludePCH( buildState, pParserSession, pMainResourceID );
+        Task_MainIncludePCH*   pMainIncludePCH     = new Task_MainIncludePCH( buildState, pParserSession );
         tasks.push_back( task::Task::Ptr( pMainIncludePCH     ) );
         
         Task_MainInterfacePCH* pMainInterfacePCH   = new Task_MainInterfacePCH( buildState, pMainIncludePCH );

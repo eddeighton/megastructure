@@ -312,7 +312,7 @@ std::vector< boost::filesystem::path > ProjectTree::getUserIncludes( const Envir
 
     includes.push_back( "egcomponent/egcomponent.hpp" );
     
-    includes.push_back( "resource.hpp" );
+    includes.push_back( getResourceInclude() );
     
     return includes;
 }

@@ -94,16 +94,6 @@ protected:
     std::unique_ptr< eg::ImplementationSession >&   m_session_implementation;
 };
 
-class Task_ResourceID : public BaseTask
-{
-public:
-    Task_ResourceID( const BuildState& buildState )
-        :   BaseTask( buildState, {} )
-    {
-    }
-    virtual void run();
-};
-
 class Task_ParserSession : public BaseTask
 {
 public:
@@ -129,8 +119,8 @@ public:
 class Task_MainIncludePCH : public BaseTask
 {
 public:
-    Task_MainIncludePCH( const BuildState& buildState, Task_ParserSession* pDependency, Task_ResourceID* pDependency2 )
-        :   BaseTask( buildState, { pDependency, pDependency2 } )
+    Task_MainIncludePCH( const BuildState& buildState, Task_ParserSession* pDependency )
+        :   BaseTask( buildState, { pDependency } )
     {
     }
     virtual void run();
