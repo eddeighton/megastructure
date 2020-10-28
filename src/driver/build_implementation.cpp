@@ -41,14 +41,17 @@ void Task_CPPCompilation::run()
     m_taskInfo.target( m_projectTree.getObjectFile( m_sourceFile, m_binaryPath ) );
     updateProgress();
     
-    std::size_t hashCode = task::hash_file( m_sourceFile );
-    hashCode = task::hash_combine( hashCode, task::hash_strings( { m_strCompilationFlags } ) );
-    hashCode = task::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getParserDatabaseFilePreInterfaceAnalysis() ) );
-    hashCode = task::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getIncludePCH() ) );
-    hashCode = task::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getComponentIncludePCH( m_component ) ) );
-    hashCode = task::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getComponentInterfacePCH( m_component ) ) );
-    hashCode = task::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getComponentGenericsPCH( m_component ) ) );
-    
+    const common::HashCode hashCode = common::hash_combine(
+    {
+        common::hash_file( m_sourceFile ),
+        common::hash_strings( { m_strCompilationFlags } ),
+        m_stash.getHashCode( m_projectTree.getParserDatabaseFilePreInterfaceAnalysis() ),
+        m_stash.getHashCode( m_projectTree.getIncludePCH() ),
+        m_stash.getHashCode( m_projectTree.getComponentIncludePCH( m_component ) ),
+        m_stash.getHashCode( m_projectTree.getComponentInterfacePCH( m_component ) ),
+        m_stash.getHashCode( m_projectTree.getComponentGenericsPCH( m_component ) )
+    });
+        
     if( m_stash.restore( m_projectTree.getObjectFile( m_sourceFile, m_binaryPath ), hashCode ) )
     {
         m_taskInfo.cached( true );
@@ -96,12 +99,15 @@ void Task_PublicEGImplCompilation::run()
     std::ostringstream osImpl;
     eg::generateImplementationSource( osImpl, m_instructionCodeGenFactory, m_printerFactory, m_session, m_translationUnit, additionalIncludes );
     
-    std::size_t hashCode = task::hash_strings( { osImpl.str(), m_strCompilationFlags } );
-    hashCode = task::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getParserDatabaseFilePreInterfaceAnalysis() ) );
-    hashCode = task::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getIncludePCH() ) );
-    hashCode = task::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getInterfacePCH() ) );
-    hashCode = task::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getGenericsPCH() ) );
-    hashCode = task::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getOperationsPublicPCH( strTUName ) ) );
+    const common::HashCode hashCode = common::hash_combine(
+    {
+        common::hash_strings( { osImpl.str(), m_strCompilationFlags } ),
+        m_stash.getHashCode( m_projectTree.getParserDatabaseFilePreInterfaceAnalysis() ),
+        m_stash.getHashCode( m_projectTree.getIncludePCH() ),
+        m_stash.getHashCode( m_projectTree.getInterfacePCH() ),
+        m_stash.getHashCode( m_projectTree.getGenericsPCH() ),
+        m_stash.getHashCode( m_projectTree.getOperationsPublicPCH( strTUName ) )
+    });
     
     if( m_stash.restore( m_projectTree.getObjectName( strTUName, m_binaryPath ), hashCode ) )
     {
@@ -152,13 +158,16 @@ void Task_PrivateEGImplCompilation::run()
     std::ostringstream osImpl;
     eg::generateImplementationSource( osImpl, m_instructionCodeGenFactory, m_printerFactory, m_session, m_translationUnit, additionalIncludes );
     
-    std::size_t hashCode = task::hash_strings( { osImpl.str(), m_strCompilationFlags } );
-    hashCode = task::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getParserDatabaseFilePreInterfaceAnalysis() ) );
-    hashCode = task::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getIncludePCH() ) );
-    hashCode = task::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getComponentIncludePCH( m_component ) ) );
-    hashCode = task::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getComponentInterfacePCH( m_component ) ) );
-    hashCode = task::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getComponentGenericsPCH( m_component ) ) );
-    hashCode = task::hash_combine( hashCode, m_stash.getHashCode( m_projectTree.getOperationsPrivatePCH( strTUName ) ) );
+    const common::HashCode hashCode = common::hash_combine(
+    {
+        common::hash_strings( { osImpl.str(), m_strCompilationFlags } ),
+        m_stash.getHashCode( m_projectTree.getParserDatabaseFilePreInterfaceAnalysis() ),
+        m_stash.getHashCode( m_projectTree.getIncludePCH() ),
+        m_stash.getHashCode( m_projectTree.getComponentIncludePCH( m_component ) ),
+        m_stash.getHashCode( m_projectTree.getComponentInterfacePCH( m_component ) ),
+        m_stash.getHashCode( m_projectTree.getComponentGenericsPCH( m_component ) ),
+        m_stash.getHashCode( m_projectTree.getOperationsPrivatePCH( strTUName ) )
+    });
     
     if( m_stash.restore( m_projectTree.getObjectName( strTUName, m_binaryPath ), hashCode ) )
     {
