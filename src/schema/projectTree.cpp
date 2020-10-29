@@ -176,7 +176,8 @@ Coordinator::Ptr recurseCoordinatorFolder( Environment& environment, const boost
 }
 
 ProjectTree::ProjectTree( Environment& environment, const boost::filesystem::path& root, const std::string& projectName )
-	:	m_path( root ),
+	:	m_path( boost::filesystem::edsCannonicalise(
+                    boost::filesystem::absolute( root ) ) ),
 		m_projectName( projectName )
 {
     commonCtor( environment );
@@ -184,7 +185,8 @@ ProjectTree::ProjectTree( Environment& environment, const boost::filesystem::pat
 
 ProjectTree::ProjectTree( Environment& environment, const boost::filesystem::path& root, 
 	const std::string& coordinatorName, const std::string& hostName, const std::string& projectName )
-	:	m_path( root ),
+	:	m_path( boost::filesystem::edsCannonicalise(
+                    boost::filesystem::absolute( root ) ) ),
 		m_coordinatorName( coordinatorName ),
 		m_hostName( hostName ),
 		m_projectName( projectName )
