@@ -54,6 +54,25 @@ namespace slave
 		Activity::Ptr m_pTestHosts;
 		Activity::Ptr m_pLoadHosts;
 	};
+
+	class ConfigActivity : public megastructure::ExclusiveActivity< ConfigActivity >
+	{
+	public:
+		ConfigActivity( Slave& slave ) 
+			:	m_slave( slave )
+		{
+		}
+		
+		virtual bool serverMessage( const megastructure::Message& message );
+		virtual bool activityComplete( Activity::Ptr pActivity );
+		
+	private:
+        megastructure::ConfigActivityType m_activityType = 
+            megastructure::TOTAL_CONFIG_ACTIVITY_TYPES;
+		Slave& m_slave;
+		Activity::Ptr m_pTestHosts;
+		Activity::Ptr m_pConfigHosts;
+	};
 }
 
 #endif //ACTIVITIES_MASTER_26_APRIL_2020

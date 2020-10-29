@@ -166,6 +166,7 @@ bool LoadHostProgramActivity::clientMessage( std::uint32_t uiClient, const megas
                 SPDLOG_WARN( "Client: {} has NOT assumed host name: {} with process name: {}", 
                   uiClient, m_hostName, m_programName );
 				m_slave.removeClient( m_host.getMegaClientID() );
+				m_bSuccess = false;
 			}
 			else
 			{
@@ -365,6 +366,126 @@ bool HostBufferActivity::clientMessage( std::uint32_t uiClient, const megastruct
     return false;
 }
 
+
+//////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////
+void HostConfigActivity::start()
+{
+	using namespace megastructure;
+	Message message;
+    switch( m_configActivityType )
+    {
+        case eConfigLoading:
+            message = config_load_chq();
+            break;
+        case eConfigSaving:
+            message = config_save_chq();
+            break;
+        default:
+            THROW_RTE( "Unreachable" );
+    }
+    
+	if( !m_slave.sendHost( message, m_host.getMegaClientID() ) )
+	{
+		m_slave.activityComplete( shared_from_this() );
+	}
+}
+
+bool HostConfigActivity::clientMessage( std::uint32_t uiClient, const megastructure::Message& message )
+{
+	if( m_host.getMegaClientID() == uiClient )
+	{
+		if( message.has_config_msg() )
+        {
+            switch( m_configActivityType )
+            {
+                case megastructure::eConfigLoading:
+                    if( message.config_msg().has_load() && 
+                        message.config_msg().load().has_hcs() )
+                    {
+                        const megastructure::Message::Config::Load::HCS& response = message.config_msg().load().hcs();
+                        if( !response.success() )
+                        {
+                            SPDLOG_WARN( "Client: {} failed to load config", uiClient );
+                            m_bSuccess = false;
+                        }
+                        else
+                        {
+                            SPDLOG_INFO( "Client: {} loaded config", uiClient );
+                            m_bSuccess = true;
+                        }
+                        m_slave.activityComplete( shared_from_this() );
+                        return true;
+                    }
+                    break;
+                case megastructure::eConfigSaving:
+                    if( message.config_msg().has_save() && 
+                        message.config_msg().save().has_hcs() )
+                    {
+                        const megastructure::Message::Config::Save::HCS& response = message.config_msg().save().hcs();
+                        if( !response.success() )
+                        {
+                            SPDLOG_WARN( "Client: {} failed to save config", uiClient );
+                            m_bSuccess = false;
+                        }
+                        else
+                        {
+                            SPDLOG_INFO( "Client: {} saved config", uiClient );
+                            m_bSuccess = true;
+                        }
+                        m_slave.activityComplete( shared_from_this() );
+                        return true;
+                    }
+                    break;
+                default:
+                    THROW_RTE( "Unreachable" );
+            }
+        }
+	}
+	return false;
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////
+void HostsConfigActivity::start()
+{
+	const auto& hosts = m_slave.getHosts().getEnrolledHosts();
+	for( auto i : hosts )
+	{
+		megastructure::Activity::Ptr pActivity( 
+			new HostConfigActivity( m_slave, i.second, m_configActivityType ) );
+		m_loadActivities.insert( pActivity );
+		m_slave.startActivity( pActivity );
+	}
+	if( m_loadActivities.empty() )
+	{
+		m_slave.activityComplete( shared_from_this() );
+	}
+}
+
+bool HostsConfigActivity::activityComplete( Activity::Ptr pActivity )
+{
+	if( std::shared_ptr< HostConfigActivity > pLoadActivity = 
+		std::dynamic_pointer_cast< HostConfigActivity >( pActivity ) )
+	{
+		auto iFind = m_loadActivities.find( pActivity );
+		if( iFind != m_loadActivities.end() )
+		{
+			if( !pLoadActivity->Successful() )
+			{
+				m_bSuccess = false;
+			}
+			
+			m_loadActivities.erase( iFind );
+			if( m_loadActivities.empty() )
+			{
+				m_slave.activityComplete( shared_from_this() );
+			}
+			return true;
+		}
+	}
+	return false;
+}
 
 
 }

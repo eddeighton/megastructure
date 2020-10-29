@@ -99,7 +99,9 @@ int main( int argc, const char* argv[] )
                     std::cout << "help:   This...\n";
                     std::cout << "test:   Test existing connections and drop inactive ones.\n";
                     std::cout << "list:   List existing connections.\n";
-                    std::cout << "load:   Load a program.\n";
+                    std::cout << "start:  Start a program.\n";
+                    std::cout << "load:   Load config for active program.\n";
+                    std::cout << "save:   Save config for active program.\n";
                     std::cout << "quit:   Quit.\n";
                 }
                 else if( inputString == "test" )
@@ -110,11 +112,19 @@ int main( int argc, const char* argv[] )
                 {
                     master.startActivity( new master::ListClientsActivity( master ) );
                 }
-                else if( inputString == "load" )
+                else if( inputString == "start" )
                 {
                     std::string programName;
                     std::cin >> programName;
                     master.startActivity( new master::LoadProgram( master, programName ) );
+                }
+                else if( inputString == "load" )
+                {
+                    master.startActivity( new master::LoadConfig( master ) );
+                }
+                else if( inputString == "save" )
+                {
+                    master.startActivity( new master::SaveConfig( master ) );
                 }
                 else if( inputString == "quit" )
                 {

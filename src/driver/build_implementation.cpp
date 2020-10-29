@@ -26,6 +26,7 @@ extern void generatePythonBindings( std::ostream&, const eg::ReadSession&, const
 extern void generateUnrealInterface( std::ostream&, const eg::ReadSession&, const Environment&, const ProjectTree&, eg::PrinterFactory::Ptr );
 extern void generateUnrealCode( std::ostream&, const eg::ReadSession&, const Environment&, const ProjectTree&, eg::PrinterFactory::Ptr );
 extern void generateGeometryCode( std::ostream&, const eg::ReadSession&, const Environment&, const ProjectTree&, eg::PrinterFactory::Ptr );
+extern void generateConfigIO( std::ostream& os, const eg::ReadSession& session, const Environment& environment, const ProjectTree& projectTree, eg::PrinterFactory::Ptr pPrinterFactory );
 
 namespace build
 {
@@ -459,6 +460,14 @@ void build_implementation( const boost::filesystem::path& projectDirectory,
 		boost::filesystem::updateFileIfChanged( projectTree.getRuntimeSource(), osImpl.str() );
 		sourceFiles.push_back( projectTree.getRuntimeSource() );
 	}
+    
+    //generate the config IO
+    {
+		std::ostringstream osIO;
+        generateConfigIO( osIO, session, environment, projectTree, pPrinterFactory );
+		boost::filesystem::updateFileIfChanged( projectTree.getConfigIOSource(), osIO.str() );
+		sourceFiles.push_back( projectTree.getConfigIOSource() );
+    }
     
     const Project& project = projectTree.getProject();
     const std::string& strProjectType = project.getHost().Type();

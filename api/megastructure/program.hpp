@@ -64,6 +64,10 @@ namespace megastructure
         
         //event log
         virtual void put( const char* type, eg::TimeStamp timestamp, const void* value, std::size_t size );
+        
+        //config
+        void loadConfig();
+        void saveConfig();
     private:
         void releaseLocks();
 		
@@ -78,9 +82,11 @@ namespace megastructure
 		
 		std::string m_strComponentName;
 		boost::filesystem::path m_componentPath;
+		boost::filesystem::path m_componentSrcPath;
 		
 		boost::shared_ptr< megastructure::EGComponent > m_pPlugin;
 		EncodeDecode* m_pEncodeDecode;
+        ConfigIO* m_pConfigIO;
         
         CacheBufferMap m_cacheBuffers;
         SharedBufferMap m_sharedBuffers;

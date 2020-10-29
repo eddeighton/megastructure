@@ -47,6 +47,7 @@ set( GENERATOR_SOURCES
     ${GENERATOR_SOURCE_DIR}/instructionCodeGenerator.cpp
     ${GENERATOR_SOURCE_DIR}/unreal_generator.cpp
     ${GENERATOR_SOURCE_DIR}/geometry_generator.cpp
+    ${GENERATOR_SOURCE_DIR}/configio_generator.cpp
     )
 
 source_group( src FILES ${DRIVER_SOURCES} )

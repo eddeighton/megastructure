@@ -51,6 +51,7 @@ namespace megastructure
 		m_queue.startActivity( new AliveTestActivity( *this ) );
 		m_queue.startActivity( new LoadProgramActivity( *this ) );
 		m_queue.startActivity( new EGRequestManagerActivity( *this ) );
+		m_queue.startActivity( new ConfigActivity( *this ) );
 	}
 	
 	Component::~Component()
@@ -191,5 +192,20 @@ namespace megastructure
         return pBufferActivity->getSharedBufferName();
     }
 	
+	//only called in main thread
+    void Component::loadConfig()
+    {
+        if( m_pProgram )
+        {
+            m_pProgram->loadConfig();
+        }
+    }
+    void Component::saveConfig()
+    {
+        if( m_pProgram )
+        {
+            m_pProgram->saveConfig();
+        }
+    }
 	
 }

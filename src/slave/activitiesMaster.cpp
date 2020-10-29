@@ -79,7 +79,6 @@ bool AliveTestActivity::serverMessage( const megastructure::Message& message )
 	
 //////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////
-
 bool LoadProgramActivity::serverMessage( const megastructure::Message& message )
 {
 	if( message.has_msq_load() )
@@ -142,6 +141,105 @@ bool LoadProgramActivity::activityComplete( Activity::Ptr pActivity )
 		
 		m_currentlyLoadingProgramName.clear();
 		
+		return true;
+	}
+			
+	return false;
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////
+bool ConfigActivity::serverMessage( const megastructure::Message& message )
+{
+    using namespace megastructure;
+    
+    if( message.has_config_msg() )
+    {
+        megastructure::ConfigActivityType newActivityType = 
+            megastructure::TOTAL_CONFIG_ACTIVITY_TYPES;
+        {
+            if( message.config_msg().has_load() && 
+                message.config_msg().load().has_msq() )
+            {
+                newActivityType = eConfigLoading;
+            }
+            else if( message.config_msg().has_save() && 
+                    message.config_msg().save().has_msq() )
+            {
+                newActivityType = eConfigSaving;
+            }
+        }
+    
+        if( newActivityType != megastructure::TOTAL_CONFIG_ACTIVITY_TYPES )
+        {
+            if( m_activityType != megastructure::TOTAL_CONFIG_ACTIVITY_TYPES )
+            {
+                SPDLOG_WARN( "Already performing config activity when got new config activity request" );
+                return false;
+            }
+            else
+            {
+                m_activityType = newActivityType;
+                m_pTestHosts = TestHostsActivity::Ptr( 
+                    new TestHostsActivity( m_slave ) );
+                m_pConfigHosts = HostsConfigActivity::Ptr( 
+                    new HostsConfigActivity( m_slave, m_activityType ) );
+                m_slave.startActivity( m_pTestHosts );
+                return true;
+            }
+        }
+    }
+	return false;
+}
+
+bool ConfigActivity::activityComplete( Activity::Ptr pActivity )
+{
+    using namespace megastructure;
+    
+	if( m_pTestHosts == pActivity )
+	{
+		m_slave.startActivity( m_pConfigHosts );
+		return true;
+	}
+	else if( m_pConfigHosts == pActivity )
+	{
+		std::shared_ptr< HostsConfigActivity > pConfig =
+			std::dynamic_pointer_cast< HostsConfigActivity >( pActivity );
+		VERIFY_RTE( pConfig );
+		
+		if( pConfig->Successful() )
+		{
+            switch( m_activityType )
+            {
+                case eConfigLoading:
+                    SPDLOG_INFO( "Config load successful" );
+                    m_slave.sendMaster( config_load_sms( true ) );
+                    break;
+                case eConfigSaving:
+                    SPDLOG_INFO( "Config save successful" );
+                    m_slave.sendMaster( config_save_sms( true ) );
+                    break;
+                default:
+                    THROW_RTE( "Unreachable" );
+            }
+		}
+		else
+		{
+            switch( m_activityType )
+            {
+                case eConfigLoading:
+                    SPDLOG_WARN( "Failed to load config" );
+                    m_slave.sendMaster( config_load_sms( false ) );
+                    break;
+                case eConfigSaving:
+                    SPDLOG_WARN( "Failed to save config" );
+                    m_slave.sendMaster( config_save_sms( false ) );
+                    break;
+                default:
+                    THROW_RTE( "Unreachable" );
+            }
+		}
+		m_activityType = megastructure::TOTAL_CONFIG_ACTIVITY_TYPES;
 		return true;
 	}
 			

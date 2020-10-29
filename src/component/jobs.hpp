@@ -29,6 +29,21 @@ namespace megastructure
 	};
 
 
+	class ConfigJob : public Job
+	{
+	public:
+		ConfigJob( Component& component, ConfigActivityType type );
+			
+		void run();
+		bool successful() const { return m_bSuccess; }
+        
+        ConfigActivityType getType() const { return m_type; }
+	private:
+		Component& m_component;
+        ConfigActivityType m_type;
+        bool m_bSuccess;
+	};
+
 }
 
 #endif //COMPONENT_JOBS_01_MAY_2020

@@ -176,8 +176,10 @@ namespace megastructure
 		friend class TestEGWriteActivity;
 		friend class TestEGCallActivity;
 		friend class EGRequestManagerActivity;
+        friend class ConfigActivity;
         
 		friend class LoadProgramJob;
+        friend class ConfigJob;
         
         friend class Program;
 		
@@ -236,6 +238,10 @@ namespace megastructure
 		//program
 		void setProgram( std::shared_ptr< Program > pProgram );
         std::future< std::string > getSharedBuffer( const std::string& strName, std::size_t szSize );
+        
+        //config
+        void loadConfig();
+        void saveConfig();
 		
 		//megastructure protocol
 		void send( const megastructure::Message& message )

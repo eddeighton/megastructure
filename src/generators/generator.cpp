@@ -939,6 +939,8 @@ void generate_eg_component( std::ostream& os,
     os << "    }\n";
     os << "}\n";
     
+    os << "extern void config_io_load( const char* );\n";
+    os << "extern void config_io_save( const char* );\n";
     if( eComponent_Python == componentType )
     {
     os << "extern eg::ComponentInterop& getPythonInterop();\n";
@@ -955,7 +957,7 @@ void generate_eg_component( std::ostream& os,
 namespace megastructure
 {
     
-class EGComponentImpl : public EGComponent, public EncodeDecode
+class EGComponentImpl : public EGComponent, public EncodeDecode, public ConfigIO
 {
     MemorySystem* m_pMemorySystem = nullptr;
     MegaProtocol* m_pMegaProtocol = nullptr;
@@ -970,9 +972,10 @@ public:
 )";
     os << szComponentPart1 << "\n";
     
-    os << "    virtual void Initialise( void* pHostInterface, EncodeDecode*& pEncodeDecode, MemorySystem* pMemorySystem, MegaProtocol* pMegaProtocol, EventLog* pEventLog, const char* pszDataBasePath )\n";
+    os << "    virtual void Initialise( void* pHostInterface, EncodeDecode*& pEncodeDecode, ConfigIO*& pConfigIO, MemorySystem* pMemorySystem, MegaProtocol* pMegaProtocol, EventLog* pEventLog, const char* pszDataBasePath )\n";
     os << "    {\n";
     os << "        pEncodeDecode = this;\n";
+    os << "        pConfigIO = this;\n";
     os << "        \n";
     os << "        m_pMemorySystem = pMemorySystem;\n";
     os << "        m_pMegaProtocol = pMegaProtocol;\n";
@@ -1036,6 +1039,15 @@ public:
     
     
 const char szComponentPart2[] = R"(
+
+    virtual void load( const char* pszFilePath )
+    {
+        ::config_io_load( pszFilePath );
+    }
+    virtual void save( const char* pszFilePath )
+    {
+        ::config_io_save( pszFilePath );
+    }
     
     virtual void encode( std::int32_t iType, std::uint32_t uiInstance, eg::Encoder& buffer )
     {

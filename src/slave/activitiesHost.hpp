@@ -171,6 +171,51 @@ namespace slave
 		Slave& m_slave;
         
     };
+    
+    
+	//////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////////////
+	class HostConfigActivity : public megastructure::Activity
+	{
+	public:
+		HostConfigActivity( Slave& slave, const Host& host, megastructure::ConfigActivityType configActivityType ) 
+			:	m_slave( slave ),
+				m_host( host ),
+                m_configActivityType( configActivityType )
+		{
+		}
+		
+		virtual void start();
+		virtual bool clientMessage( std::uint32_t uiClient, const megastructure::Message& message );
+		bool Successful() const { return m_bSuccess; }
+	private:
+		Slave& m_slave;
+		Host m_host;
+        megastructure::ConfigActivityType m_configActivityType;
+		bool m_bSuccess = true;
+	};
+	
+	//////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////////////
+	class HostsConfigActivity : public megastructure::ExclusiveActivity< HostsConfigActivity >
+	{
+	public:
+		HostsConfigActivity( Slave& slave, megastructure::ConfigActivityType configActivityType ) 
+			:	m_slave( slave ),
+                m_configActivityType( configActivityType )
+		{
+		}
+		
+		virtual void start();
+		virtual bool activityComplete( Activity::Ptr pActivity );
+		
+		bool Successful() const { return m_bSuccess; }
+	private:
+		Slave& m_slave;
+        megastructure::ConfigActivityType m_configActivityType;
+		std::set< Activity::Ptr > m_loadActivities;
+		bool m_bSuccess = true;
+	};
 }
 
 #endif //ACTIVITIES_HOST_26_APRIL_2020

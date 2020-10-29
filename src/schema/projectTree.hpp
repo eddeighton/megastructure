@@ -26,6 +26,7 @@ public:
 
 	ProjectName( Environment& environment, const boost::filesystem::path& root );
 	
+    const boost::filesystem::path& getPath() const { return m_path; }
 	std::string name() const { return m_path.filename().string(); }
 	const std::vector< boost::filesystem::path >& sourceFiles() const { return m_sourceFiles; }
 	const Project& getProject() const { return m_project; }
@@ -112,12 +113,8 @@ public:
 private:
     void commonCtor( Environment& environment );
 public:
-	
 	void print( std::ostream& os );
     
-    const ProjectName::Ptr getCoordinatorHostnameProject( 
-        const std::string& strCoordinatorName, const std::string& strHostName, const std::string& strProjectName ) const;
-        
 	const std::string& getCoordinatorName() const { return m_coordinatorName.get(); }
 	const std::string& getHostName() const { return m_hostName.get(); }
 	const std::string& getProjectName() const { return m_projectName; }
@@ -126,6 +123,7 @@ public:
     std::string getComponentFileNameExt( bool bDebug ) const;
     
 	const Coordinator::PtrVector& getCoordinators() const { return m_coordinators; }
+    ProjectName::Ptr getProjectNamePtr() const;
     const Project& getProject() const;
 	
 	const boost::filesystem::path& getRootPath() const { return m_path; }
@@ -195,6 +193,7 @@ public:
 	std::string getGeometryInclude() const;
 	boost::filesystem::path getGeometryInterface() const;
 	boost::filesystem::path getGeometrySource() const;
+	boost::filesystem::path getConfigIOSource() const;
 	boost::filesystem::path getObjectName( const std::string& strTUName, const boost::filesystem::path& binPath ) const;
 	boost::filesystem::path getObjectFile( const boost::filesystem::path& sourceFile, const boost::filesystem::path& binPath ) const;
 	boost::filesystem::path getEGComponentSource() const;

@@ -147,6 +147,42 @@ private:
 	Master& m_master;
 };
 
+//////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////
+class LoadConfig : public megastructure::ExclusiveActivity< LoadConfig >
+{
+public:
+	LoadConfig( Master& master ) 
+		:	m_master( master )
+	{
+	}
+	
+	virtual void start();
+	virtual bool clientMessage( std::uint32_t uiClient, const megastructure::Message& message );
+private:
+	Master& m_master;
+	std::set< std::uint32_t > m_clientIDs;
+	bool m_clientFailed = false;
+};
+
+//////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////
+class SaveConfig : public megastructure::ExclusiveActivity< SaveConfig >
+{
+public:
+	SaveConfig( Master& master ) 
+		:	m_master( master )
+	{
+	}
+	
+	virtual void start();
+	virtual bool clientMessage( std::uint32_t uiClient, const megastructure::Message& message );
+private:
+	Master& m_master;
+	std::set< std::uint32_t > m_clientIDs;
+	bool m_clientFailed = false;
+};
+
 }
 
 #endif //ACTIVITIES_26_APRIL_2020

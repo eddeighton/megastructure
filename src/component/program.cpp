@@ -27,7 +27,8 @@ Program::Program( Component& component, const std::string& strHostName, const st
     :   m_component( component ),
         m_strHostName( strHostName ),
         m_strProjectName( strProjectName ),
-		m_pEncodeDecode( nullptr )
+		m_pEncodeDecode( nullptr ),
+        m_pConfigIO( nullptr )
 {
 	
 	try
@@ -39,6 +40,10 @@ Program::Program( Component& component, const std::string& strHostName, const st
                 m_component.getSlaveName(),
                 m_strHostName,
 				strProjectName );
+                
+        ::ProjectName::Ptr pProjectName = m_pProjectTree->getProjectNamePtr();
+        VERIFY_RTE( pProjectName );
+        m_componentSrcPath = pProjectName->getPath();
 	}
 	catch( std::exception& ex )
 	{
@@ -81,10 +86,11 @@ Program::Program( Component& component, const std::string& strHostName, const st
         
     //initialise the program
     m_pPlugin->Initialise( m_component.getHostInterface(), 
-        m_pEncodeDecode, this, this, this,
+        m_pEncodeDecode, m_pConfigIO, this, this, this,
         m_pProjectTree->getAnalysisFileName().string().c_str() );
 	
 	VERIFY_RTE_MSG( m_pEncodeDecode, "Did not get encode decode interface from program: " << m_componentPath.string() );
+	VERIFY_RTE_MSG( m_pConfigIO, "Did not get config IO interface from program: " << m_componentPath.string() );
     
     SPDLOG_INFO( "Initialisation complete" );
 }
@@ -434,6 +440,16 @@ void Program::put( const char* type, eg::TimeStamp timestamp, const void* value,
         SPDLOG_ERROR( "unknown event : {}", type );
     }
     
+}
+
+void Program::loadConfig()
+{
+    m_pConfigIO->load( m_componentSrcPath.string().c_str() );
+}
+
+void Program::saveConfig()
+{
+    m_pConfigIO->save( m_componentSrcPath.string().c_str() );
 }
 
 }

@@ -36,7 +36,6 @@ message Message
 		bool success = 1;
 	}
 	
-	
 	message HCQ_Enroll
 	{
 		string processname = 1;
@@ -97,6 +96,63 @@ message Message
 		string sharedname = 2;
 	}
 	
+    message Config
+    {
+        message Load
+        {
+            message MSQ
+            {
+            }
+            message SMS
+            {
+                bool success = 1;
+            }
+            message CHQ
+            {
+            }
+            message HCS
+            {
+                bool success = 1;
+            }
+            oneof foobar
+            {
+                MSQ msq = 1;
+                SMS sms = 2;
+                CHQ chq = 3;
+                HCS hcs = 4;
+            }
+        }
+        message Save
+        {
+            message MSQ
+            {
+            }
+            message SMS
+            {
+                bool success = 1;
+            }
+            message CHQ
+            {
+            }
+            message HCS
+            {
+                bool success = 1;
+            }
+            oneof foobar
+            {
+                MSQ msq = 1;
+                SMS sms = 2;
+                CHQ chq = 3;
+                HCS hcs = 4;
+            }
+        }
+        oneof foobar
+        {
+            Load load = 1;
+            Save save = 2;
+        }
+    }
+    
 	//eg protocol
 	//host to coordinator request read, write, call, lock, unlock
 	
@@ -193,7 +249,8 @@ message Message
 		HCQ_Buffer hcq_buffer = 16;
 		CHS_Buffer chs_buffer = 17;
 		
-		EG_Msg eg_msg = 18;
+        Config config_msg = 18;
+		EG_Msg eg_msg = 19;
 	}
 	
 }

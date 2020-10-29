@@ -567,4 +567,92 @@ void EGRequestManagerActivity::issueLockResponse( const SimulationLock::HostCycl
     m_component.sendeg( responseMessage );
 }
 
+////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
+bool ConfigActivity::serverMessage( const Message& message )
+{
+	if( message.has_config_msg() )
+	{
+        if( config_load_chq( message.config_msg() ) )
+        {
+            if( m_pConfigJob )
+            {
+                //existing job active so deny
+                SPDLOG_WARN( "Already performing config job while received config load request" );
+                m_component.send( megastructure::config_load_hcs( false ) );
+            }
+            else
+            {
+                m_pConfigJob.reset( new ConfigJob( m_component, megastructure::eConfigLoading ) );
+                m_component.startJob( m_pConfigJob );
+            }
+            return true;
+        }
+        else if( config_save_chq( message.config_msg() ) )
+        {
+            if( m_pConfigJob )
+            {
+                //existing job active so deny
+                SPDLOG_WARN( "Already performing config job while received config save request" );
+                m_component.send( megastructure::config_save_hcs( false ) );
+            }
+            else
+            {
+                m_pConfigJob.reset( new ConfigJob( m_component, megastructure::eConfigSaving ) );
+                m_component.startJob( m_pConfigJob );
+            }
+            return true;
+        }
+        
+		
+			
+		return true;
+	}
+	return false;
+}
+	
+bool ConfigActivity::jobComplete( Job::Ptr pJob )
+{
+	if( m_pConfigJob == pJob )
+	{
+        if( m_pConfigJob->successful() )
+        {
+            switch( m_pConfigJob->getType() )
+            {
+                case eConfigLoading:
+                    SPDLOG_INFO( "Config load successful" );
+                    m_component.send( megastructure::config_load_hcs( true ) );
+                    break;
+                case eConfigSaving:
+                    SPDLOG_INFO( "Config save successful" );
+                    m_component.send( megastructure::config_save_hcs( true ) );
+                    break;
+                case TOTAL_CONFIG_ACTIVITY_TYPES:
+                default:
+                    THROW_RTE( "Unsupported config activity" );
+            }
+        }
+        else
+        {
+            switch( m_pConfigJob->getType() )
+            {
+                case eConfigLoading:
+                    SPDLOG_WARN( "Config load failed" );
+                    m_component.send( megastructure::config_load_hcs( false ) );
+                    break;
+                case eConfigSaving:
+                    SPDLOG_WARN( "Config save failed" );
+                    m_component.send( megastructure::config_save_hcs( false ) );
+                    break;
+                case TOTAL_CONFIG_ACTIVITY_TYPES:
+                default:
+                    THROW_RTE( "Unsupported config activity" );
+            }
+        }
+		m_pConfigJob.reset();
+		return true;
+	}
+	return false;
+}
+	
 }

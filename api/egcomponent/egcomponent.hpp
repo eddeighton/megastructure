@@ -20,6 +20,13 @@ namespace megastructure
 		virtual void decode( eg::Decoder& decoder ) = 0;
 	};
 	
+    class BOOST_SYMBOL_VISIBLE ConfigIO
+    {
+    public:
+        virtual void load( const char* pszFilePath ) = 0;
+        virtual void save( const char* pszFilePath ) = 0;
+    };
+	
 	class BOOST_SYMBOL_VISIBLE Buffer
 	{
 	public:
@@ -67,6 +74,7 @@ namespace megastructure
 	public:
 		virtual void Initialise( void* pHostInterface, 
             EncodeDecode*& pEncodeDecode, 
+            ConfigIO*& pConfigIO,
             MemorySystem* pMemorySystem, 
             MegaProtocol* pMegaProtocol, 
             EventLog* pEventLog,

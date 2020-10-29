@@ -2,6 +2,10 @@
 <EG xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="file:///W:/workspace/eg/src/driver/schema.xsd">
 	<Host>
         <Type>unreal</Type>
+        <Directories>
+            <Include>${COMMON}/include</Include>
+            <Include>${ED}/include</Include>
+        </Directories>
         <Files>
             <Include>${MEGA}/include/unreal/unreal.hpp</Include>
         </Files>

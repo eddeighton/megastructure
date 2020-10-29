@@ -135,6 +135,25 @@ namespace megastructure
 		Component& m_component;
 		
 	};
+    
+    class ConfigJob;
+	////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////
+	class ConfigActivity : public Activity
+	{
+	public:
+		ConfigActivity( Component& component ) 
+			:	m_component( component )
+		{
+		}
+		
+		virtual bool serverMessage( const Message& message );
+		virtual bool jobComplete( Job::Ptr pJob );
+		
+	private:
+		Component& m_component;
+        std::shared_ptr< ConfigJob > m_pConfigJob;
+	};
 }
 
 #endif //COMPONENT_ACTIVITIES_26_APRIL_2020

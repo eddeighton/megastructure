@@ -82,6 +82,7 @@ namespace slave
 		m_queue.startActivity( new LoadProgramActivity( *this ) );
 		m_queue.startActivity( new HostBufferActivity( *this ) );
 		m_queue.startActivity( new RouteEGProtocolActivity( *this ) );
+		m_queue.startActivity( new ConfigActivity( *this ) );
 	}
 	
 	Slave::~Slave()

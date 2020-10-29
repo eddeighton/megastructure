@@ -233,8 +233,7 @@ void ProjectTree::getSourceFilesMap( std::multimap< boost::filesystem::path, boo
 	}
 }
 
-
-const Project& ProjectTree::getProject() const
+ProjectName::Ptr ProjectTree::getProjectNamePtr() const
 {
     VERIFY_RTE( m_coordinatorName && m_hostName );
     
@@ -250,7 +249,7 @@ const Project& ProjectTree::getProject() const
                     {
                         if( pProject->name() == m_projectName )
                         {
-                            return pProject->getProject();
+                            return pProject;
                         }
                     }
                     break;
@@ -260,6 +259,11 @@ const Project& ProjectTree::getProject() const
         }
 	}
     THROW_RTE( "Failed to locate project" );
+}
+
+const Project& ProjectTree::getProject() const
+{
+    return getProjectNamePtr()->getProject();
 }
 
 
@@ -739,6 +743,14 @@ boost::filesystem::path ProjectTree::getGeometrySource() const
     return boost::filesystem::edsCannonicalise(
         boost::filesystem::absolute( 
             getImplFolder() / m_coordinatorName.get() / m_hostName.get() / m_projectName / "geometry_interface.cpp" ) );
+}
+
+boost::filesystem::path ProjectTree::getConfigIOSource() const
+{
+    VERIFY_RTE( m_coordinatorName && m_hostName );
+    return boost::filesystem::edsCannonicalise(
+        boost::filesystem::absolute( 
+            getImplFolder() / m_coordinatorName.get() / m_hostName.get() / m_projectName / "config_io.cpp" ) );
 }
     
 boost::filesystem::path ProjectTree::getObjectName( const std::string& strTUName, const boost::filesystem::path& binPath ) const

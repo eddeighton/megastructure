@@ -377,4 +377,142 @@ bool RouteEGProtocolActivity::clientMessage( std::uint32_t uiClient, const megas
 	return false;
 }
 	
+    
+//////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////
+void LoadConfig::start()
+{
+	//send all clients request to load the config
+	const megastructure::ClientMap::ClientIDMap& clients = m_master.getClients();
+    if( m_master.getActiveProgramName().empty() )
+    {
+        spdlog::info( "Master has no current program so cannot load config" );
+		m_master.activityComplete( shared_from_this() );
+    }
+	else if( clients.empty() )
+	{
+        spdlog::info( "Master currently has no slaves so cannot load config" );
+		m_master.activityComplete( shared_from_this() );
+	}
+	else
+	{
+		for( megastructure::ClientMap::ClientIDMap::const_iterator 
+			i = clients.begin(), iEnd = clients.end();
+			i!=iEnd; ++i )
+		{
+			using namespace megastructure;
+			Message message = config_load_msq();
+			if( !m_master.send( message, i->second ) )
+			{
+				m_master.removeClient( i->second );
+			}
+			else
+			{
+				m_clientIDs.insert( i->second );
+			}
+		}
+	}
+}
+
+bool LoadConfig::clientMessage( std::uint32_t uiClient, const megastructure::Message& message )
+{
+	using namespace megastructure;
+	
+	if( message.has_config_msg() )
+	{
+        const bool bSuccess = config_load_sms( message.config_msg() );
+		if( !bSuccess )
+		{
+            spdlog::info( "Client: {} failed to load config", uiClient );
+			m_clientFailed = true;
+		}
+		
+		m_clientIDs.erase( uiClient );
+		
+		if( m_clientIDs.empty() )
+		{
+			if( !m_clientFailed )
+			{
+                spdlog::info( "No clients failed while loading config" );
+			}
+			
+			m_master.activityComplete( shared_from_this() );
+		}
+		
+		return true;
+	}
+	
+	return false;
+}
+
+
+//////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////
+void SaveConfig::start()
+{
+	//send all clients request to save the config
+	const megastructure::ClientMap::ClientIDMap& clients = m_master.getClients();
+    if( m_master.getActiveProgramName().empty() )
+    {
+        spdlog::info( "Master has no current program so cannot save config" );
+		m_master.activityComplete( shared_from_this() );
+    }
+	else if( clients.empty() )
+	{
+        spdlog::info( "Master currently has no slaves so cannot save config" );
+		m_master.activityComplete( shared_from_this() );
+	}
+	else
+	{
+		for( megastructure::ClientMap::ClientIDMap::const_iterator 
+			i = clients.begin(), iEnd = clients.end();
+			i!=iEnd; ++i )
+		{
+			using namespace megastructure;
+			Message message = config_save_msq();
+			if( !m_master.send( message, i->second ) )
+			{
+				m_master.removeClient( i->second );
+			}
+			else
+			{
+				m_clientIDs.insert( i->second );
+			}
+		}
+	}
+}
+
+bool SaveConfig::clientMessage( std::uint32_t uiClient, const megastructure::Message& message )
+{
+	using namespace megastructure;
+	
+	if( message.has_config_msg() )
+	{
+        const bool bSuccess = config_save_sms( message.config_msg() );
+        
+		if( !bSuccess )
+		{
+            spdlog::info( "Client: {} failed to save config", uiClient );
+			m_clientFailed = true;
+		}
+		
+		m_clientIDs.erase( uiClient );
+		
+		if( m_clientIDs.empty() )
+		{
+			if( !m_clientFailed )
+			{
+                spdlog::info( "No clients failed while saving config" );
+			}
+			
+			m_master.activityComplete( shared_from_this() );
+		}
+		
+		return true;
+	}
+	
+	return false;
+}
+
+
 } //namespace master
