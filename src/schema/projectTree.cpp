@@ -350,7 +350,12 @@ boost::filesystem::path ProjectTree::getBuildFolder() const
 
 boost::filesystem::path ProjectTree::getStashFolder() const
 {
-    return m_path / "stash" / m_projectName;
+    return m_path / "stash" / m_projectName / "code";
+}
+
+boost::filesystem::path ProjectTree::getAssetStashFolder() const
+{
+    return m_path / "stash" / m_projectName / "assets";
 }
 
 boost::filesystem::path ProjectTree::getUnrealSourceFolder() const

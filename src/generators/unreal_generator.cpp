@@ -35,6 +35,32 @@ namespace eg
         os << "I" << pNode->getIdentifier();
         return os.str();
     }
+
+    inline std::string fullInterfaceType( const eg::interface::Context* pNode )
+    {
+        std::vector< const eg::interface::Element* > path =
+            eg::interface::getPath( pNode );
+            
+        std::ostringstream os;
+        
+        bool bFirst = true;
+        for( const eg::interface::Element* pElement : path )
+        {
+            const eg::interface::Context* pContext = 
+                dynamic_cast< const eg::interface::Context* >( pElement );
+            if( bFirst )
+            {
+                os << interfaceName( pContext );
+                bFirst = false;
+            }
+            else
+            {
+                os << "::" << interfaceName( pContext );
+            }
+        }
+        
+        return os.str();
+    }
     
     void contextInclusion( const interface::Context* pContext, bool& bIsContext, bool& bIsObject )
     {
@@ -96,7 +122,7 @@ namespace eg
         {
             const interface::Context* pAction = pDimension->getContextTypes().front();
             
-            os << "const " << interfaceName( pAction ) << "*";
+            os << "const " << fullInterfaceType( pAction ) << "*";
         }
         else
         {
@@ -311,32 +337,6 @@ void generateUnrealInterface( std::ostream& os, const eg::ReadSession& session,
     os << "#endif //UNREAL_INTERFACE\n";
 }
 
-
-inline std::string fullInterfaceType( const eg::interface::Context* pNode )
-{
-    std::vector< const eg::interface::Element* > path =
-        eg::interface::getPath( pNode );
-        
-    std::ostringstream os;
-    
-    bool bFirst = true;
-    for( const eg::interface::Element* pElement : path )
-    {
-        const eg::interface::Context* pContext = 
-            dynamic_cast< const eg::interface::Context* >( pElement );
-        if( bFirst )
-        {
-            os << interfaceName( pContext );
-            bFirst = false;
-        }
-        else
-        {
-            os << "::" << interfaceName( pContext );
-        }
-    }
-    
-    return os.str();
-}
 
 inline std::string implName( const eg::concrete::Action* pNode )
 {
@@ -581,8 +581,38 @@ void generateImplementationDefinitions( std::ostream& os, const eg::LinkAnalysis
                     const eg::interface::Dimension* pDimension = pUserDimension->getDimension();
                     if( dataTypeSupported( pDimension ) )
                     {
-                        os << dataTypeFull( pDimension ) << " " << implName( pContext ) << "::" << pDimension->getIdentifier() << "() const { return " << 
-                                *pPrinterFactory->read( layout.getDataMember( pUserDimension ), "ref.instance" ) << "; }\n";
+                        if( pDimension->getContextTypes().empty() )
+                        {
+                            //just return the value
+                            os << dataTypeFull( pDimension ) << " " << implName( pContext ) << "::" << pDimension->getIdentifier() << "() const { return " << 
+                                    *pPrinterFactory->read( layout.getDataMember( pUserDimension ), "ref.instance" ) << "; }\n";
+                        }
+                        else if( pDimension->getContextTypes().size() == 1U )
+                        {
+                            const eg::interface::Context* pAction = pDimension->getContextTypes().front();
+                            
+                            os << "const " << fullInterfaceType( pAction ) << "* " << implName( pContext ) << "::" << pDimension->getIdentifier() << "() const\n";
+                            os << "{\n";
+                            os << "  const eg::reference& r = " << *pPrinterFactory->read( layout.getDataMember( pUserDimension ), "ref.instance" ) << ".data;\n";
+                            os << "  switch( r.type )\n";
+                            os << "  {\n";
+                            {
+                                const eg::DerivationAnalysis::Compatibility& compatibility =
+                                    derivationAnalysis.getCompatibility( pAction );                                        
+                                for( const eg::concrete::Action* pConcreteType : compatibility.dynamicCompatibleTypes )
+                                {
+                                os << "    case " << pConcreteType->getIndex() << ": return &" << arrayName( pConcreteType ) << "[ r.instance ];\n";
+                                }
+                            }
+                            os << "    default: return nullptr;\n";
+                            os << "  }\n";
+                            os << "}\n";
+                        }
+                        else
+                        {
+                            THROW_RTE( "Variants not supported in interface" );
+                        }
+                        
                     }
                 }
                 

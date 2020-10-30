@@ -18,8 +18,6 @@
 #include <map>
 #include <functional>
 
-extern void generateGeometryInterface( std::ostream& os, const Environment& environment );
-
 namespace build
 {
 namespace Interface
@@ -324,15 +322,8 @@ void Task_ComponentIncludePCH::run()
     {
         std::ostringstream os;
         
-        if( m_component.pProjectName->getProject().getHost().Type() == 
-            megastructure::szComponentTypeNames[ megastructure::eComponent_Geometry ] )
-        {
-            //generate the geometry interface
-            std::ostringstream osGeometryInterface;
-            generateGeometryInterface( osGeometryInterface, m_environment );
-            boost::filesystem::updateFileIfChanged( m_projectTree.getGeometryInterface(), osGeometryInterface.str() );
-            os << "#include \"" << m_projectTree.getGeometryInclude() << "\"\n";
-        }
+        //m_component.pProjectName->getProject().getHost().Type() == 
+        //    megastructure::szComponentTypeNames[ megastructure::eComponent_Geometry ]
         
         for( const boost::filesystem::path& includePath : m_projectTree.getComponentIncludeFiles( m_environment, m_component ) )
         {
@@ -466,7 +457,8 @@ void Task_OperationsHeader::run()
     VERIFY_RTE( m_session_interface );
     const eg::TranslationUnitAnalysis& tuAnalysis = m_session_interface->getTranslationUnitAnalysis();
     const eg::TranslationUnit* pTranslationUnit = tuAnalysis.getTU( m_sourceFile );
-    VERIFY_RTE( pTranslationUnit );
+    VERIFY_RTE_MSG( pTranslationUnit, "Failed to get translation unit for source file: " << m_sourceFile.string() << 
+        " PERHAPS a source file contains no code body?" );
     
     m_taskInfo.taskName( "OperationsHeader" );
     m_taskInfo.source( std::string{"none"} );

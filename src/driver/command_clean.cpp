@@ -39,6 +39,7 @@
 void command_clean( bool bHelp, const std::vector< std::string >& args )
 {
     std::string strDirectory, strProject;
+    bool bAssets = false;
     
     namespace po = boost::program_options;
     po::options_description commandOptions(" Read Project Log");
@@ -46,6 +47,7 @@ void command_clean( bool bHelp, const std::vector< std::string >& args )
         commandOptions.add_options()
             ("dir",         po::value< std::string >( &strDirectory ), "Project directory")
 			("project", 	po::value< std::string >( &strProject ),   "Project Name" )
+            ("assets",      po::bool_switch( &bAssets ),               "Clear asset cache" )
         ;
     }
     
@@ -98,6 +100,14 @@ void command_clean( bool bHelp, const std::vector< std::string >& args )
         {
             std::cout << "Removing: " << projectTree.getStashFolder().generic_string() << std::endl;
             boost::filesystem::remove_all( projectTree.getStashFolder() );
+        }
+        if( bAssets )
+        {
+            if( boost::filesystem::exists( projectTree.getAssetStashFolder() ) )
+            {
+                std::cout << "Removing: " << projectTree.getAssetStashFolder().generic_string() << std::endl;
+                boost::filesystem::remove_all( projectTree.getAssetStashFolder() );
+            }
         }
         
     }

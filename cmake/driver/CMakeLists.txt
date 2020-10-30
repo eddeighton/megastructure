@@ -10,9 +10,6 @@ include( ${MEGA_ROOT_DIR}/cmake/schema/schema_include.cmake )
 #get boost
 include( ${MEGA_ROOT_DIR}/cmake/boost_include.cmake )
 
-#get indicators
-#include( ${MEGA_ROOT_DIR}/cmake/indicators_include.cmake )
-
 #get common
 include( ${MEGA_ROOT_DIR}/cmake/common_include.cmake )
 
@@ -64,7 +61,6 @@ link_boost( mega timer )
 link_boost( mega filesystem )
 link_boost( mega iostreams )
 link_boost( mega serialization )
-#link_indicators( mega )
 link_common( mega )
 link_eg( mega )
 
