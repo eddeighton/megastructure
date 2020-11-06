@@ -141,6 +141,7 @@ public:
 	boost::filesystem::path getStashFolder() const;
 	boost::filesystem::path getAssetStashFolder() const;
 	boost::filesystem::path getUnrealSourceFolder() const;
+	boost::filesystem::path getUnrealContentFolder() const;
     boost::filesystem::path getManifestFile() const;
     std::string getResourceInclude() const;
     boost::filesystem::path getResourceHeader() const;

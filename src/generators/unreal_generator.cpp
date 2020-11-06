@@ -62,39 +62,52 @@ namespace eg
         return os.str();
     }
     
-    void contextInclusion( const interface::Context* pContext, bool& bIsContext, bool& bIsObject )
+    struct ContextType
     {
-        bIsContext = false;
-        bIsObject = false;
+        ContextType( const interface::Context* pContext )
+        {
+            if( const interface::Event* pEvent = dynamic_cast< const interface::Event* >( pContext ) )
+            {
+            }
+            else if( const interface::Function* pFunction = dynamic_cast< const interface::Function* >( pContext ) )
+            {
+            }
+            else if( const interface::Action* pAction = dynamic_cast< const interface::Action* >( pContext ) )
+            {
+                bIsPointer = true;
+                bIsEnumerable = true;
+            }
+            else if( const interface::Object* pObject = dynamic_cast< const interface::Object* >( pContext ) )
+            {
+                bIsPointer = true;
+                bIsEnumerable = true;
+                bIsObject = true;
+            }
+            else if( const interface::Link* pLink = dynamic_cast< const interface::Link* >( pContext ) )
+            {
+                bIsPointer = true;
+                bIsEnumerable = true;
+            }
+            else if( const interface::Abstract* pAbstract = dynamic_cast< const interface::Abstract* >( pContext ) )
+            {
+                bIsPointer = true;
+            }
+            else
+            {
+                THROW_RTE( "Unknown context type" );
+            }
+        }
         
-        if( const interface::Event* pEvent = dynamic_cast< const interface::Event* >( pContext ) )
-        {
-        }
-        else if( const interface::Function* pFunction = dynamic_cast< const interface::Function* >( pContext ) )
-        {
-        }
-        else if( const interface::Action* pAction = dynamic_cast< const interface::Action* >( pContext ) )
-        {
-            bIsContext = true;
-        }
-        else if( const interface::Object* pObject = dynamic_cast< const interface::Object* >( pContext ) )
-        {
-            bIsContext = true;
-            bIsObject = true;
-        }
-        else if( const interface::Link* pLink = dynamic_cast< const interface::Link* >( pContext ) )
-        {
-            bIsContext = true;
-        }
-        else if( const interface::Abstract* pAbstract = dynamic_cast< const interface::Abstract* >( pContext ) )
-        {
-            bIsContext = true;
-        }
-        else
-        {
-            THROW_RTE( "Unknown context type" );
-        }
-    }
+        bool isPointer() const { return bIsPointer; }
+        bool isEnumerable() const { return bIsEnumerable; }
+        bool isObject() const { return bIsObject; }
+            
+    private:
+        bool bIsPointer = false;
+        bool bIsEnumerable = false;
+        bool bIsObject = false;
+    };
+    
     
     bool dataTypeSupported( const interface::Dimension* pDimension )
     {
@@ -163,6 +176,7 @@ namespace eg
         }
         void push ( const input::Dimension* pElement, const interface::Element* pNode )
         {
+            //generate access to the dimension
             const interface::Dimension* pDimension = dynamic_cast< const interface::Dimension* >( pNode );
             if( dataTypeSupported( pDimension ) )
             {
@@ -187,15 +201,11 @@ namespace eg
         }
         void push ( const input::Context* pElement, const interface::Element* pNode )
         {
-            bool bIsContext = false;
-            bool bIsObject = false;
-            
             const interface::Context* pContext = dynamic_cast< const interface::Context* >( pNode );
             VERIFY_RTE( pContext );
             
-            contextInclusion( pContext, bIsContext, bIsObject );
-            
-            if( bIsContext )
+            const eg::ContextType contextType( pContext );
+            if( contextType.isPointer() )
             {
                 const std::vector< interface::Context* >& baseContexts = pContext->getBaseContexts();
                 
@@ -214,18 +224,18 @@ namespace eg
                         {
                             if( bFirst )
                             {
-                                osBaseList << interfaceName( pBaseContext ) << " ";
+                                osBaseList << fullInterfaceType( pBaseContext ) << " ";
                                 bFirst = false;
                             }
                             else
                             {
-                                osBaseList << ", " << interfaceName( pBaseContext ) << " ";
+                                osBaseList << ", " << fullInterfaceType( pBaseContext ) << " ";
                             }
                         }
                         os << strIndent << "struct " << interfaceName( pContext ) << " : public " << osBaseList.str() << "\n";
                         os << strIndent << "{\n";
                     }
-                    else if( bIsObject )
+                    else if( contextType.isObject() )
                     {
                         os << strIndent << "struct " << interfaceName( pContext ) << " : public IObject\n";
                         os << strIndent << "{\n";
@@ -279,23 +289,22 @@ namespace eg
         {
             popIndent();
             
-            bool bIsContext = false;
-            bool bIsObject = false;
-            
             const interface::Context* pContext = dynamic_cast< const interface::Context* >( pNode );
             VERIFY_RTE( pContext );
             
-            contextInclusion( pContext, bIsContext, bIsObject );
+            const eg::ContextType contextType( pContext );
             
-            if( bIsContext )
+            if( contextType.isPointer() )
             {
                 os << strIndent << "};\n";
-                //if( pContext->isExecutable() )
-                if( pContext->getParent() && pContext->getParent()->getParent() )
+                if( contextType.isEnumerable() )
                 {
-                    os << strIndent << "virtual const " << interfaceName( pContext ) << "* " << pNode->getIdentifier() << "( std::size_t iterator ) const = 0;\n";
-                    os << strIndent << "virtual std::size_t " << pNode->getIdentifier() << "_begin() const = 0;\n";
-                    os << strIndent << "virtual std::size_t " << pNode->getIdentifier() << "_next( std::size_t iterator ) const = 0;\n";
+                    if( pContext->getParent() && pContext->getParent()->getParent() )
+                    {
+                        os << strIndent << "virtual const " << fullInterfaceType( pContext ) << "* " << pNode->getIdentifier() << "( std::size_t iterator ) const = 0;\n";
+                        os << strIndent << "virtual std::size_t " << pNode->getIdentifier() << "_begin() const = 0;\n";
+                        os << strIndent << "virtual std::size_t " << pNode->getIdentifier() << "_next( std::size_t iterator ) const = 0;\n";
+                    }
                 }
             }
         }
@@ -323,7 +332,6 @@ void generateUnrealInterface( std::ostream& os, const eg::ReadSession& session,
     os << "{\n";
     os << "};\n";
     
-    
     const eg::LinkAnalysis& linkAnalysis = session.getLinkAnalysis();
     
     {
@@ -332,7 +340,6 @@ void generateUnrealInterface( std::ostream& os, const eg::ReadSession& session,
         pInterfaceRoot->pushpop( interfaceVisitor );
         os << "\n";
     }
-    
     
     os << "#endif //UNREAL_INTERFACE\n";
 }
@@ -382,7 +389,6 @@ void generateImplementationDeclarations( std::ostream& os, const eg::LinkAnalysi
         os << "  " << implName( pContext ) << "( const eg::TypeInstance& egRef ) : ref( egRef ) {}\n";
         os << "  eg::TypeInstance ref;\n";
         os << "  std::size_t getInstance() const { return ref.instance; };\n";
-        //os << "  virtual std::size_t getRTTI() const { return ref.type; };\n";
         
         //link groups
         const eg::concrete::Action::LinkMap& links = pContext->getLinks();
@@ -413,16 +419,16 @@ void generateImplementationDeclarations( std::ostream& os, const eg::LinkAnalysi
             }
             else if( const eg::concrete::Action* pChildContext = dynamic_cast< const eg::concrete::Action* >( pChildElement ) )
             {
-                bool bIsContext = false;
-                bool bIsObject = false;
+                const eg::interface::Context* pNestedContext = 
+                    dynamic_cast< const eg::interface::Context* >( pChildContext->getContext() );
+                VERIFY_RTE( pNestedContext );
+                const eg::ContextType contextType( pNestedContext );
                 
-                contextInclusion( pChildContext->getContext(), bIsContext, bIsObject );
-                
-                if( bIsContext )
+                if( contextType.isEnumerable() )
                 {
-                    if( pContext->getParent() )
+                    if( pNestedContext->getParent() )
                     {
-                        os << "  const " << interfaceName( pChildContext->getContext() ) << "* " << pChildContext->getContext()->getIdentifier() << "( std::size_t iterator ) const;\n";
+                        os << "  const " << fullInterfaceType( pChildContext->getContext() ) << "* " << pChildContext->getContext()->getIdentifier() << "( std::size_t iterator ) const;\n";
                         os << "  std::size_t " << pChildContext->getContext()->getIdentifier() << "_begin() const;\n";
                         os << "  std::size_t " << pChildContext->getContext()->getIdentifier() << "_next( std::size_t iterator ) const;\n";
                     }
@@ -443,16 +449,12 @@ void generateImplementationDeclarations( std::ostream& os, const eg::LinkAnalysi
         }
         else if( const eg::concrete::Action* pChildContext = dynamic_cast< const eg::concrete::Action* >( pChildElement ) )
         {
-            bool bIsContext = false;
-            bool bIsObject = false;
-            
             const eg::interface::Context* pContext = 
                 dynamic_cast< const eg::interface::Context* >( pChildContext->getContext() );
             VERIFY_RTE( pContext );
             
-            contextInclusion( pChildContext->getContext(), bIsContext, bIsObject );
-            
-            if( bIsContext )
+            const eg::ContextType contextType( pContext );
+            if( contextType.isPointer() )
             {
                 generateImplementationDeclarations( os, linkAnalysis, layout, pChildContext, pPrinterFactory );
             }
@@ -487,16 +489,12 @@ void generateAllocations( std::ostream& os, const eg::concrete::Action* pContext
     {
         if( const eg::concrete::Action* pChildContext = dynamic_cast< const eg::concrete::Action* >( pChildElement ) )
         {
-            bool bIsContext = false;
-            bool bIsObject = false;
-            
             const eg::interface::Context* pContext = 
                 dynamic_cast< const eg::interface::Context* >( pChildContext->getContext() );
             VERIFY_RTE( pContext );
             
-            contextInclusion( pChildContext->getContext(), bIsContext, bIsObject );
-            
-            if( bIsContext )
+            const eg::ContextType contextType( pChildContext->getContext() );
+            if( contextType.isEnumerable() )
             {
                 generateAllocations( os, pChildContext );
             }
@@ -619,12 +617,9 @@ void generateImplementationDefinitions( std::ostream& os, const eg::LinkAnalysis
             }
             else if( const eg::concrete::Action* pChildContext = dynamic_cast< const eg::concrete::Action* >( pChildElement ) )
             {
-                bool bIsContext = false;
-                bool bIsObject = false;
+                const eg::ContextType contextType( pChildContext->getContext() );
                 
-                contextInclusion( pChildContext->getContext(), bIsContext, bIsObject );
-                
-                if( bIsContext )
+                if( contextType.isEnumerable() )
                 {
                     if( pContext->getParent() )
                     {
@@ -674,16 +669,13 @@ void generateImplementationDefinitions( std::ostream& os, const eg::LinkAnalysis
         }
         else if( const eg::concrete::Action* pChildContext = dynamic_cast< const eg::concrete::Action* >( pChildElement ) )
         {
-            bool bIsContext = false;
-            bool bIsObject = false;
-            
             const eg::interface::Context* pContext = 
                 dynamic_cast< const eg::interface::Context* >( pChildContext->getContext() );
             VERIFY_RTE( pContext );
             
-            contextInclusion( pChildContext->getContext(), bIsContext, bIsObject );
+            const eg::ContextType contextType( pContext );
             
-            if( bIsContext )
+            if( contextType.isPointer() )
             {
                 generateImplementationDefinitions( os, linkAnalysis, layout, derivationAnalysis, pChildContext, pPrinterFactory );
             }

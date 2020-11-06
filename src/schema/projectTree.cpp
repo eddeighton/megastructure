@@ -362,7 +362,12 @@ boost::filesystem::path ProjectTree::getUnrealSourceFolder() const
 {
     return m_path / "src" / m_projectName / "Source" / m_projectName;
 }
-    
+   
+boost::filesystem::path ProjectTree::getUnrealContentFolder() const
+{
+    return m_path / "src" / m_projectName / "Content" / m_projectName;
+}
+
 boost::filesystem::path ProjectTree::getManifestFile() const
 {
     return getDataFolder() / "manifest.ed";

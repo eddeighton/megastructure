@@ -520,19 +520,18 @@ struct MegastructurePrinterFactory : public ::eg::PrinterFactory
     return std::make_shared< MegastructurePrinterFactory >( *this );
 }
 
-void recurseEncodeDecode( const ::eg::concrete::Action* pAction, std::ostream& os )
+void recurseEncodeDecode( const ::eg::interface::Context* pContext, std::ostream& os )
 {
-    const std::vector< eg::concrete::Element* >& children = pAction->getChildren();
-    for( const eg::concrete::Element* pElement : children )
+    const std::vector< eg::interface::Element* >& children = pContext->getChildren();
+    for( const eg::interface::Element* pElement : children )
     {
-        if( const eg::concrete::Action* pNestedAction = 
-            dynamic_cast< const eg::concrete::Action* >( pElement ) )
+        if( const eg::interface::Context* pNestedContext = 
+            dynamic_cast< const eg::interface::Context* >( pElement ) )
         {
-            const std::string strType = getStaticType( pNestedAction->getContext() );
+            const std::string strType = getStaticType( pNestedContext );
             os << "    template<> inline void encode( Encoder& encoder, const " << strType << "& value ){ encode( encoder, value.data ); }\n";
             os << "    template<> inline void decode( Decoder& decoder, " << strType << "& value )      { decode( decoder, value.data ); }\n";
-
-            recurseEncodeDecode( pNestedAction, os );
+            recurseEncodeDecode( pNestedContext, os );
         }
     }
 }
@@ -775,6 +774,7 @@ void generate_eg_component( std::ostream& os,
     const eg::Layout& layout = session.getLayout();
     const eg::IndexedObject::Array& objects = session.getObjects( eg::IndexedObject::MASTER_FILE );
     const eg::concrete::Action* pRoot = session.getInstanceRoot();
+    const eg::interface::Context* pInterfaceRoot = session.getTreeRoot();
     
     const eg::TranslationUnitAnalysis& translationUnitAnalysis =
         session.getTranslationUnitAnalysis();
@@ -858,7 +858,9 @@ void generate_eg_component( std::ostream& os,
     os << "\n";
     os << "namespace eg\n";
     os << "{\n";
-    recurseEncodeDecode( pRoot, os );
+    {
+        recurseEncodeDecode( pInterfaceRoot, os );
+    }
     os << "}\n";
     os << "\n";
     
