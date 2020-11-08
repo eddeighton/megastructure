@@ -35,6 +35,61 @@ namespace Ed
     {
         return os >> v.X >> v.Y;
     }
+    
+    inline OShorthandStream& operator<<( OShorthandStream& os, const FQuat& v )
+    {
+        return os << v.X << v.Y << v.Z << v.W;
+    }
+
+    inline IShorthandStream& operator>>( IShorthandStream& os, FQuat& v )
+    {
+        return os >> v.X >> v.Y >> v.Z >> v.W;
+    }
+    
+    inline OShorthandStream& operator<<( OShorthandStream& os, const FMatrix& v )
+    {
+        for (int RowIndex = 0; RowIndex != 4; RowIndex++)
+        {
+            for (int ColumnIndex = 0; ColumnIndex != 4; ColumnIndex++)
+            {
+                os << v.M[ RowIndex ][ ColumnIndex ];
+            }
+        }
+        return os;
+    }
+
+    inline IShorthandStream& operator>>( IShorthandStream& os, FMatrix& v )
+    {
+        for (int RowIndex = 0; RowIndex != 4; RowIndex++)
+        {
+            for (int ColumnIndex = 0; ColumnIndex != 4; ColumnIndex++)
+            {
+                os >> v.M[ RowIndex ][ ColumnIndex ];
+            }
+        }
+        return os;
+    }
+    
+    inline OShorthandStream& operator<<( OShorthandStream& os, const FTransform& v )
+    {
+        const FQuat   fq = v.GetRotation();
+        const FVector ft = v.GetTranslation();
+        const FVector fs = v.GetScale3D();
+        
+        return os << fq << ft << fs;
+    }
+
+    inline IShorthandStream& operator>>( IShorthandStream& os, FTransform& v )
+    {
+        FQuat   fq;
+        FVector ft;
+        FVector fs;
+        
+        os >> fq >> ft >> fs;
+        v.SetComponents( fq, ft, fs );
+        
+        return os;
+    }
 }
 
 #endif //ED_CONVERSIONS_09_OCT_2020

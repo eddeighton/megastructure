@@ -16,9 +16,9 @@
             <!--<Include>resource_lib/resource.hpp</Include>-->
             <!--<Include>ed/ed.hpp</Include>-->
             <Include>blueprint/factory.h</Include>
-            <Include>spaces/basicarea.h</Include>
-            <Include>spaces/basicfeature.h</Include>
-            <Include>spaces/blueprint.h</Include>
+            <Include>blueprint/basicarea.h</Include>
+            <Include>blueprint/basicfeature.h</Include>
+            <Include>blueprint/blueprint.h</Include>
             <!--<Include>GU/GU_Detail.h</Include>-->
         </Files>
 		<Command>${MEGA}/bin/geometry_host.exe</Command>
