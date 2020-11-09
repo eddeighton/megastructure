@@ -232,7 +232,24 @@ void generateLoadRecurse( std::ostream& os, const eg::Layout& layout, eg::Printe
     os << strIndent << "    {\n";
     const eg::DataMember* pDataMember = layout.getDataMember( pConstant ); 
     os << strIndent << "      Ed::IShorthandStream is( n" << ( iNodeCount + 1 ) << ".statement.shorthand.get() );\n";
-    os << strIndent << "      is >> " << *printerFactory.write( pDataMember, computeIndexString( pObject, pTree->pAction, iNodeCount ).c_str() ) << ";\n";
+    
+    if( pConstant->isEGType() )
+    {
+        
+    os << strIndent << "      {\n";
+    os << strIndent << "        eg::reference egRef;\n";
+    os << strIndent << "        Ed::Ref edRef;\n";
+    os << strIndent << "        is >> egRef.instance >> edRef >> egRef.timestamp;\n";
+    os << strIndent << "        egRef.type = fromReference( edRef );\n";
+    os << strIndent << "        " << *printerFactory.write( pDataMember, computeIndexString( pObject, pTree->pAction, iNodeCount ).c_str() ) << ".data = egRef;\n";
+    os << strIndent << "      }\n";
+        
+    }
+    else
+    {
+        os << strIndent << "      is >> " << *printerFactory.write( pDataMember, computeIndexString( pObject, pTree->pAction, iNodeCount ).c_str() ) << ";\n";
+    }
+    
     os << strIndent << "    }\n";
 }
     for( ConstTree::Ptr pChild : pTree->children )
@@ -347,7 +364,21 @@ void generateSaveRecurse( std::ostream& os, const eg::Layout& layout, eg::Printe
     os << strIndent << "  if( !dimNode.statement.shorthand )\n";
     os << strIndent << "    dimNode.statement.shorthand = Ed::Shorthand();\n";
     os << strIndent << "  Ed::OShorthandStream os( dimNode.statement.shorthand.get() );\n";
-    os << strIndent << "  os << " << *printerFactory.read( pDataMember, computeIndexString( pObject, pTree->pAction, iNodeCount + 1 ).c_str() ) << ";\n";
+    
+    if( pConstant->isEGType() )
+    {
+    os << strIndent << "  {\n";
+    os << strIndent << "    const eg::reference& egRef = " << 
+        *printerFactory.read( pDataMember, computeIndexString( pObject, pTree->pAction, iNodeCount + 1 ).c_str() ) << ".data;\n";
+    os << strIndent << "    const Ed::Ref edRef = fromRunTimeTypeID( egRef.type );\n";
+    os << strIndent << "    os << egRef.instance << edRef << egRef.timestamp;\n";
+    os << strIndent << "  }\n";
+    }
+    else
+    {
+        os << strIndent << "  os << " << *printerFactory.read( pDataMember, computeIndexString( pObject, pTree->pAction, iNodeCount + 1 ).c_str() ) << ";\n";
+    }
+    
     os << strIndent << "  n" << ( iNodeCount + 1 ) << ".children.push_back( dimNode );\n";
     os << strIndent << "}\n";
     }
@@ -387,6 +418,66 @@ void generateSave( std::ostream& os, const eg::Layout& layout, eg::PrinterFactor
     
 }
 
+void recurseFromRunTimeTypeID( std::ostream& os, const eg::concrete::Action* pContext )
+{
+    std::ostringstream osRef;
+    {
+        const std::vector< const ::eg::interface::Element* > path = 
+            ::eg::interface::getPath( pContext->getContext() );
+        bool bFirst = true;
+        for( const ::eg::interface::Element* pElement : path )
+        {
+            if( bFirst )
+                bFirst = false;
+            else
+                osRef << ',';
+            osRef << "Ed::Identifier{\"" << pElement->getIdentifier() << "\"}";
+        }
+    }
+    
+    os << "    case " << pContext->getIndex() << ": return Ed::make_ref( Ed::Reference{" << osRef.str() << "} );\n";
+    
+    for( const eg::concrete::Element* pChild : pContext->getChildren() )
+    {
+        if( const eg::concrete::Action* pChildAction = 
+            dynamic_cast< const eg::concrete::Action* >( pChild ) )
+        {
+            recurseFromRunTimeTypeID( os, pChildAction );
+        }
+    }
+}
+
+void recurseFromReference( std::ostream& os, const eg::concrete::Action* pContext, std::string& strIndent )
+{
+    strIndent.push_back( ' ' );
+    strIndent.push_back( ' ' );
+    strIndent.push_back( ' ' );
+    strIndent.push_back( ' ' );
+    os << strIndent << "if( boost::get< Ed::Identifier >( *iter ) == \"" << pContext->getContext()->getIdentifier() << "\" )\n";
+    os << strIndent << "{\n";
+    os << strIndent << "  ++iter;\n";
+    os << strIndent << "  if( iter == iterEnd )\n";
+    os << strIndent << "  {\n";
+    os << strIndent << "    return " << pContext->getIndex() << ";\n";
+    os << strIndent << "  }\n";
+    os << strIndent << "  else\n";
+    os << strIndent << "  {\n";
+    for( const eg::concrete::Element* pChild : pContext->getChildren() )
+    {
+        if( const eg::concrete::Action* pChildAction = 
+            dynamic_cast< const eg::concrete::Action* >( pChild ) )
+        {
+            recurseFromReference( os, pChildAction, strIndent );
+        }
+    }
+    os << strIndent << "  }\n";
+    os << strIndent << "}\n";
+    strIndent.pop_back();
+    strIndent.pop_back();
+    strIndent.pop_back();
+    strIndent.pop_back();
+}
+
 void generateConfigIO( std::ostream& os, const eg::ReadSession& session, 
         const Environment& environment, const ProjectTree& projectTree, 
         eg::PrinterFactory::Ptr pPrinterFactory )
@@ -396,6 +487,14 @@ void generateConfigIO( std::ostream& os, const eg::ReadSession& session,
     const eg::Layout&               layout              = session.getLayout();
     const eg::LinkAnalysis&         linkAnaysis         = session.getLinkAnalysis();
     const eg::DerivationAnalysis&   derivationAnalysis  = session.getDerivationAnalysis();
+    //const eg::interface::Context*   pInterfaceRoot      = session.getTreeRoot();
+    
+    const eg::concrete::Action* pActualConcreteRoot = nullptr;
+    {
+        const std::vector< eg::concrete::Element* >& children = pConcreteRoot->getChildren();
+        VERIFY_RTE( children.size() == 1U );
+        pActualConcreteRoot = dynamic_cast< const eg::concrete::Action* >( children.front() );
+    }
     
     const eg::concrete::Action* pComponentRoot = findComponentRoot( projectTree, pConcreteRoot );
     VERIFY_RTE_MSG( pComponentRoot, "Could not find component root" );
@@ -409,7 +508,6 @@ void generateConfigIO( std::ostream& os, const eg::ReadSession& session,
         VERIFY_RTE( bRootIsObject );
         
     }
-    
     
     os << "#include \"geometry/config_conversions.hpp\"\n";
     os << "#include \"" << projectTree.getStructuresInclude() << "\"\n";
@@ -444,6 +542,38 @@ void generateConfigIO( std::ostream& os, const eg::ReadSession& session,
     os << "    return os.str();\n";
     os << "}\n";
     os << "\n";
+    
+    os << "Ed::Ref fromRunTimeTypeID( eg::TypeID typeID )\n";
+    os << "{\n";
+    os << "  Ed::Ref r;\n";
+    os << "  switch( typeID )\n";
+    os << "  {\n";
+    recurseFromRunTimeTypeID( os, pActualConcreteRoot );
+    os << "     case 0: return Ed::make_ref( Ed::Reference{} );\n";
+    os << "     default: ERR( \"Failed to match runtime type for: \" << typeID );\n";
+    os << "  }\n";
+    os << "  return r;\n";
+    os << "}\n";
+    
+    os << "eg::TypeID fromReference( const Ed::Ref& reference )\n";
+    os << "{\n";
+    os << "  if( reference.size() == 1U )\n";
+    os << "  {\n";
+    os << "      Ed::Reference::const_iterator iter      = reference.front().begin();\n";
+    os << "      Ed::Reference::const_iterator iterEnd   = reference.front().end();\n";
+    os << "      if( iter != iterEnd )\n";
+    os << "      {\n";
+    std::string strIndent;
+    recurseFromReference( os, pActualConcreteRoot, strIndent );
+    os << "      }\n";
+    os << "      else\n";
+    os << "      {\n";
+    os << "        return 0;\n";//null
+    os << "      }\n";
+    os << "      ERR( \"Invalid reference:\" << reference );\n";
+    os << "  }\n";
+    os << "  return 0;\n";
+    os << "}\n";
     
     os << "void config_io_load( const char* pszSrcFolderPath )\n";
     os << "{\n";

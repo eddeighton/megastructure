@@ -3,9 +3,20 @@
 #define ED_CONVERSIONS_09_OCT_2020
 
 #include "ed/nodeio.hpp"
+#include "eg/common.hpp"
 
 namespace Ed
 {
+    inline OShorthandStream& operator<<( OShorthandStream& os, const eg::reference& v )
+    {
+        return os << v.instance << v.type << v.timestamp;
+    }
+
+    inline IShorthandStream& operator>>( IShorthandStream& os, eg::reference& v )
+    {
+        return os >> v.instance >> v.type >> v.timestamp;
+    }
+    
     inline OShorthandStream& operator<<( OShorthandStream& os, const FVector4& v )
     {
         return os << v.X << v.Y << v.Z << v.W;
