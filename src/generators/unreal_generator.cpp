@@ -61,6 +61,19 @@ namespace eg
         
         return os.str();
     }
+
+    inline std::string implName( const eg::concrete::Action* pNode )
+    {
+        std::ostringstream os;
+        os << "C" << pNode->getName();
+        return os.str();
+    }
+    inline std::string arrayName( const eg::concrete::Action* pNode )
+    {
+        std::ostringstream os;
+        os << "u_" << pNode->getName();
+        return os.str();
+    }
     
     struct ContextType
     {
@@ -155,10 +168,19 @@ namespace eg
     struct StaticInterfaceVisitor
     {
         const eg::LinkAnalysis& linkAnalysis;
+        const eg::DerivationAnalysis& derivationAnalysis;
         std::ostream& os;
         std::string strIndent;
 
-        StaticInterfaceVisitor( const eg::LinkAnalysis& _linkAnalysis, std::ostream& os ) : linkAnalysis( _linkAnalysis ), os( os ) {}
+        StaticInterfaceVisitor( 
+                    const eg::LinkAnalysis& _linkAnalysis, 
+                    const eg::DerivationAnalysis& _derivationAnalysis, std::ostream& os ) 
+            :   linkAnalysis( _linkAnalysis ), 
+                derivationAnalysis( _derivationAnalysis ), 
+                os( os ) 
+        {
+            pushIndent();
+        }
         
         void pushIndent()
         {
@@ -247,6 +269,20 @@ namespace eg
                     }
                 }
                 
+                //static constants
+                {
+                    std::vector< const eg::concrete::Element* > instances;
+                    derivationAnalysis.getInstances( pContext, instances, false );
+                    if( instances.size() == 1U )
+                    {
+                        const eg::concrete::Element* pConcrete = instances.front();
+                        const eg::concrete::Action* pConcreteAction = dynamic_cast< const eg::concrete::Action* >( pConcrete );
+                        VERIFY_RTE( pConcrete );
+                        os << strIndent << "  static const std::size_t TOTAL = " << pConcreteAction->getTotalDomainSize() << ";\n";
+                        //os << strIndent << "  static const " << interfaceName( pContext ) << "* begin( const ::Iroot* pRoot );\n";
+                    }
+                }
+                
                 //link groups
                 const LinkGroup::Vector& linkGroups = linkAnalysis.getLinkGroups();
                 for( const LinkGroup* pLinkGroup : linkGroups )
@@ -309,6 +345,92 @@ namespace eg
             }
         }
     };
+    
+    struct RootAccessorVisitor
+    {
+        const eg::DerivationAnalysis& derivationAnalysis;
+        std::ostream& os;
+
+        RootAccessorVisitor( 
+                    const eg::DerivationAnalysis& _derivationAnalysis, std::ostream& os ) 
+            :   derivationAnalysis( _derivationAnalysis ), 
+                os( os ) 
+        {
+        }
+
+        void push ( const input::Opaque*    pElement, const interface::Element* pNode )
+        {
+        }
+        void push ( const input::Dimension* pElement, const interface::Element* pNode )
+        {
+        }
+        void push ( const input::Include*   pElement, const interface::Element* pNode )
+        {
+        }
+        void push ( const input::Using*   pElement, const interface::Element* pNode )
+        {
+        }
+        void push ( const input::Export*   pElement, const interface::Element* pNode )
+        {
+        }
+        void push ( const input::Visibility* pElement, const interface::Element* pNode )
+        {
+        }
+        void push ( const input::Root* pElement, const interface::Element* pNode )
+        {
+            push( (const input::Context*) pElement, pNode );
+        }
+        void push ( const input::Context* pElement, const interface::Element* pNode )
+        {
+            const interface::Context* pContext = dynamic_cast< const interface::Context* >( pNode );
+            VERIFY_RTE( pContext );
+            
+            const eg::ContextType contextType( pContext );
+            if( contextType.isPointer() )
+            {
+                const std::vector< interface::Context* >& baseContexts = pContext->getBaseContexts();
+                                
+                //static constants
+                {
+                    std::vector< const eg::concrete::Element* > instances;
+                    derivationAnalysis.getInstances( pContext, instances, false );
+                    if( instances.size() == 1U )
+                    {
+                        const eg::concrete::Element* pConcrete = instances.front();
+                        const eg::concrete::Action* pConcreteAction = dynamic_cast< const eg::concrete::Action* >( pConcrete );
+                        VERIFY_RTE( pConcrete );
+                        os << "  virtual const " << fullInterfaceType( pContext ) << "* get_" << arrayName( pConcreteAction ) << "() const = 0;\n";
+                    }
+                }
+            }
+        }
+        void pop ( const input::Opaque* pElement, const interface::Element* pNode )
+        {
+        }
+        void pop ( const input::Dimension* pElement, const interface::Element* pNode )
+        {
+        }
+        void pop ( const input::Include* pElement, const interface::Element* pNode )
+        {
+        }
+        void pop ( const input::Using* pElement, const interface::Element* pNode )
+        {
+            //os << strIndent << "using " << pElement->getIdentifier() << " = " << pElement->getType()->getStr() << ";\n";
+        }
+        void pop ( const input::Export* pElement, const interface::Element* pNode )
+        {
+        }
+        void pop ( const input::Visibility* pElement, const interface::Element* pNode )
+        {
+        }
+        void pop ( const input::Root* pElement, const interface::Element* pNode )
+        {
+            pop( (const input::Context*) pElement, pNode );
+        }
+        void pop ( const input::Context* pElement, const interface::Element* pNode )
+        {
+        }
+    };
 }
 
 void generateUnrealInterface( std::ostream& os, const eg::ReadSession& session, 
@@ -320,12 +442,23 @@ void generateUnrealInterface( std::ostream& os, const eg::ReadSession& session,
     os << "\n\n";
     
     const eg::interface::Root* pInterfaceRoot = session.getTreeRoot();
+    VERIFY_RTE( pInterfaceRoot->getChildren().size() == 1U );
+    const eg::interface::Root* pActualRoot = 
+        dynamic_cast< const eg::interface::Root* >( pInterfaceRoot->getChildren().front() );
+    
     
     os << "struct IObject;\n";
     os << "struct IContext\n";
     os << "{\n";
+    os << "    enum ContextState : char\n";
+    os << "    {\n";
+    os << "        eOff,\n";
+    os << "        eRunning,\n";
+    os << "        eStopping,\n";
+    os << "        eSuspended\n";
+    os << "    };\n";
     os << "    virtual std::size_t getInstance() const = 0;\n";
-    //os << "    virtual std::size_t getRTTI() const = 0;\n";
+    os << "    virtual ContextState getState() const = 0;\n";
     os << "};\n";
     
     os << "struct IObject : public IContext\n";
@@ -333,30 +466,40 @@ void generateUnrealInterface( std::ostream& os, const eg::ReadSession& session,
     os << "};\n";
     
     const eg::LinkAnalysis& linkAnalysis = session.getLinkAnalysis();
+    const eg::DerivationAnalysis& derivationAnalysis = session.getDerivationAnalysis();
     
+    
+                
     {
         os << "\n//Object Interface\n";
-        eg::StaticInterfaceVisitor interfaceVisitor( linkAnalysis, os );
-        pInterfaceRoot->pushpop( interfaceVisitor );
+        
+        os << "struct Iroot : public IObject\n";
+        os << "{\n";
+        os << "  static const std::size_t TOTAL = 1;\n";
+        
+        {
+            eg::StaticInterfaceVisitor interfaceVisitor( linkAnalysis, derivationAnalysis, os );
+            for( const eg::interface::Element* pChildNode : pActualRoot->getChildren() )
+            {
+                pChildNode->pushpop( interfaceVisitor );
+            }
+        }
+        
+        {
+            eg::RootAccessorVisitor rootVisitor( derivationAnalysis, os );   
+            for( const eg::interface::Element* pChildNode : pActualRoot->getChildren() )
+            {
+                pChildNode->pushpop( rootVisitor );
+            }
+        }
+        
+        os << "};\n";
         os << "\n";
     }
     
     os << "#endif //UNREAL_INTERFACE\n";
 }
 
-
-inline std::string implName( const eg::concrete::Action* pNode )
-{
-    std::ostringstream os;
-    os << "C" << pNode->getName();
-    return os.str();
-}
-inline std::string arrayName( const eg::concrete::Action* pNode )
-{
-    std::ostringstream os;
-    os << "u_" << pNode->getName();
-    return os.str();
-}
 
 std::string dataTypeFull( const eg::interface::Dimension* pDimension )
 {
@@ -377,8 +520,73 @@ std::string dataTypeFull( const eg::interface::Dimension* pDimension )
     return os.str();
 }
     
-void generateImplementationDeclarations( std::ostream& os, const eg::LinkAnalysis& linkAnalysis, 
-    const eg::Layout& layout, const eg::concrete::Action* pContext, eg::PrinterFactory::Ptr pPrinterFactory )
+namespace eg
+{
+    struct RootAccessorDeclVisitor
+    {
+        const eg::DerivationAnalysis& derivationAnalysis;
+        std::ostream& os;
+
+        RootAccessorDeclVisitor( 
+                    const eg::DerivationAnalysis& _derivationAnalysis, std::ostream& os ) 
+            :   derivationAnalysis( _derivationAnalysis ), 
+                os( os ) 
+        { }
+
+        void push ( const input::Opaque*    pElement, const interface::Element* pNode ) { }
+        void push ( const input::Dimension* pElement, const interface::Element* pNode ) { }
+        void push ( const input::Include*   pElement, const interface::Element* pNode ) { }
+        void push ( const input::Using*   pElement, const interface::Element* pNode ) { }
+        void push ( const input::Export*   pElement, const interface::Element* pNode ) { }
+        void push ( const input::Visibility* pElement, const interface::Element* pNode ) { }
+        void push ( const input::Root* pElement, const interface::Element* pNode )
+        {
+            push( (const input::Context*) pElement, pNode );
+        }
+        void push ( const input::Context* pElement, const interface::Element* pNode )
+        {
+            const interface::Context* pContext = dynamic_cast< const interface::Context* >( pNode );
+            VERIFY_RTE( pContext );
+            
+            const eg::ContextType contextType( pContext );
+            if( contextType.isPointer() )
+            {
+                const std::vector< interface::Context* >& baseContexts = pContext->getBaseContexts();
+                                
+                //static constants
+                {
+                    std::vector< const eg::concrete::Element* > instances;
+                    derivationAnalysis.getInstances( pContext, instances, false );
+                    if( instances.size() == 1U )
+                    {
+                        const eg::concrete::Element* pConcrete = instances.front();
+                        const eg::concrete::Action* pConcreteAction = dynamic_cast< const eg::concrete::Action* >( pConcrete );
+                        VERIFY_RTE( pConcrete );
+                        os << "  const " << fullInterfaceType( pContext ) << "* get_" << arrayName( pConcreteAction ) << "() const;\n";
+                    }
+                }
+            }
+        }
+        void pop ( const input::Opaque* pElement, const interface::Element* pNode ) { }
+        void pop ( const input::Dimension* pElement, const interface::Element* pNode ) { }
+        void pop ( const input::Include* pElement, const interface::Element* pNode ) { }
+        void pop ( const input::Using* pElement, const interface::Element* pNode ) { }
+        void pop ( const input::Export* pElement, const interface::Element* pNode ) { }
+        void pop ( const input::Visibility* pElement, const interface::Element* pNode ) { }
+        void pop ( const input::Root* pElement, const interface::Element* pNode )
+        {
+            pop( (const input::Context*) pElement, pNode );
+        }
+        void pop ( const input::Context* pElement, const interface::Element* pNode ) { }
+    };
+}
+
+void generateImplementationDeclarations( std::ostream& os, 
+                const eg::LinkAnalysis& linkAnalysis, 
+                const eg::DerivationAnalysis& derivationAnalysis, 
+                const eg::Layout& layout, 
+                const eg::concrete::Action* pContext, 
+                eg::PrinterFactory::Ptr pPrinterFactory )
 {
     const std::vector< eg::concrete::Element* >& children = pContext->getChildren();
     
@@ -389,6 +597,21 @@ void generateImplementationDeclarations( std::ostream& os, const eg::LinkAnalysi
         os << "  " << implName( pContext ) << "( const eg::TypeInstance& egRef ) : ref( egRef ) {}\n";
         os << "  eg::TypeInstance ref;\n";
         os << "  std::size_t getInstance() const { return ref.instance; };\n";
+        
+        os << "  ContextState getState() const\n";
+        os << "  {\n";
+        os << "      switch( ::getState< " << eg::getStaticType( pContext->getContext() ) << " >( ref.type, ref.instance ) )\n";
+        os << "      {\n";
+        os << "          case eg::action_stopped :\n";
+        os << "              if( ::getStopCycle< " << eg::getStaticType( pContext->getContext() ) << " >( ref.type, ref.instance ) == clock::cycle( ref.type ) )\n";
+        os << "                  return eStopping;\n";
+        os << "              else\n";
+        os << "                  return eOff;\n";
+        os << "          case eg::action_running : return eRunning;\n";
+        os << "          case eg::action_paused  : return eSuspended;\n";
+        os << "          case eg::TOTAL_ACTION_STATES  : return eOff;\n";
+        os << "      }\n";
+        os << "  }\n";
         
         //link groups
         const eg::concrete::Action::LinkMap& links = pContext->getLinks();
@@ -436,6 +659,16 @@ void generateImplementationDeclarations( std::ostream& os, const eg::LinkAnalysi
             }
         }
         
+        if( fullInterfaceType( pContext->getContext() ) == "Iroot" )
+        {
+            const eg::interface::Context* pActualRoot = pContext->getContext();
+            eg::RootAccessorDeclVisitor rootVisitor( derivationAnalysis, os );   
+            for( const eg::interface::Element* pChildNode : pActualRoot->getChildren() )
+            {
+                pChildNode->pushpop( rootVisitor );
+            }
+        }
+        
         os << "};\n";
     
     }
@@ -456,7 +689,7 @@ void generateImplementationDeclarations( std::ostream& os, const eg::LinkAnalysi
             const eg::ContextType contextType( pContext );
             if( contextType.isPointer() )
             {
-                generateImplementationDeclarations( os, linkAnalysis, layout, pChildContext, pPrinterFactory );
+                generateImplementationDeclarations( os, linkAnalysis, derivationAnalysis, layout, pChildContext, pPrinterFactory );
             }
         }
     }
@@ -483,6 +716,9 @@ void generateAllocations( std::ostream& os, const eg::concrete::Action* pContext
         }
     }
     os << "const std::array< " << implName( pContext ) << ", " << iTotal << " > " << arrayName( pContext ) << " = { " << osInit.str() << " };\n";
+    
+    //const std::string strFullInterfaceType = fullInterfaceType( pContext->getContext() );
+    //os << "const " << strFullInterfaceType << "* " << strFullInterfaceType << "::begin( const ::Iroot* pRoot ) { return pRoot->get_" << arrayName( pContext ) << "(); }\n";
     
     const std::vector< eg::concrete::Element* >& children = pContext->getChildren();
     for( const eg::concrete::Element* pChildElement : children )
@@ -683,6 +919,67 @@ void generateImplementationDefinitions( std::ostream& os, const eg::LinkAnalysis
     }
 }
 
+namespace eg
+{
+    struct RootAccessorImplVisitor
+    {
+        const eg::DerivationAnalysis& derivationAnalysis;
+        std::ostream& os;
+
+        RootAccessorImplVisitor( 
+                    const eg::DerivationAnalysis& _derivationAnalysis, std::ostream& os ) 
+            :   derivationAnalysis( _derivationAnalysis ), 
+                os( os ) 
+        { }
+
+        void push ( const input::Opaque*    pElement, const interface::Element* pNode ) { }
+        void push ( const input::Dimension* pElement, const interface::Element* pNode ) { }
+        void push ( const input::Include*   pElement, const interface::Element* pNode ) { }
+        void push ( const input::Using*   pElement, const interface::Element* pNode ) { }
+        void push ( const input::Export*   pElement, const interface::Element* pNode ) { }
+        void push ( const input::Visibility* pElement, const interface::Element* pNode ) { }
+        void push ( const input::Root* pElement, const interface::Element* pNode )
+        {
+            push( (const input::Context*) pElement, pNode );
+        }
+        void push ( const input::Context* pElement, const interface::Element* pNode )
+        {
+            const interface::Context* pContext = dynamic_cast< const interface::Context* >( pNode );
+            VERIFY_RTE( pContext );
+            
+            const eg::ContextType contextType( pContext );
+            if( contextType.isPointer() )
+            {
+                const std::vector< interface::Context* >& baseContexts = pContext->getBaseContexts();
+                                
+                //static constants
+                {
+                    std::vector< const eg::concrete::Element* > instances;
+                    derivationAnalysis.getInstances( pContext, instances, false );
+                    if( instances.size() == 1U )
+                    {
+                        const eg::concrete::Element* pConcrete = instances.front();
+                        const eg::concrete::Action* pConcreteAction = dynamic_cast< const eg::concrete::Action* >( pConcrete );
+                        VERIFY_RTE( pConcrete );
+                        os << "const " << fullInterfaceType( pContext ) << "* Croot::get_" << arrayName( pConcreteAction ) << "() const { return &" << arrayName( pConcreteAction ) << "[ 0U ]; }\n";
+                    }
+                }
+            }
+        }
+        void pop ( const input::Opaque* pElement, const interface::Element* pNode ) { }
+        void pop ( const input::Dimension* pElement, const interface::Element* pNode ) { }
+        void pop ( const input::Include* pElement, const interface::Element* pNode ) { }
+        void pop ( const input::Using* pElement, const interface::Element* pNode ) { }
+        void pop ( const input::Export* pElement, const interface::Element* pNode ) { }
+        void pop ( const input::Visibility* pElement, const interface::Element* pNode ) { }
+        void pop ( const input::Root* pElement, const interface::Element* pNode )
+        {
+            pop( (const input::Context*) pElement, pNode );
+        }
+        void pop ( const input::Context* pElement, const interface::Element* pNode ) { }
+    };
+}
+
 void generateUnrealCode( std::ostream& os, const eg::ReadSession& session, 
         const Environment& environment, const ProjectTree& projectTree, eg::PrinterFactory::Ptr pPrinterFactory )
 {
@@ -704,7 +1001,7 @@ void generateUnrealCode( std::ostream& os, const eg::ReadSession& session,
     const eg::concrete::Action* pActualRoot = 
         dynamic_cast< const eg::concrete::Action* >( pConcreteRoot->getChildren().front() );
     
-    generateImplementationDeclarations( os, linkAnaysis, layout, pActualRoot, pPrinterFactory );
+    generateImplementationDeclarations( os, linkAnaysis, derivationAnalysis, layout, pActualRoot, pPrinterFactory );
     
     os << "\n";
     os << "using R = eg::TypeInstance;\n";
@@ -712,6 +1009,19 @@ void generateUnrealCode( std::ostream& os, const eg::ReadSession& session,
     generateAllocations( os, pActualRoot );
     
     generateImplementationDefinitions( os, linkAnaysis, layout, derivationAnalysis, pActualRoot, pPrinterFactory );
+    
+    {
+        const eg::interface::Root* pInterfaceRoot = session.getTreeRoot();
+        VERIFY_RTE( pInterfaceRoot->getChildren().size() == 1U );
+        const eg::interface::Root* pActualRoot = 
+            dynamic_cast< const eg::interface::Root* >( pInterfaceRoot->getChildren().front() );
+        
+        eg::RootAccessorImplVisitor rootVisitor( derivationAnalysis, os );   
+        for( const eg::interface::Element* pChildNode : pActualRoot->getChildren() )
+        {
+            pChildNode->pushpop( rootVisitor );
+        }
+    }
     
     os << "\n";
 
