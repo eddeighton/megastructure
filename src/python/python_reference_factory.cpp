@@ -177,6 +177,11 @@ PyObject* PythonEGReferenceFactory::create( eg::reference egReference )
     return pPythonObject;
 }
 
+void PythonEGReferenceFactory::printType( eg::TypeID type, std::ostream& os )
+{
+    m_egRuntime.printType( type, os );
+}
+   
 eg::TypeID PythonEGReferenceFactory::getTypeID( const char* pszIdentity )
 {
     return m_egRuntime.getTypeID( pszIdentity );

@@ -213,10 +213,10 @@ void generateLoadRecurse( std::ostream& os, const eg::Layout& layout, eg::Printe
     strIndent.push_back( ' ' );
     strIndent.push_back( ' ' );
     
+    os << strIndent << "int index_" << ( iNodeCount + 1 ) << ";\n";
     os << strIndent << "for( const Ed::Node& n" << ( iNodeCount + 1 ) << " : n" << iNodeCount << ".children )\n";
     os << strIndent << "{\n";
     os << strIndent << "  std::string identity_" << ( iNodeCount + 1 ) << ";\n";
-    os << strIndent << "  int index_" << ( iNodeCount + 1 ) << ";\n";
     os << strIndent << "  if( parseIdentifier( n" << ( iNodeCount + 1 ) << ".statement.declarator.identifier.get(), identity_" << ( iNodeCount + 1 ) << ", index_" << ( iNodeCount + 1 ) << " ) )\n";
     os << strIndent << "  {\n";
     
@@ -230,6 +230,7 @@ void generateLoadRecurse( std::ostream& os, const eg::Layout& layout, eg::Printe
     os << strIndent << "    //load: " << pConstant->getDimension()->getFriendlyName() << "\n";
     os << strIndent << "    else if( identity_" << ( iNodeCount + 1 ) << " == \"" << pConstant->getDimension()->getIdentifier() << "\" )\n";
     os << strIndent << "    {\n";
+    
     const eg::DataMember* pDataMember = layout.getDataMember( pConstant ); 
     os << strIndent << "      Ed::IShorthandStream is( n" << ( iNodeCount + 1 ) << ".statement.shorthand.get() );\n";
     
@@ -256,6 +257,14 @@ void generateLoadRecurse( std::ostream& os, const eg::Layout& layout, eg::Printe
     {
     os << strIndent << "    else if( identity_" << ( iNodeCount + 1 ) << " == \"" << pChild->pAction->getContext()->getIdentifier() << "\" )\n";
     os << strIndent << "    {\n";
+    
+    //allocate the object
+    os << strIndent << "        if( !::isActionActive< " << eg::getStaticType( pChild->pAction->getContext() ) << " >( " << 
+        pChild->pAction->getIndex() << ", " << computeIndexString( pObject, pChild->pAction, iNodeCount + 1 ) << "  ) )\n";
+    os << strIndent << "        {\n";
+    os << strIndent << "          " << pChild->pAction->getName() << "_starter( " << computeIndexString( pObject, pTree->pAction, iNodeCount ) << " );\n";
+    os << strIndent << "        }\n";
+    
     generateLoadRecurse( os, layout, printerFactory, pObject, pChild, strIndent, iNodeCount + 1 );
     os << strIndent << "    }\n";
     }
@@ -270,6 +279,10 @@ void generateLoadRecurse( std::ostream& os, const eg::Layout& layout, eg::Printe
     os << strIndent << "    ERR( \"Failed to match node: \" << identity_" << ( iNodeCount + 1 ) << " );\n";
     os << strIndent << "  }\n";
     os << strIndent << "}\n";
+    //os << strIndent << "for( ++index_" << ( iNodeCount + 1 ) << "; index_" << ( iNodeCount + 1 ) << " != " << pTree->pAction->getLocalDomainSize() << "; ++index_" << ( iNodeCount + 1 ) << " )\n";
+    //os << strIndent << "{\n";
+    //os << strIndent << "    " << pTree->pAction->getName() << "_stopper( " << computeIndexString( pObject, pTree->pAction, iNodeCount ) << " );\n";
+    //os << strIndent << "}\n";
     
     strIndent.pop_back();
     strIndent.pop_back();
@@ -311,6 +324,11 @@ void generateLoad( std::ostream& os, const eg::Layout& layout, eg::PrinterFactor
     os << "          }\n";
     os << "          else if( identity_1 == \"" << pTree->pAction->getContext()->getIdentifier() << "\" )\n";
     os << "          {\n";
+    os << "            if( !::isActionActive< " << eg::getStaticType( pTree->pAction->getContext() ) << " >( " << pTree->pAction->getIndex() << ", 0  ) )\n";
+    os << "            {\n";
+    os << "              " << pTree->pAction->getName() << "_starter( 0 );\n";
+    os << "            }\n";
+    
     std::string strIndent = "      ";
     generateLoadRecurse( os, layout, printerFactory, pObject, pTree, strIndent, 1 );
     os << "          }\n";
@@ -348,10 +366,17 @@ void generateSaveRecurse( std::ostream& os, const eg::Layout& layout, eg::Printe
     os << strIndent << "{\n";
     strIndent.push_back( ' ' );
     strIndent.push_back( ' ' );
+    
+    os << strIndent << "if( ::isActionActive< " << eg::getStaticType( pTree->pAction->getContext() ) << " >( " << pTree->pAction->getIndex() << ", index_" << ( iNodeCount + 1 ) << " ) )\n";
+    os << strIndent << "{\n";
+    strIndent.push_back( ' ' );
+    strIndent.push_back( ' ' );
+    
     os << strIndent << "Ed::Node n" << ( iNodeCount + 1 ) << ";\n";
     os << strIndent << "n" << ( iNodeCount + 1 ) << ".statement.declarator.identifier = makeIdentifier( \"" << 
         pTree->pAction->getContext()->getIdentifier() << "\", index_" << ( iNodeCount + 1 ) << ");\n";
         
+    //save dimensions
     for( const eg::concrete::Dimension_User* pConstant : pTree->constants )
     {
     os << strIndent << "//save: " << pConstant->getDimension()->getFriendlyName() << "\n";
@@ -382,6 +407,7 @@ void generateSaveRecurse( std::ostream& os, const eg::Layout& layout, eg::Printe
     os << strIndent << "  n" << ( iNodeCount + 1 ) << ".children.push_back( dimNode );\n";
     os << strIndent << "}\n";
     }
+    //save dimensions --end
     
     for( ConstTree::Ptr pChild : pTree->children )
     {
@@ -392,6 +418,10 @@ void generateSaveRecurse( std::ostream& os, const eg::Layout& layout, eg::Printe
     
     os << strIndent << "n" << iNodeCount << ".children.push_back( n" << ( iNodeCount + 1 ) << " );\n";
     
+    strIndent.pop_back();
+    strIndent.pop_back();
+    os << strIndent << "}\n"; //if( ::isActionActive
+        
     strIndent.pop_back();
     strIndent.pop_back();
     os << strIndent << "}\n";

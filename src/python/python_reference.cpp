@@ -56,7 +56,10 @@ int PythonEGReference::set( void* pClosure, PyObject* pValue )
 PyObject* PythonEGReference::str() const
 {
     std::ostringstream os;
-    os << "instance: " << m_reference.instance << " type: " << m_reference.type << " timestamp: " << m_reference.timestamp;
+    os << "type: ";
+    m_pythonReferenceFactory.printType( m_reference.type, os );
+    
+    os << " instance: " << m_reference.instance << " typeid: " << m_reference.type << " timestamp: " << m_reference.timestamp;
     for( std::vector< eg::TypeID >::const_iterator 
         i = m_type_path.begin(), iEnd = m_type_path.end(); i!=iEnd; ++i )
     {

@@ -3,6 +3,8 @@
 
 #include <pybind11/pybind11.h>
 
+#include <ostream>
+
 namespace megastructure
 {
     
@@ -18,6 +20,7 @@ public:
     
     PyObject* create( eg::reference ref );
     
+    void printType( eg::TypeID type, std::ostream& os );
     eg::TypeID getTypeID( const char* pszIdentity );
     PyObject* invoke( const eg::reference& reference, const std::vector< eg::TypeID >& typePath, PyObject *args, PyObject *kwargs );
     
