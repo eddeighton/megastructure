@@ -16,6 +16,10 @@
 
 #include "hostdll/hostdll.hpp"
 
+
+#include "X:/tsp/impl/reddwarf/unreal/tsp/unreal.hpp"
+
+
 struct Args
 {
 	boost::filesystem::path workspace_path;
@@ -114,6 +118,66 @@ int main( int argc, const char* argv[] )
                 }
                 else if( strInput == "test" )
                 {
+                    using ITSP = Iroot::Ireddwarf::Iunreal::Itsp;
+                    
+                    if( const Iroot* pRoot = (const Iroot*)pMegaHost->getRoot() )
+                    {
+                        std::cout << "Got Iroot" << std::endl;
+                        
+                        
+                        auto bridgeIter = pRoot->get_u_root_reddwarf_unreal_tsp_Bridge();
+                        for( std::size_t sz = 0U; sz != ITSP::IBridge::TOTAL; ++sz, bridgeIter.inc() )
+                        {
+                            const ITSP::IBridge* pEGBridge = bridgeIter.get();
+                            switch( pEGBridge->getState() )
+                            {
+                                case IContext::eOff        :
+                                    {
+                                    }
+                                    break;
+                                case IContext::eRunning    :
+                                    {
+                                        const ITSP::IpcShipClass::IpcShipVariant::IpcInteriorSpace::IpcSpaceVariant* pVariant = pEGBridge->m_roomVariant();
+                                        if( !pVariant )
+                                        {
+                                            std::cout << "Found bridge but no room variant" << std::endl;
+                                        }
+                                        else
+                                        {
+                                            std::cout << "Found bridge with room variant" << std::endl;
+                                        }
+                                        
+                                        const ITSP::IShip::IShipRoom* pShipRoom = static_cast< const ITSP::IShip::IShipRoom* >( pEGBridge->ShipRoom() );
+                                        if( !pShipRoom )
+                                        {
+                                            std::cout << "Ship room link missing" << std::endl;
+                                        }
+                                        else
+                                        {
+                                            const ITSP::IShip* pShip = static_cast< const ITSP::IShip* >( pShipRoom->getParent() );
+                                            if( !pShip )
+                                            {
+                                                std::cout << "Ship room link parent ship null" << std::endl;
+                                            }
+                                            else
+                                            {
+                                                std::cout << "Found ship from room link with instance: " << pShip->getInstance() << std::endl;
+                                            }
+                                        }
+                                    }
+                                    break;
+                                case IContext::eStopping   :
+                                case IContext::eSuspended  :
+                                    break;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        std::cout << "No current root" << std::endl;
+                    }
+                        
+                    
                     /*using TestProject = Iroot::Ireddwarf::Iunreal::Itestproject;
                     const Iroot* pRoot = (const Iroot*)pMegaHost->getRoot();
                     if( const Iroot::Ireddwarf* pRedDwarf = pRoot->reddwarf( 0 ) )

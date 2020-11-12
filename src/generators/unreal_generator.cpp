@@ -269,6 +269,13 @@ namespace eg
                     }
                 }
                 
+                //parent access
+                if( const interface::Context* pParentContext = 
+                        dynamic_cast< const interface::Context* >( pContext->getParent() ) )
+                {
+                    os << strIndent << "  virtual const IContext* getParent() const = 0;\n";
+                }
+                
                 //static constants
                 {
                     std::vector< const eg::concrete::Element* > instances;
@@ -399,7 +406,7 @@ namespace eg
                         const eg::concrete::Element* pConcrete = instances.front();
                         const eg::concrete::Action* pConcreteAction = dynamic_cast< const eg::concrete::Action* >( pConcrete );
                         VERIFY_RTE( pConcrete );
-                        os << "  virtual const " << fullInterfaceType( pContext ) << "* get_" << arrayName( pConcreteAction ) << "() const = 0;\n";
+                        os << "  virtual const Iter< " << fullInterfaceType( pContext ) << " > get_" << arrayName( pConcreteAction ) << "() const = 0;\n";
                     }
                 }
             }
@@ -446,10 +453,27 @@ void generateUnrealInterface( std::ostream& os, const eg::ReadSession& session,
     const eg::interface::Root* pActualRoot = 
         dynamic_cast< const eg::interface::Root* >( pInterfaceRoot->getChildren().front() );
     
-    
-    os << "struct IObject;\n";
+    os << "template< typename T >\n";
+    os << "class Iter\n";
+    os << "{\n";
+    os << "  const char* m_pBase;\n";
+    os << "  std::size_t m_szStride;\n";
+    os << "public:\n";
+    os << "  Iter( const void* pBase, std::size_t szStride )\n";
+    os << "      :   m_pBase( reinterpret_cast< const char* >( pBase ) ),\n";
+    os << "          m_szStride( szStride )\n";
+    os << "  {\n";
+    os << "  }\n";
+    os << "  inline const T* get() const { return reinterpret_cast< const T* >( m_pBase ); }\n";
+    os << "  inline void inc()\n";
+    os << "  {\n";
+    os << "      m_pBase += m_szStride;\n";
+    os << "  }\n";
+    os << "};\n";
+    os << "\n";
     os << "struct IContext\n";
     os << "{\n";
+    os << "    virtual ~IContext();\n";
     os << "    enum ContextState : char\n";
     os << "    {\n";
     os << "        eOff,\n";
@@ -562,7 +586,7 @@ namespace eg
                         const eg::concrete::Element* pConcrete = instances.front();
                         const eg::concrete::Action* pConcreteAction = dynamic_cast< const eg::concrete::Action* >( pConcrete );
                         VERIFY_RTE( pConcrete );
-                        os << "  const " << fullInterfaceType( pContext ) << "* get_" << arrayName( pConcreteAction ) << "() const;\n";
+                        os << "  const Iter< " << fullInterfaceType( pContext ) << " > get_" << arrayName( pConcreteAction ) << "() const;\n";
                     }
                 }
             }
@@ -598,6 +622,12 @@ void generateImplementationDeclarations( std::ostream& os,
         os << "  eg::TypeInstance ref;\n";
         os << "  std::size_t getInstance() const { return ref.instance; };\n";
         
+        if( const eg::interface::Context* pParentContext = 
+                dynamic_cast< const eg::interface::Context* >( pContext->getContext()->getParent() ) )
+        {
+        os << "  const IContext* getParent() const;\n";
+        }
+                
         os << "  ContextState getState() const\n";
         os << "  {\n";
         os << "      switch( ::getState< " << eg::getStaticType( pContext->getContext() ) << " >( ref.type, ref.instance ) )\n";
@@ -717,9 +747,6 @@ void generateAllocations( std::ostream& os, const eg::concrete::Action* pContext
     }
     os << "const std::array< " << implName( pContext ) << ", " << iTotal << " > " << arrayName( pContext ) << " = { " << osInit.str() << " };\n";
     
-    //const std::string strFullInterfaceType = fullInterfaceType( pContext->getContext() );
-    //os << "const " << strFullInterfaceType << "* " << strFullInterfaceType << "::begin( const ::Iroot* pRoot ) { return pRoot->get_" << arrayName( pContext ) << "(); }\n";
-    
     const std::vector< eg::concrete::Element* >& children = pContext->getChildren();
     for( const eg::concrete::Element* pChildElement : children )
     {
@@ -746,6 +773,20 @@ void generateImplementationDefinitions( std::ostream& os, const eg::LinkAnalysis
     
     if( pContext->getParent() )
     {
+        if( const eg::concrete::Action* pParentContext = 
+                dynamic_cast< const eg::concrete::Action* >( pContext->getParent() ) )
+        {
+            if( arrayName( pParentContext ) == "u_" )
+            {
+                os << "const IContext* " << implName( pContext ) << "::getParent() const { return nullptr; }\n";
+            }
+            else
+            {
+                os << "const IContext* " << implName( pContext ) << "::getParent() const { return &" << 
+                    arrayName( pParentContext ) << "[ ref.instance / " << pContext->getLocalDomainSize() << " ]; }\n";
+            }
+        }
+        
         //link groups
         const eg::concrete::Action::LinkMap& links = pContext->getLinks();
         for( eg::concrete::Action::LinkMap::const_iterator i = links.begin(),
@@ -961,7 +1002,9 @@ namespace eg
                         const eg::concrete::Element* pConcrete = instances.front();
                         const eg::concrete::Action* pConcreteAction = dynamic_cast< const eg::concrete::Action* >( pConcrete );
                         VERIFY_RTE( pConcrete );
-                        os << "const " << fullInterfaceType( pContext ) << "* Croot::get_" << arrayName( pConcreteAction ) << "() const { return &" << arrayName( pConcreteAction ) << "[ 0U ]; }\n";
+                        os << "const Iter< " << fullInterfaceType( pContext ) << " > Croot::get_" << arrayName( pConcreteAction ) << 
+                            "() const { return Iter< " << fullInterfaceType( pContext ) << " >( &" << 
+                                arrayName( pConcreteAction ) << "[ 0U ], sizeof( " << implName( pConcreteAction ) << " ) ); }\n";
                     }
                 }
             }
@@ -1005,6 +1048,7 @@ void generateUnrealCode( std::ostream& os, const eg::ReadSession& session,
     
     os << "\n";
     os << "using R = eg::TypeInstance;\n";
+    os << "IContext::~IContext(){}\n";
     
     generateAllocations( os, pActualRoot );
     

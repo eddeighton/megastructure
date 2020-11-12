@@ -100,6 +100,7 @@ int main( int argc, const char* argv[] )
                     std::cout << "test:   Test existing connections and drop inactive ones.\n";
                     std::cout << "list:   List existing connections.\n";
                     std::cout << "start:  Start a program.\n";
+                    std::cout << "stop:   Stop any current program.\n";
                     std::cout << "load:   Load config for active program.\n";
                     std::cout << "save:   Save config for active program.\n";
                     std::cout << "quit:   Quit.\n";
@@ -117,6 +118,10 @@ int main( int argc, const char* argv[] )
                     std::string programName;
                     std::cin >> programName;
                     master.startActivity( new master::LoadProgram( master, programName ) );
+                }
+                else if( inputString == "stop" )
+                {
+                    master.startActivity( new master::LoadProgram( master, "" ) );
                 }
                 else if( inputString == "load" )
                 {
