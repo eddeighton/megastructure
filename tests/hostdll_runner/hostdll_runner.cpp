@@ -17,7 +17,7 @@
 #include "hostdll/hostdll.hpp"
 
 
-#include "X:/tsp/impl/reddwarf/unreal/tsp/unreal.hpp"
+//#include "X:/tsp/impl/reddwarf/unreal/tsp/unreal.hpp"
 
 
 struct Args
@@ -118,12 +118,12 @@ int main( int argc, const char* argv[] )
                 }
                 else if( strInput == "test" )
                 {
-                    using ITSP = Iroot::Ireddwarf::Iunreal::Itsp;
+                    //using ITSP = Iroot::Ireddwarf::Iunreal::Itsp;
                     
+                    /*
                     if( const Iroot* pRoot = (const Iroot*)pMegaHost->getRoot() )
                     {
                         std::cout << "Got Iroot" << std::endl;
-                        
                         
                         auto bridgeIter = pRoot->get_u_root_reddwarf_unreal_tsp_Bridge();
                         for( std::size_t sz = 0U; sz != ITSP::IBridge::TOTAL; ++sz, bridgeIter.inc() )
@@ -175,25 +175,6 @@ int main( int argc, const char* argv[] )
                     else
                     {
                         std::cout << "No current root" << std::endl;
-                    }
-                        
-                    
-                    /*using TestProject = Iroot::Ireddwarf::Iunreal::Itestproject;
-                    const Iroot* pRoot = (const Iroot*)pMegaHost->getRoot();
-                    if( const Iroot::Ireddwarf* pRedDwarf = pRoot->reddwarf( 0 ) )
-                    {
-                        if( const Iroot::Ireddwarf::Iunreal* pUnreal = pRedDwarf->unreal( 0 ) )
-                        {
-                            if( const TestProject* pTestProject = pUnreal->testproject( 0 ) )
-                            {
-                                size_t iSim = pTestProject->Tank_begin();
-                                while( const TestProject::ITank* pSimTank = pTestProject->Tank( iSim ) )
-                                {
-                                    std::cout << "Tank: " << pSimTank->getInstance() << " x: " << pSimTank->x() << " y: " << pSimTank->y() << " angle: " <<pSimTank->angle() << "\n";
-                                    iSim = pTestProject->Tank_next( iSim );
-                                }
-                            }
-                        }
                     }*/
                     
                 }
