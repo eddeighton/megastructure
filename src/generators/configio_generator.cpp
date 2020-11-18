@@ -194,10 +194,12 @@ std::string computeIndexString( const eg::interface::Object* pObject, const eg::
     std::ostringstream os;
     
     os << " ( index_" << iNodeCount-- << " ) ";
+    int iComponentFactor = pAction->getLocalDomainSize();
     while( pAction->getContext() != pObject )
     {
-        os << " + ( index_" << iNodeCount-- << " * " << pAction->getLocalDomainSize() << " ) ";
+        os << " + ( index_" << iNodeCount-- << " * " << iComponentFactor << " ) ";
         pAction = dynamic_cast< const eg::concrete::Action* >( pAction->getParent() );
+        iComponentFactor *= pAction->getLocalDomainSize();
     }
     
     return os.str();
@@ -324,7 +326,7 @@ void generateLoad( std::ostream& os, const eg::Layout& layout, eg::PrinterFactor
     os << "          }\n";
     os << "          else if( identity_1 == \"" << pTree->pAction->getContext()->getIdentifier() << "\" )\n";
     os << "          {\n";
-    os << "            if( !::isActionActive< " << eg::getStaticType( pTree->pAction->getContext() ) << " >( " << pTree->pAction->getIndex() << ", 0  ) )\n";
+    os << "            if( !::isActionActive< " << eg::getStaticType( pTree->pAction->getContext() ) << " >( " << pTree->pAction->getIndex() << ", index_1  ) )\n";
     os << "            {\n";
     os << "              " << pTree->pAction->getName() << "_starter( 0 );\n";
     os << "            }\n";
@@ -367,7 +369,11 @@ void generateSaveRecurse( std::ostream& os, const eg::Layout& layout, eg::Printe
     strIndent.push_back( ' ' );
     strIndent.push_back( ' ' );
     
-    os << strIndent << "if( ::isActionActive< " << eg::getStaticType( pTree->pAction->getContext() ) << " >( " << pTree->pAction->getIndex() << ", index_" << ( iNodeCount + 1 ) << " ) )\n";
+    //os << strIndent << "if( ::isActionActive< " << eg::getStaticType( pTree->pAction->getContext() ) << " >( " << pTree->pAction->getIndex() << ", index_" << ( iNodeCount + 1 ) << " ) )\n";
+    
+    os << strIndent << "if( ::isActionActive< " << eg::getStaticType( pTree->pAction->getContext() ) << " >( " << 
+        pTree->pAction->getIndex() << ", " << computeIndexString( pObject, pTree->pAction, iNodeCount + 1 ) << "  ) )\n";
+        
     os << strIndent << "{\n";
     strIndent.push_back( ' ' );
     strIndent.push_back( ' ' );
