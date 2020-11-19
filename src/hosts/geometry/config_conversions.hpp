@@ -5,6 +5,8 @@
 #include "ed/nodeio.hpp"
 #include "eg/common.hpp"
 
+#include <stdexcept>
+
 namespace Ed
 {
     inline OShorthandStream& operator<<( OShorthandStream& os, const eg::reference& v )
@@ -98,6 +100,13 @@ namespace Ed
         
         os >> fq >> ft >> fs;
         v.SetComponents( fq, ft, fs );
+        v.NormalizeRotation();
+        
+        //check valid
+        if( !v.IsValid() )
+        {
+            throw std::runtime_error( "Invalid transform" );
+        }
         
         return os;
     }
