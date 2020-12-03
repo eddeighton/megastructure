@@ -16,8 +16,7 @@
             <!--<Include>resource_lib/resource.hpp</Include>-->
             <!--<Include>ed/ed.hpp</Include>-->
             <Include>blueprint/factory.h</Include>
-            <Include>blueprint/basicarea.h</Include>
-            <Include>blueprint/basicfeature.h</Include>
+            <Include>blueprint/space.h</Include>
             <Include>blueprint/blueprint.h</Include>
             <!--<Include>GU/GU_Detail.h</Include>-->
         </Files>
