@@ -140,6 +140,7 @@ public:
 	boost::filesystem::path getBuildFolder() const;
 	boost::filesystem::path getStashFolder() const;
 	boost::filesystem::path getAssetStashFolder() const;
+	boost::filesystem::path getIntermediateFolder() const;
 	boost::filesystem::path getUnrealSourceFolder() const;
 	boost::filesystem::path getUnrealContentFolder() const;
     boost::filesystem::path getManifestFile() const;
