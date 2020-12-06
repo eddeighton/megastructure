@@ -63,12 +63,12 @@ namespace build
 
     namespace Implementation
     {
-        extern void build_implementation( const boost::filesystem::path& projectDirectory, 
-                const std::string& strCoordinator, 
-                const std::string& strHost, 
-                const std::string& strProject, 
+        extern void build_implementation( const boost::filesystem::path& projectDirectory,
+                const std::string& strCoordinator,
+                const std::string& strHost,
+                const std::string& strProject,
                 const std::string& strCompilationFlags,
-                const std::vector< std::string >& egSourceFiles, 
+                const std::vector< std::string >& egSourceFiles,
                 const boost::filesystem::path& binPath );
     }
 }
@@ -76,38 +76,38 @@ namespace build
 void command_build( bool bHelp, const std::string& strBuildCommand, const std::vector< std::string >& args )
 {
     std::string strDirectory, strProject, strCoordinator, strHost, strBin;
-    
-	boost::filesystem::path binPath;
+
+    boost::filesystem::path binPath;
     //bool bBenchCommands = false;
     //bool bLogCommands = false;
     bool bFullRebuild = false;
-	std::vector< std::string > flags;
+    std::vector< std::string > flags;
     std::string names;
-    
+
     namespace po = boost::program_options;
     po::options_description commandOptions(" Build Project Command");
     {
         commandOptions.add_options()
-            ("dir",     	po::value< std::string >( &strDirectory ), "Project directory")
-			("project", 	po::value< std::string >( &strProject ), "Project Name" )
-			("coordinator", po::value< std::string >( &strCoordinator ), "Coordinator Name" )
-			("host", 		po::value< std::string >( &strHost ), "Host Name" )
-			("bin",         po::value< boost::filesystem::path >( &binPath ), "Binary Directory" )
-            //("bench",   	po::bool_switch( &bBenchCommands ), "Benchmark compilation steps" )
-            //("trace",   	po::bool_switch( &bLogCommands ), "Trace compilation commands" )
-            ("full",    	po::bool_switch( &bFullRebuild ), "Full rebuild - do not reuse previous objects or precompiled headers" )
-			("flags",   	po::value< std::vector< std::string > >( &flags ), "C++ Compilation Flags" )
-			("names",   	po::value< std::string >( &names ), "eg source file names ( no extension, semicolon delimited )" )
+            ("dir",         po::value< std::string >( &strDirectory ), "Project directory")
+            ("project",     po::value< std::string >( &strProject ), "Project Name" )
+            ("coordinator", po::value< std::string >( &strCoordinator ), "Coordinator Name" )
+            ("host",        po::value< std::string >( &strHost ), "Host Name" )
+            ("bin",         po::value< boost::filesystem::path >( &binPath ), "Binary Directory" )
+            //("bench",     po::bool_switch( &bBenchCommands ), "Benchmark compilation steps" )
+            //("trace",     po::bool_switch( &bLogCommands ), "Trace compilation commands" )
+            ("full",        po::bool_switch( &bFullRebuild ), "Full rebuild - do not reuse previous objects or precompiled headers" )
+            ("flags",       po::value< std::vector< std::string > >( &flags ), "C++ Compilation Flags" )
+            ("names",       po::value< std::string >( &names ), "eg source file names ( no extension, semicolon delimited )" )
         ;
     }
-    
+
     po::positional_options_description p;
     p.add( "dir", -1 );
-    
+
     po::variables_map vm;
     po::store( po::command_line_parser( args ).options( commandOptions ).positional( p ).run(), vm );
     po::notify( vm );
-    
+
     if( bHelp )
     {
         std::cout << commandOptions << "\n";
@@ -119,29 +119,29 @@ void command_build( bool bHelp, const std::string& strBuildCommand, const std::v
             std::cout << "Missing build command type" << std::endl;
             return;
         }
-		
-		std::string strCompilationFlags;
-		{
-			std::ostringstream osFlags;
-			for( const auto& str : flags )
-				osFlags << str << " ";
-			strCompilationFlags = osFlags.str();
-		}
-        
+
+        std::string strCompilationFlags;
+        {
+            std::ostringstream osFlags;
+            for( const auto& str : flags )
+                osFlags << str << " ";
+            strCompilationFlags = osFlags.str();
+        }
+
         if( strCompilationFlags.empty() )
         {
             //use defaults
             std::cout << "Warning using default compiler flags as none specified" << std::endl;
             strCompilationFlags = "-O3 -mllvm -polly -MD -DNDEBUG -D_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH -DWIN32_LEAN_AND_MEAN -D_DLL -DNOMINMAX -DBOOST_ALL_NO_LIB -D_CRT_SECURE_NO_WARNINGS -DBOOST_USE_WINDOWS_H -D_WIN32_WINNT=0x0601 -DWIN32 -D_WINDOWS -Xclang -std=c++17 -Xclang -fcoroutines-ts -Xclang -flto-visibility-public-std -Xclang -Wno-deprecated -Xclang -fexceptions -Xclang -Wno-inconsistent-missing-override";
         }
-		
-		if( strProject.empty() )
-		{
+
+        if( strProject.empty() )
+        {
             std::cout << "Missing project name" << std::endl;
             return;
-		}
-        
-        const boost::filesystem::path projectDirectory = 
+        }
+
+        const boost::filesystem::path projectDirectory =
             boost::filesystem::edsCannonicalise(
                 boost::filesystem::absolute( strDirectory ) );
 
@@ -153,9 +153,9 @@ void command_build( bool bHelp, const std::string& strBuildCommand, const std::v
         {
             THROW_RTE( "Specified path is not a directory: " << projectDirectory.generic_string() );
         }
-		
-		if( bFullRebuild )
-		{
+
+        if( bFullRebuild )
+        {
             Environment environment;
             ProjectTree projectTree( environment, projectDirectory, strProject );
             if( boost::filesystem::exists( projectTree.getInterfaceFolder() ) )
@@ -173,14 +173,14 @@ void command_build( bool bHelp, const std::string& strBuildCommand, const std::v
                 std::cout << "Removing: " << projectTree.getStashFolder().generic_string() << std::endl;
                 boost::filesystem::remove_all( projectTree.getStashFolder() );
             }
-		}
-		
-		if( strCoordinator.empty() && strHost.empty() )
-		{
-			build::Interface::build_interface( projectDirectory, strProject, strCompilationFlags );
-		}
-		else
-		{
+        }
+
+        if( strCoordinator.empty() && strHost.empty() )
+        {
+            build::Interface::build_interface( projectDirectory, strProject, strCompilationFlags );
+        }
+        else
+        {
             //tokenize semi colon delimited names
             std::vector< std::string > egFileNames;
             {
@@ -194,13 +194,13 @@ void command_build( bool bHelp, const std::string& strBuildCommand, const std::v
             //{
             //    std::cout << "eg source name: " << str << std::endl;
             //}
-        
-			VERIFY_RTE_MSG( !strCoordinator.empty(), "Missing Coordinator" );
-			VERIFY_RTE_MSG( !strHost.empty(), "Missing Host Name" );
-            
-			build::Implementation::build_implementation( 
+
+            VERIFY_RTE_MSG( !strCoordinator.empty(), "Missing Coordinator" );
+            VERIFY_RTE_MSG( !strHost.empty(), "Missing Host Name" );
+
+            build::Implementation::build_implementation(
                 projectDirectory, strCoordinator, strHost, strProject, strCompilationFlags, egFileNames, binPath );
-		}
+        }
     }
-    
+
 }
