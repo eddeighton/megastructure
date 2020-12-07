@@ -618,7 +618,8 @@ void generateImplementationDeclarations( std::ostream& os,
     {
         os << "struct " << implName( pContext ) << " : public " << fullInterfaceType( pContext->getContext() ) << "\n";
         os << "{\n";
-        os << "  " << implName( pContext ) << "( const eg::TypeInstance& egRef ) : ref( egRef ) {}\n";
+        //os << "  " << implName( pContext ) << "( const eg::TypeInstance& egRef ) : ref( egRef ) {}\n";
+        os << "  " << implName( pContext ) << "(){}\n";
         os << "  eg::TypeInstance ref;\n";
         os << "  std::size_t getInstance() const { return ref.instance; };\n";
         
@@ -730,22 +731,9 @@ void generateAllocations( std::ostream& os, const eg::concrete::Action* pContext
 {
     VERIFY_RTE( pContext->getParent() );
     
-    std::ostringstream osInit;
     const auto iTotal = pContext->getTotalDomainSize();
-    bool bFirst = true;
-    for( int i = 0; i < iTotal; ++i )
-    {
-        if( bFirst )
-        {
-            osInit << "R{ " << i << ", " << pContext->getIndex() << " }";
-            bFirst = false;
-        }
-        else
-        {
-            osInit << ",R{ " << i << ", " << pContext->getIndex() << " }";
-        }
-    }
-    os << "const std::array< " << implName( pContext ) << ", " << iTotal << " > " << arrayName( pContext ) << " = { " << osInit.str() << " };\n";
+    
+    os << "const InterfaceArray< " << implName( pContext ) << ", " << iTotal << ", " << pContext->getIndex() << " > " << arrayName( pContext ) << ";\n";
     
     const std::vector< eg::concrete::Element* >& children = pContext->getChildren();
     for( const eg::concrete::Element* pChildElement : children )
@@ -1049,6 +1037,20 @@ void generateUnrealCode( std::ostream& os, const eg::ReadSession& session,
     os << "\n";
     os << "using R = eg::TypeInstance;\n";
     os << "IContext::~IContext(){}\n";
+    
+    os << "template< typename T, eg::Instance Size, eg::TypeID Index >\n";
+    os << "struct InterfaceArray\n";
+    os << "{\n";
+    os << "    std::array< T, Size > data;\n";
+    os << "    InterfaceArray()\n";
+    os << "    {\n";
+    os << "          for( eg::Instance sz = 0U; sz != Size; ++sz )\n";
+    os << "          {\n";
+    os << "              data[ sz ].ref = eg::TypeInstance{ sz, Index };\n";
+    os << "          }\n";
+    os << "    }\n";
+    os << "    const T& operator[]( std::size_t sz )const { return data[ sz ]; }\n";
+    os << "};\n";
     
     generateAllocations( os, pActualRoot );
     

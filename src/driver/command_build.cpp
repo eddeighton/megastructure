@@ -55,7 +55,7 @@
 #include <map>
 
 namespace build
-    {
+{
     namespace Interface
     {
         extern void build_interface( const boost::filesystem::path& projectDirectory, const std::string& strProject, const std::string& strCompilationFlags );
