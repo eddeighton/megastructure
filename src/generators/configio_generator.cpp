@@ -155,7 +155,7 @@ bool pruneTree( ConstTree::Ptr pTree )
     }
 }
 
-using ObjectTreeMap = std::map< const eg::interface::Object*, ConstTree::Ptr >;
+using ObjectTreeMap = std::map< const eg::interface::Object*, ConstTree::Ptr, eg::CompareIndexedObjects >;
     
 bool gatherObjectTrees( ObjectTreeMap& objectTreeMap, ConstTree::Ptr pTree )
 {

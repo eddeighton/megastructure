@@ -79,35 +79,66 @@ namespace eg
     {
         ContextType( const interface::Context* pContext )
         {
-            if( const interface::Event* pEvent = dynamic_cast< const interface::Event* >( pContext ) )
+            
+            //is the context in the unreal path to the root?
+            
+            const interface::Root* pCoordinator = nullptr;
+            const interface::Root* pHostname = nullptr;
+             
+            if( pContext->getCoordinatorHostname( pCoordinator, pHostname ) )
             {
-            }
-            else if( const interface::Function* pFunction = dynamic_cast< const interface::Function* >( pContext ) )
-            {
-            }
-            else if( const interface::Action* pAction = dynamic_cast< const interface::Action* >( pContext ) )
-            {
-                bIsPointer = true;
-                bIsEnumerable = true;
-            }
-            else if( const interface::Object* pObject = dynamic_cast< const interface::Object* >( pContext ) )
-            {
-                bIsPointer = true;
-                bIsEnumerable = true;
-                bIsObject = true;
-            }
-            else if( const interface::Link* pLink = dynamic_cast< const interface::Link* >( pContext ) )
-            {
-                bIsPointer = true;
-                bIsEnumerable = true;
-            }
-            else if( const interface::Abstract* pAbstract = dynamic_cast< const interface::Abstract* >( pContext ) )
-            {
-                bIsPointer = true;
+                if( pHostname )
+                {
+                    if( pHostname->getIdentifier() == "unreal" )
+                    {
+                        if( const interface::Event* pEvent = dynamic_cast< const interface::Event* >( pContext ) )
+                        {
+                        }
+                        else if( const interface::Function* pFunction = dynamic_cast< const interface::Function* >( pContext ) )
+                        {
+                        }
+                        else if( const interface::Action* pAction = dynamic_cast< const interface::Action* >( pContext ) )
+                        {
+                            bIsPointer = true;
+                            bIsEnumerable = true;
+                        }
+                        else if( const interface::Object* pObject = dynamic_cast< const interface::Object* >( pContext ) )
+                        {
+                            bIsPointer = true;
+                            bIsEnumerable = true;
+                            bIsObject = true;
+                        }
+                        else if( const interface::Link* pLink = dynamic_cast< const interface::Link* >( pContext ) )
+                        {
+                            bIsPointer = true;
+                            bIsEnumerable = true;
+                        }
+                        else if( const interface::Abstract* pAbstract = dynamic_cast< const interface::Abstract* >( pContext ) )
+                        {
+                            bIsPointer = true;
+                        }
+                        else
+                        {
+                            THROW_RTE( "Unknown context type" );
+                        }
+                    }
+                    else
+                    {
+                        //all false
+                    }
+                }
+                else
+                {
+                    bIsEnumerable = true;
+                    bIsPointer = true;
+                    bIsObject = true;
+                }
             }
             else
             {
-                THROW_RTE( "Unknown context type" );
+                bIsEnumerable = true;
+                bIsPointer = true;
+                bIsObject = true;
             }
         }
         
@@ -198,11 +229,18 @@ namespace eg
         }
         void push ( const input::Dimension* pElement, const interface::Element* pNode )
         {
+            const interface::Context* pContext = dynamic_cast< const interface::Context* >( pNode->getParent() );
+            VERIFY_RTE( pContext );
+            
             //generate access to the dimension
-            const interface::Dimension* pDimension = dynamic_cast< const interface::Dimension* >( pNode );
-            if( dataTypeSupported( pDimension ) )
+            const eg::ContextType contextType( pContext );
+            if( contextType.isPointer() )
             {
-                os << strIndent << "virtual " << dataType( pDimension ) << " " << pDimension->getIdentifier() << "() const = 0;\n";
+                const interface::Dimension* pDimension = dynamic_cast< const interface::Dimension* >( pNode );
+                if( dataTypeSupported( pDimension ) )
+                {
+                    os << strIndent << "virtual " << dataType( pDimension ) << " " << pDimension->getIdentifier() << "() const = 0;\n";
+                }
             }
         }
         void push ( const input::Include*   pElement, const interface::Element* pNode )
@@ -316,7 +354,6 @@ namespace eg
         }
         void pop ( const input::Using* pElement, const interface::Element* pNode )
         {
-            //os << strIndent << "using " << pElement->getIdentifier() << " = " << pElement->getType()->getStr() << ";\n";
         }
         void pop ( const input::Export* pElement, const interface::Element* pNode )
         {
