@@ -112,10 +112,10 @@ void Task_MainIncludePCH::run()
             {
                 common::hash_strings( { osInclude.str(), m_strCompilationFlags } ), 
                 common::hash_file( m_projectTree.getResourceHeader() ),
-                m_stash.getHashCode( m_projectTree.getParserDatabaseFilePreInterfaceAnalysis() ) 
+                m_stash.getBuildHashCode( m_projectTree.getParserDatabaseFilePreInterfaceAnalysis() ) 
             } );
             
-        m_stash.setHashCode( m_projectTree.getIncludePCH(), hashCode );
+        m_stash.setBuildHashCode( m_projectTree.getIncludePCH(), hashCode );
             
         if( m_stash.restore( m_projectTree.getIncludePCH(), hashCode ) )
         {
@@ -162,14 +162,14 @@ void Task_MainInterfacePCH::run()
         m_session_parser->getIdentifiers() );
     
     common::HashCode interfaceHash = common::hash_strings( { m_strCompilationFlags, osInterface.str() } );
-    m_stash.setHashCode( m_projectTree.getInterfaceHeader(), interfaceHash );
+    m_stash.setBuildHashCode( m_projectTree.getInterfaceHeader(), interfaceHash );
     
     interfaceHash = common::hash_combine( {
         interfaceHash, 
-        m_stash.getHashCode( m_projectTree.getParserDatabaseFilePreInterfaceAnalysis() ),
-        m_stash.getHashCode( m_projectTree.getIncludePCH() ) } );
+        m_stash.getBuildHashCode( m_projectTree.getParserDatabaseFilePreInterfaceAnalysis() ),
+        m_stash.getBuildHashCode( m_projectTree.getIncludePCH() ) } );
         
-    m_stash.setHashCode( m_projectTree.getInterfacePCH(), interfaceHash );
+    m_stash.setBuildHashCode( m_projectTree.getInterfacePCH(), interfaceHash );
     
     if( m_stash.restore( m_projectTree.getInterfacePCH(), interfaceHash ) )
     {
@@ -208,12 +208,12 @@ void Task_InterfaceSession::run()
         common::hash_combine( 
         {
             common::hash_strings( { m_strCompilationFlags } ), 
-            m_stash.getHashCode( m_projectTree.getParserDatabaseFilePreInterfaceAnalysis() ),
-            m_stash.getHashCode( m_projectTree.getIncludePCH() ),
-            m_stash.getHashCode( m_projectTree.getInterfacePCH() )
+            m_stash.getBuildHashCode( m_projectTree.getParserDatabaseFilePreInterfaceAnalysis() ),
+            m_stash.getBuildHashCode( m_projectTree.getIncludePCH() ),
+            m_stash.getBuildHashCode( m_projectTree.getInterfacePCH() )
         });
             
-    m_stash.setHashCode( m_projectTree.getInterfaceDatabaseFile(), interfaceDBHash );
+    m_stash.setBuildHashCode( m_projectTree.getInterfaceDatabaseFile(), interfaceDBHash );
     
     if( m_stash.restore( m_projectTree.getInterfaceDatabaseFile(), interfaceDBHash ) )
     {
@@ -273,18 +273,18 @@ void Task_MainGenericsPCH::run()
         eg::generateGenericsHeader( osImpl, *m_session_interface );
         
         hashCode = common::hash_strings( { osImpl.str(), m_strCompilationFlags } );
-        m_stash.setHashCode( m_projectTree.getGenericsHeader(), hashCode );
+        m_stash.setBuildHashCode( m_projectTree.getGenericsHeader(), hashCode );
         
         hashCode = common::hash_combine( 
         {
             hashCode, 
-            m_stash.getHashCode( m_projectTree.getParserDatabaseFilePreInterfaceAnalysis() ),
-            m_stash.getHashCode( m_projectTree.getIncludePCH() ),
-            m_stash.getHashCode( m_projectTree.getInterfacePCH() ),
-            m_stash.getHashCode( m_projectTree.getInterfaceDatabaseFile() ) 
+            m_stash.getBuildHashCode( m_projectTree.getParserDatabaseFilePreInterfaceAnalysis() ),
+            m_stash.getBuildHashCode( m_projectTree.getIncludePCH() ),
+            m_stash.getBuildHashCode( m_projectTree.getInterfacePCH() ),
+            m_stash.getBuildHashCode( m_projectTree.getInterfaceDatabaseFile() ) 
         });
             
-        m_stash.setHashCode( m_projectTree.getGenericsPCH(), hashCode );
+        m_stash.setBuildHashCode( m_projectTree.getGenericsPCH(), hashCode );
         
         if( m_stash.restore( m_projectTree.getGenericsPCH(), hashCode ) )
         {
@@ -333,11 +333,11 @@ void Task_ComponentIncludePCH::run()
         hashCode = common::hash_combine(
         {
             common::hash_strings( { os.str(), m_strCompilationFlags } ),
-            m_stash.getHashCode( m_projectTree.getParserDatabaseFilePreInterfaceAnalysis() ),
-            m_stash.getHashCode( m_projectTree.getIncludePCH() )
+            m_stash.getBuildHashCode( m_projectTree.getParserDatabaseFilePreInterfaceAnalysis() ),
+            m_stash.getBuildHashCode( m_projectTree.getIncludePCH() )
         });
 
-        m_stash.setHashCode( m_projectTree.getComponentIncludePCH( m_component ), hashCode );
+        m_stash.setBuildHashCode( m_projectTree.getComponentIncludePCH( m_component ), hashCode );
             
         if( m_stash.restore( m_projectTree.getComponentIncludePCH( m_component ), hashCode ) )
         {
@@ -374,14 +374,14 @@ void Task_ComponentInterfacePCH::run()
     
     const common::HashCode hashCode = common::hash_combine(
     {
-        m_stash.getHashCode( m_projectTree.getInterfaceHeader() ),
+        m_stash.getBuildHashCode( m_projectTree.getInterfaceHeader() ),
         common::hash_strings( { m_strCompilationFlags } ),
-        m_stash.getHashCode( m_projectTree.getParserDatabaseFilePreInterfaceAnalysis() ),
-        m_stash.getHashCode( m_projectTree.getIncludePCH() ),
-        m_stash.getHashCode( m_projectTree.getComponentIncludePCH( m_component ) )
+        m_stash.getBuildHashCode( m_projectTree.getParserDatabaseFilePreInterfaceAnalysis() ),
+        m_stash.getBuildHashCode( m_projectTree.getIncludePCH() ),
+        m_stash.getBuildHashCode( m_projectTree.getComponentIncludePCH( m_component ) )
     });
     
-    m_stash.setHashCode( m_projectTree.getComponentInterfacePCH( m_component ), hashCode );
+    m_stash.setBuildHashCode( m_projectTree.getComponentInterfacePCH( m_component ), hashCode );
     
     if( m_stash.restore( m_projectTree.getComponentInterfacePCH( m_component ), hashCode ) )
     {
@@ -417,15 +417,15 @@ void Task_ComponentGenericsPCH::run()
     
     const common::HashCode hashCode = common::hash_combine(
     {
-        m_stash.getHashCode( m_projectTree.getGenericsHeader() ),
+        m_stash.getBuildHashCode( m_projectTree.getGenericsHeader() ),
         common::hash_strings( { m_strCompilationFlags } ),
-        m_stash.getHashCode( m_projectTree.getParserDatabaseFilePreInterfaceAnalysis() ),
-        m_stash.getHashCode( m_projectTree.getIncludePCH() ),
-        m_stash.getHashCode( m_projectTree.getComponentIncludePCH( m_component ) ),
-        m_stash.getHashCode( m_projectTree.getComponentInterfacePCH( m_component ) )
+        m_stash.getBuildHashCode( m_projectTree.getParserDatabaseFilePreInterfaceAnalysis() ),
+        m_stash.getBuildHashCode( m_projectTree.getIncludePCH() ),
+        m_stash.getBuildHashCode( m_projectTree.getComponentIncludePCH( m_component ) ),
+        m_stash.getBuildHashCode( m_projectTree.getComponentInterfacePCH( m_component ) )
     });
     
-    m_stash.setHashCode( m_projectTree.getComponentGenericsPCH( m_component ), hashCode );
+    m_stash.setBuildHashCode( m_projectTree.getComponentGenericsPCH( m_component ), hashCode );
     
     if( m_stash.restore( m_projectTree.getComponentGenericsPCH( m_component ), hashCode ) )
     {
@@ -469,7 +469,7 @@ void Task_OperationsHeader::run()
     eg::generateOperationSource( osOperations, m_session_interface->getTreeRoot(), *pTranslationUnit, m_functionBodyHandler );
     
     common::HashCode hashCode = common::hash_strings( { m_strCompilationFlags, osOperations.str() } );
-    m_stash.setHashCode( m_projectTree.getOperationsHeader( pTranslationUnit->getName() ), hashCode );
+    m_stash.setBuildHashCode( m_projectTree.getOperationsHeader( pTranslationUnit->getName() ), hashCode );
         
     boost::filesystem::updateFileIfChanged( m_projectTree.getOperationsHeader( pTranslationUnit->getName() ), osOperations.str() );
     
@@ -492,15 +492,15 @@ void Task_OperationsPublicPCH::run()
     
     const common::HashCode hashCode = common::hash_combine(
     {
-        m_stash.getHashCode( m_projectTree.getOperationsHeader( pTranslationUnit->getName() ) ),
+        m_stash.getBuildHashCode( m_projectTree.getOperationsHeader( pTranslationUnit->getName() ) ),
         common::hash_strings( { m_strCompilationFlags } ),
-        m_stash.getHashCode( m_projectTree.getParserDatabaseFilePreInterfaceAnalysis() ),
-        m_stash.getHashCode( m_projectTree.getIncludePCH() ),
-        m_stash.getHashCode( m_projectTree.getInterfacePCH() ),
-        m_stash.getHashCode( m_projectTree.getGenericsPCH() )
+        m_stash.getBuildHashCode( m_projectTree.getParserDatabaseFilePreInterfaceAnalysis() ),
+        m_stash.getBuildHashCode( m_projectTree.getIncludePCH() ),
+        m_stash.getBuildHashCode( m_projectTree.getInterfacePCH() ),
+        m_stash.getBuildHashCode( m_projectTree.getGenericsPCH() )
     });
     
-    m_stash.setHashCode( m_projectTree.getOperationsPublicPCH( strTUName ), hashCode );
+    m_stash.setBuildHashCode( m_projectTree.getOperationsPublicPCH( strTUName ), hashCode );
     
     if( m_stash.restore( m_projectTree.getOperationsPublicPCH( strTUName ), hashCode ) )
     {
@@ -543,15 +543,15 @@ void Task_OperationsPrivatePCH::run()
     
     const common::HashCode hashCode = common::hash_combine(
     {
-        m_stash.getHashCode( m_projectTree.getOperationsHeader( pTranslationUnit->getName() ) ),
-        m_stash.getHashCode( m_projectTree.getParserDatabaseFilePreInterfaceAnalysis() ),
-        m_stash.getHashCode( m_projectTree.getIncludePCH() ),
-        m_stash.getHashCode( m_projectTree.getComponentIncludePCH( m_component ) ),
-        m_stash.getHashCode( m_projectTree.getComponentInterfacePCH( m_component ) ),
-        m_stash.getHashCode( m_projectTree.getComponentGenericsPCH( m_component ) )
+        m_stash.getBuildHashCode( m_projectTree.getOperationsHeader( pTranslationUnit->getName() ) ),
+        m_stash.getBuildHashCode( m_projectTree.getParserDatabaseFilePreInterfaceAnalysis() ),
+        m_stash.getBuildHashCode( m_projectTree.getIncludePCH() ),
+        m_stash.getBuildHashCode( m_projectTree.getComponentIncludePCH( m_component ) ),
+        m_stash.getBuildHashCode( m_projectTree.getComponentInterfacePCH( m_component ) ),
+        m_stash.getBuildHashCode( m_projectTree.getComponentGenericsPCH( m_component ) )
     });
     
-    m_stash.setHashCode( m_projectTree.getOperationsPrivatePCH( strTUName ), hashCode );
+    m_stash.setBuildHashCode( m_projectTree.getOperationsPrivatePCH( strTUName ), hashCode );
     
     if( m_stash.restore( m_projectTree.getOperationsPrivatePCH( strTUName ), hashCode ) )
     {
@@ -647,7 +647,7 @@ void build_interface( const boost::filesystem::path& projectDirectory, const std
             
             common::HashCode parserHash = common::hash_file( projectTree.getParserDatabaseFile() );
             parserHash = common::hash_combine( parserHash, common::hash_strings( { strCompilationFlags } ) );
-            stash.setHashCode( projectTree.getParserDatabaseFilePreInterfaceAnalysis(), parserHash );
+            stash.setBuildHashCode( projectTree.getParserDatabaseFilePreInterfaceAnalysis(), parserHash );
             
             if( stash.restore( projectTree.getParserDatabaseFilePreInterfaceAnalysis(), parserHash ) )
             {
@@ -775,7 +775,7 @@ void build_interface( const boost::filesystem::path& projectDirectory, const std
     
     scheduler.run();
     
-    stash.saveHashCodes( projectTree.getBuildInfoFile() );
+    stash.saveBuildHashCodes( projectTree.getBuildInfoFile() );
     
 }
 
