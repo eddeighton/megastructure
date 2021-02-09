@@ -18,6 +18,8 @@
 #include "eg_compiler/codegen/codegen.hpp"
 #include "eg_compiler/codegen/instructionCodeGenerator.hpp"
 
+#include "common/stash.hpp"
+
 #include "boost/filesystem/path.hpp"
 
 namespace build
@@ -40,7 +42,6 @@ struct BuildState
     const std::string&              m_strAdditionalDefines;
     const boost::filesystem::path&  m_binaryPath;
     task::Stash&                    m_stash;
-    std::ostream&                   m_log;
     const eg::ReadSession&          m_session;
     
     BuildState( const Environment&              environment,
@@ -50,7 +51,6 @@ struct BuildState
                 const std::string&              strAdditionalDefines,
                 const boost::filesystem::path&  binaryPath,
                 task::Stash&                    stash,
-                std::ostream&                   log,
                 const eg::ReadSession&          session  )
         :   m_environment          ( environment            ),
             m_projectTree          ( projectTree            ),
@@ -59,7 +59,6 @@ struct BuildState
             m_strAdditionalDefines ( strAdditionalDefines   ),
             m_binaryPath           ( binaryPath             ),
             m_stash                ( stash                  ),
-            m_log                  ( log ),
             m_session              ( session                )
     {
         
@@ -71,7 +70,7 @@ class BaseTask : public task::Task
 {
 public:
     BaseTask( const BuildState& buildState, const RawPtrSet& dependencies )
-        :   task::Task( buildState.m_log, dependencies ), 
+        :   task::Task( dependencies ), 
             m_environment           ( buildState.m_environment              ),
             m_projectTree           ( buildState.m_projectTree              ),
             m_config                ( buildState.m_config                   ),
@@ -107,7 +106,7 @@ public:
     {
     }
     
-    virtual void run();
+    virtual void run( task::Progress& taskProgress );
 };
 
 class Task_PublicEGImplCompilation : public BaseTask
@@ -134,7 +133,7 @@ public:
     {
     }
     
-    virtual void run();
+    virtual void run( task::Progress& taskProgress );
 };
 class Task_PrivateEGImplCompilation : public BaseTask
 {
@@ -160,7 +159,7 @@ public:
     {
     }
     
-    virtual void run();
+    virtual void run( task::Progress& taskProgress );
 };
 
 }

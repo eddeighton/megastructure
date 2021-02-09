@@ -9,6 +9,7 @@
 
 #include "common/assert_verify.hpp"
 #include "common/file.hpp"
+#include "common/scheduler.hpp"
 
 #include <boost/filesystem.hpp>
 #include <boost/tokenizer.hpp>
@@ -53,18 +54,19 @@ struct ParserCallbackImpl : eg::EG_PARSER_CALLBACK, eg::FunctionBodyGenerator
 ParserCallbackImpl m_functionBodyHandler;
 
 
-void Task_ParserSession::run()
+void Task_ParserSession::run( task::Progress& taskProgress )
 {
     //do nothing since doing this in main function
+    taskProgress.start( "Task_ParserSession", std::string{}, std::string{} );
+    taskProgress.cached();
 }
 
-void Task_ParserSessionCopy::run()
+void Task_ParserSessionCopy::run( task::Progress& taskProgress )
 {
-    m_taskInfo.taskName( "ParserSessionCopy" );
-    m_taskInfo.source( m_projectTree.getParserDatabaseFile() );
-    m_taskInfo.target( m_projectTree.getComponentParserDatabase( m_component ) );
-    updateProgress();
-    
+    taskProgress.start( "ParserSessionCopy", 
+        m_projectTree.getParserDatabaseFile(), 
+        m_projectTree.getComponentParserDatabase( m_component ) );
+
     if( m_parserChanged )
     {
         const boost::filesystem::path sourceFile = m_projectTree.getParserDatabaseFile();
@@ -80,16 +82,14 @@ void Task_ParserSessionCopy::run()
         boost::filesystem::ensureFoldersExist( targetFile );
         boost::filesystem::copy( sourceFile, targetFile );
     }
-    m_taskInfo.cached( true );
-    m_taskInfo.complete( true );
+    taskProgress.cached();
 }
 
-void Task_MainIncludePCH::run()
+void Task_MainIncludePCH::run( task::Progress& taskProgress )
 {
-    m_taskInfo.taskName( "MainIncludePCH" );
-    m_taskInfo.source( m_projectTree.getIncludeHeader() );
-    m_taskInfo.target( m_projectTree.getIncludePCH() );
-    updateProgress();
+    taskProgress.start( "MainIncludePCH",
+        m_projectTree.getIncludeHeader(),
+        m_projectTree.getIncludePCH() );
     
     VERIFY_RTE( m_session_parser );
     VERIFY_RTE_MSG( boost::filesystem::exists( m_projectTree.getResourceHeader() ), 
@@ -119,8 +119,7 @@ void Task_MainIncludePCH::run()
             
         if( m_stash.restore( m_projectTree.getIncludePCH(), hashCode ) )
         {
-            m_taskInfo.cached( true );
-            m_taskInfo.complete( true );
+            taskProgress.cached();
             return;
         }
             
@@ -141,15 +140,14 @@ void Task_MainIncludePCH::run()
             
     m_stash.stash( m_projectTree.getIncludePCH(), hashCode );
     
-    m_taskInfo.complete( true );
+    taskProgress.succeeded();
 }
 
-void Task_MainInterfacePCH::run()
+void Task_MainInterfacePCH::run( task::Progress& taskProgress )
 {
-    m_taskInfo.taskName( "MainInterfacePCH" );
-    m_taskInfo.source( m_projectTree.getInterfaceHeader() );
-    m_taskInfo.target( m_projectTree.getInterfacePCH() );
-    updateProgress();
+    taskProgress.start( "MainInterfacePCH",
+        m_projectTree.getInterfaceHeader(),
+        m_projectTree.getInterfacePCH() );
         
     VERIFY_RTE( m_session_parser );
     
@@ -173,8 +171,7 @@ void Task_MainInterfacePCH::run()
     
     if( m_stash.restore( m_projectTree.getInterfacePCH(), interfaceHash ) )
     {
-        m_taskInfo.cached( true );
-        m_taskInfo.complete( true );
+        taskProgress.cached();
         return;
     }
     
@@ -192,15 +189,14 @@ void Task_MainInterfacePCH::run()
     
     m_stash.stash( m_projectTree.getInterfacePCH(), interfaceHash );
     
-    m_taskInfo.complete( true );
+    taskProgress.succeeded();
 }
 
-void Task_InterfaceSession::run()
+void Task_InterfaceSession::run( task::Progress& taskProgress )
 {
-    m_taskInfo.taskName( "InterfaceSession" );
-    m_taskInfo.source( m_projectTree.getParserDatabaseFile() );
-    m_taskInfo.target( m_projectTree.getInterfaceDatabaseFile() );
-    updateProgress();
+    taskProgress.start( "InterfaceSession",
+        m_projectTree.getParserDatabaseFile(),
+        m_projectTree.getInterfaceDatabaseFile() );
     
     VERIFY_RTE( m_session_parser );
     
@@ -219,8 +215,7 @@ void Task_InterfaceSession::run()
     {
         m_session_interface = std::make_unique< eg::InterfaceSession >( 
             m_projectTree.getInterfaceDatabaseFile() );
-        m_taskInfo.cached( true );
-        m_taskInfo.complete( true );
+        taskProgress.cached();
         return;
     }
     
@@ -252,15 +247,14 @@ void Task_InterfaceSession::run()
     m_session_interface->store( m_projectTree.getInterfaceDatabaseFile() );
     m_stash.stash( m_projectTree.getInterfaceDatabaseFile(), interfaceDBHash );
     
-    m_taskInfo.complete( true );
+    taskProgress.succeeded();
 }
 
-void Task_MainGenericsPCH::run()
+void Task_MainGenericsPCH::run( task::Progress& taskProgress )
 {
-    m_taskInfo.taskName( "MainGenericsPCH" );
-    m_taskInfo.source( m_projectTree.getGenericsHeader() );
-    m_taskInfo.target( m_projectTree.getGenericsPCH() );
-    updateProgress();
+    taskProgress.start( "MainGenericsPCH",
+        m_projectTree.getGenericsHeader(),
+        m_projectTree.getGenericsPCH() );
         
     VERIFY_RTE( m_session_interface );
     
@@ -288,8 +282,7 @@ void Task_MainGenericsPCH::run()
         
         if( m_stash.restore( m_projectTree.getGenericsPCH(), hashCode ) )
         {
-            m_taskInfo.cached( true );
-            m_taskInfo.complete( true );
+            taskProgress.cached();
             return;
         }
         
@@ -308,15 +301,14 @@ void Task_MainGenericsPCH::run()
     
     m_stash.stash( m_projectTree.getGenericsPCH(), hashCode );
     
-    m_taskInfo.complete( true );
+    taskProgress.succeeded();
 }
 
-void Task_ComponentIncludePCH::run()
+void Task_ComponentIncludePCH::run( task::Progress& taskProgress )
 {
-    m_taskInfo.taskName( "ComponentIncludePCH" );
-    m_taskInfo.source( m_projectTree.getComponentIncludeHeader( m_component ) );
-    m_taskInfo.target( m_projectTree.getComponentIncludePCH( m_component ) );
-    updateProgress();
+    taskProgress.start( "ComponentIncludePCH",
+        m_projectTree.getComponentIncludeHeader( m_component ),
+        m_projectTree.getComponentIncludePCH( m_component ) );
     
     common::HashCode hashCode;
     {
@@ -341,8 +333,7 @@ void Task_ComponentIncludePCH::run()
             
         if( m_stash.restore( m_projectTree.getComponentIncludePCH( m_component ), hashCode ) )
         {
-            m_taskInfo.cached( true );
-            m_taskInfo.complete( true );
+            taskProgress.cached();
             return;
         }
         
@@ -362,15 +353,15 @@ void Task_ComponentIncludePCH::run()
     
     m_stash.stash( m_projectTree.getComponentIncludePCH( m_component ), hashCode );
     
-    m_taskInfo.complete( true );
+    taskProgress.succeeded();
 }
 
-void Task_ComponentInterfacePCH::run()
+void Task_ComponentInterfacePCH::run( task::Progress& taskProgress )
 {
-    m_taskInfo.taskName( "ComponentInterfacePCH" );
-    m_taskInfo.source( m_projectTree.getInterfaceHeader() );
-    m_taskInfo.target( m_projectTree.getComponentInterfacePCH( m_component ) );
-    updateProgress();
+    taskProgress.start( 
+        "ComponentInterfacePCH",
+        m_projectTree.getInterfaceHeader(),
+        m_projectTree.getComponentInterfacePCH( m_component ) );
     
     const common::HashCode hashCode = common::hash_combine(
     {
@@ -385,8 +376,7 @@ void Task_ComponentInterfacePCH::run()
     
     if( m_stash.restore( m_projectTree.getComponentInterfacePCH( m_component ), hashCode ) )
     {
-        m_taskInfo.cached( true );
-        m_taskInfo.complete( true );
+        taskProgress.cached();
         return;
     }
     
@@ -405,15 +395,14 @@ void Task_ComponentInterfacePCH::run()
     
     m_stash.stash( m_projectTree.getComponentInterfacePCH( m_component ), hashCode );
     
-    m_taskInfo.complete( true );
+    taskProgress.succeeded();
 }
 
-void Task_ComponentGenericsPCH::run()
+void Task_ComponentGenericsPCH::run( task::Progress& taskProgress )
 {
-    m_taskInfo.taskName( "ComponentGenericsPCH" );
-    m_taskInfo.source( m_projectTree.getGenericsHeader() );
-    m_taskInfo.target( m_projectTree.getComponentGenericsPCH( m_component ) );
-    updateProgress();
+    taskProgress.start( "ComponentGenericsPCH",
+        m_projectTree.getGenericsHeader(),
+        m_projectTree.getComponentGenericsPCH( m_component ) );
     
     const common::HashCode hashCode = common::hash_combine(
     {
@@ -429,8 +418,7 @@ void Task_ComponentGenericsPCH::run()
     
     if( m_stash.restore( m_projectTree.getComponentGenericsPCH( m_component ), hashCode ) )
     {
-        m_taskInfo.cached( true );
-        m_taskInfo.complete( true );
+        taskProgress.cached();
         return;
     }
     
@@ -449,10 +437,10 @@ void Task_ComponentGenericsPCH::run()
     
     m_stash.stash( m_projectTree.getComponentGenericsPCH( m_component ), hashCode );
     
-    m_taskInfo.complete( true );
+    taskProgress.succeeded();
 }
 
-void Task_OperationsHeader::run()
+void Task_OperationsHeader::run( task::Progress& taskProgress )
 {
     VERIFY_RTE( m_session_interface );
     const eg::TranslationUnitAnalysis& tuAnalysis = m_session_interface->getTranslationUnitAnalysis();
@@ -460,10 +448,10 @@ void Task_OperationsHeader::run()
     VERIFY_RTE_MSG( pTranslationUnit, "Failed to get translation unit for source file: " << m_sourceFile.string() << 
         " PERHAPS a source file contains no code body?" );
     
-    m_taskInfo.taskName( "OperationsHeader" );
-    m_taskInfo.source( std::string{"none"} );
-    m_taskInfo.target( m_projectTree.getOperationsHeader( pTranslationUnit->getName() ) );
-    updateProgress();
+    taskProgress.start(
+        "OperationsHeader",
+        std::string{"none"},
+        m_projectTree.getOperationsHeader( pTranslationUnit->getName() ) );
     
     std::ostringstream osOperations;
     eg::generateOperationSource( osOperations, m_session_interface->getTreeRoot(), *pTranslationUnit, m_functionBodyHandler );
@@ -471,13 +459,16 @@ void Task_OperationsHeader::run()
     common::HashCode hashCode = common::hash_strings( { m_strCompilationFlags, osOperations.str() } );
     m_stash.setBuildHashCode( m_projectTree.getOperationsHeader( pTranslationUnit->getName() ), hashCode );
         
-    boost::filesystem::updateFileIfChanged( m_projectTree.getOperationsHeader( pTranslationUnit->getName() ), osOperations.str() );
+    const bool bUpdated =
+        boost::filesystem::updateFileIfChanged( m_projectTree.getOperationsHeader( pTranslationUnit->getName() ), osOperations.str() );
     
-    m_taskInfo.cached( true );
-    m_taskInfo.complete( true );
+    if( bUpdated )
+        taskProgress.cached();
+    else
+        taskProgress.succeeded();
 }
 
-void Task_OperationsPublicPCH::run()
+void Task_OperationsPublicPCH::run( task::Progress& taskProgress )
 {
     VERIFY_RTE( m_session_interface );
     const eg::TranslationUnitAnalysis& tuAnalysis = m_session_interface->getTranslationUnitAnalysis();
@@ -485,11 +476,11 @@ void Task_OperationsPublicPCH::run()
     VERIFY_RTE( pTranslationUnit );
     const std::string strTUName = pTranslationUnit->getName();
     
-    m_taskInfo.taskName( "OperationsPublicPCH" );
-    m_taskInfo.source( m_projectTree.getOperationsHeader( strTUName ) );
-    m_taskInfo.target( m_projectTree.getOperationsPublicPCH( strTUName ) );
-    updateProgress();
-    
+    taskProgress.start(
+        "OperationsPublicPCH",
+        m_projectTree.getOperationsHeader( strTUName ),
+        m_projectTree.getOperationsPublicPCH( strTUName ) );
+        
     const common::HashCode hashCode = common::hash_combine(
     {
         m_stash.getBuildHashCode( m_projectTree.getOperationsHeader( pTranslationUnit->getName() ) ),
@@ -504,8 +495,7 @@ void Task_OperationsPublicPCH::run()
     
     if( m_stash.restore( m_projectTree.getOperationsPublicPCH( strTUName ), hashCode ) )
     {
-        m_taskInfo.cached( true );
-        m_taskInfo.complete( true );
+        taskProgress.cached();
         return;
     }
     
@@ -525,10 +515,10 @@ void Task_OperationsPublicPCH::run()
     
     m_stash.stash( m_projectTree.getOperationsPublicPCH( strTUName ), hashCode );
     
-    m_taskInfo.complete( true );
+    taskProgress.succeeded();
 }
 
-void Task_OperationsPrivatePCH::run()
+void Task_OperationsPrivatePCH::run( task::Progress& taskProgress )
 {
     VERIFY_RTE( m_session_interface );
     const eg::TranslationUnitAnalysis& tuAnalysis = m_session_interface->getTranslationUnitAnalysis();
@@ -536,10 +526,9 @@ void Task_OperationsPrivatePCH::run()
     VERIFY_RTE( pTranslationUnit );
     const std::string strTUName = pTranslationUnit->getName();
     
-    m_taskInfo.taskName( "OperationsPrivatePCH" );
-    m_taskInfo.source( m_projectTree.getOperationsHeader( strTUName ) );
-    m_taskInfo.target( m_projectTree.getOperationsPrivatePCH( strTUName ) );
-    updateProgress();
+    taskProgress.start( "OperationsPrivatePCH",
+        m_projectTree.getOperationsHeader( strTUName ),
+        m_projectTree.getOperationsPrivatePCH( strTUName ) );
     
     const common::HashCode hashCode = common::hash_combine(
     {
@@ -555,8 +544,7 @@ void Task_OperationsPrivatePCH::run()
     
     if( m_stash.restore( m_projectTree.getOperationsPrivatePCH( strTUName ), hashCode ) )
     {
-        m_taskInfo.cached( true );
-        m_taskInfo.complete( true );
+        taskProgress.cached();
         return;
     }
     
@@ -578,15 +566,14 @@ void Task_OperationsPrivatePCH::run()
     
     m_stash.stash( m_projectTree.getOperationsPrivatePCH( strTUName ), hashCode );  
     
-    m_taskInfo.complete( true );
+    taskProgress.succeeded();
 }
 
-void Task_ImplementationSession::run()
+void Task_ImplementationSession::run( task::Progress& taskProgress )
 {    
-    m_taskInfo.taskName( "ImplementationSession" );
-    m_taskInfo.source( m_projectTree.getInterfaceDatabaseFile() );
-    m_taskInfo.target( m_projectTree.getAnalysisFileName() );
-    updateProgress();
+    taskProgress.start( "ImplementationSession",
+        m_projectTree.getInterfaceDatabaseFile(),
+        m_projectTree.getAnalysisFileName() );
     
     //use the interface session to determine the files
     eg::IndexedFile::FileIDtoPathMap allFiles;
@@ -614,6 +601,8 @@ void Task_ImplementationSession::run()
         m_session_implementation->fullProgramAnalysis();
         m_session_implementation->store( m_projectTree.getAnalysisFileName() );
     }
+    
+    taskProgress.succeeded();
 }
 
 
@@ -625,7 +614,7 @@ void build_interface( const boost::filesystem::path& projectDirectory, const std
     
     task::Stash stash( projectTree.getStashFolder() );
     
-    BuildState buildState( environment, projectTree, m_config, strCompilationFlags, stash, std::cout );
+    BuildState buildState( environment, projectTree, m_config, strCompilationFlags, stash );
     
     //parse the input source code generating the parser.db
     {
@@ -771,9 +760,9 @@ void build_interface( const boost::filesystem::path& projectDirectory, const std
         tasks.push_back( task::Task::Ptr( pImplementationSession ) );
     }
     
-    task::Scheduler scheduler( std::cout, tasks );
+    task::Schedule::Ptr pSchedule( new task::Schedule( tasks ) );
     
-    scheduler.run();
+    task::run( pSchedule, std::cout );
     
     stash.saveBuildHashCodes( projectTree.getBuildInfoFile() );
     

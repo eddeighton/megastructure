@@ -7,6 +7,7 @@
 
 #include "common/assert_verify.hpp"
 #include "common/file.hpp"
+#include "common/scheduler.hpp"
 
 #include <boost/filesystem.hpp>
 #include <boost/tokenizer.hpp>
@@ -33,12 +34,12 @@ namespace Implementation
 {
 static DiagnosticsConfig m_config;
     
-void Task_CPPCompilation::run()
+void Task_CPPCompilation::run( task::Progress& taskProgress )
 {
-    m_taskInfo.taskName( "CPPCompilation" );
-    m_taskInfo.source( m_sourceFile );
-    m_taskInfo.target( m_projectTree.getObjectFile( m_sourceFile, m_binaryPath ) );
-    updateProgress();
+    taskProgress.start(
+        "CPPCompilation",
+        m_sourceFile,
+        m_projectTree.getObjectFile( m_sourceFile, m_binaryPath ) );
     
     const common::HashCode hashCode = common::hash_combine(
     {
@@ -53,8 +54,7 @@ void Task_CPPCompilation::run()
         
     if( m_stash.restore( m_projectTree.getObjectFile( m_sourceFile, m_binaryPath ), hashCode ) )
     {
-        m_taskInfo.cached( true );
-        m_taskInfo.complete( true );
+        taskProgress.cached();
         return;
     }
     
@@ -76,17 +76,17 @@ void Task_CPPCompilation::run()
 
     m_stash.stash( m_projectTree.getObjectFile( m_sourceFile, m_binaryPath ), hashCode );
     
-    m_taskInfo.complete( true );    
+    taskProgress.succeeded();  
 }
 
-void Task_PublicEGImplCompilation::run()
+void Task_PublicEGImplCompilation::run( task::Progress& taskProgress )
 {
     const std::string strTUName = m_translationUnit.getName();
     
-    m_taskInfo.taskName( "PublicEGImplCompilation" );
-    m_taskInfo.source( m_projectTree.getImplementationSource( strTUName ) );
-    m_taskInfo.target( m_projectTree.getObjectName( strTUName, m_binaryPath ) );
-    updateProgress();
+    taskProgress.start( 
+        "PublicEGImplCompilation",
+        m_projectTree.getImplementationSource( strTUName ),
+        m_projectTree.getObjectName( strTUName, m_binaryPath ) );
     
     std::vector< std::string > additionalIncludes = 
     { 
@@ -110,8 +110,7 @@ void Task_PublicEGImplCompilation::run()
     
     if( m_stash.restore( m_projectTree.getObjectName( strTUName, m_binaryPath ), hashCode ) )
     {
-        m_taskInfo.cached( true );
-        m_taskInfo.complete( true );
+        taskProgress.cached();
         return;
     }
     
@@ -135,18 +134,18 @@ void Task_PublicEGImplCompilation::run()
 
     m_stash.stash( m_projectTree.getObjectName( strTUName, m_binaryPath ), hashCode );
     
-    m_taskInfo.complete( true );        
+    taskProgress.succeeded();     
 }
 
-void Task_PrivateEGImplCompilation::run()
+void Task_PrivateEGImplCompilation::run( task::Progress& taskProgress )
 {
     const std::string strTUName = m_translationUnit.getName();
     
-    m_taskInfo.taskName( "PrivateEGImplCompilation" );
-    m_taskInfo.source( m_projectTree.getImplementationSource( strTUName ) );
-    m_taskInfo.target( m_projectTree.getObjectName( strTUName, m_binaryPath ) );
-    updateProgress();
-    
+    taskProgress.start( 
+        "PrivateEGImplCompilation",
+        m_projectTree.getImplementationSource( strTUName ),
+        m_projectTree.getObjectName( strTUName, m_binaryPath ) );
+        
     std::vector< std::string > additionalIncludes = 
     { 
         m_projectTree.getStructuresInclude(), 
@@ -170,8 +169,7 @@ void Task_PrivateEGImplCompilation::run()
     
     if( m_stash.restore( m_projectTree.getObjectName( strTUName, m_binaryPath ), hashCode ) )
     {
-        m_taskInfo.cached( true );
-        m_taskInfo.complete( true );
+        taskProgress.cached();
         return;
     }
     
@@ -196,7 +194,7 @@ void Task_PrivateEGImplCompilation::run()
 
     m_stash.stash( m_projectTree.getObjectName( strTUName, m_binaryPath ), hashCode );   
     
-    m_taskInfo.complete( true );     
+    taskProgress.succeeded();    
 }
 
 void generateMegaBufferStructures( std::ostream& os, const eg::ReadSession& program, const ProjectTree& projectTree )
@@ -558,7 +556,7 @@ void build_implementation( const boost::filesystem::path& projectDirectory,
     stash.loadBuildHashCodes( projectTree.getBuildInfoFile() );
     
     BuildState buildState( environment, projectTree, m_config, strCompilationFlags, 
-        strAdditionalDefines, binPath, stash, std::cout, session );
+        strAdditionalDefines, binPath, stash, session );
     
     task::Task::PtrVector tasks;
     {
@@ -616,9 +614,11 @@ void build_implementation( const boost::filesystem::path& projectDirectory,
         }
     }
     
-    task::Scheduler scheduler( std::cout, tasks );
     
-    scheduler.run();
+    task::Schedule::Ptr pSchedule( new task::Schedule( tasks ) );
+    
+    task::run( pSchedule, std::cout );
+    
     
     
 }

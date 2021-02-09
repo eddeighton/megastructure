@@ -17,6 +17,8 @@
 #include "eg_compiler/codegen/codegen.hpp"
 #include "eg_compiler/codegen/instructionCodeGenerator.hpp"
 
+#include "common/stash.hpp"
+
 #include "boost/filesystem/path.hpp"
 
 namespace build
@@ -38,7 +40,6 @@ struct BuildState
     const DiagnosticsConfig&    m_config;
     const std::string&          m_strCompilationFlags;
     task::Stash&                m_stash;
-    std::ostream&               m_log;
     bool                        m_parserChanged;
     
     mutable std::unique_ptr< eg::ParserSession >            m_session_parser;
@@ -49,14 +50,12 @@ struct BuildState
                 const ProjectTree&          projectTree,
                 const DiagnosticsConfig&    config,
                 const std::string&          strCompilationFlags,
-                task::Stash&                stash,
-                std::ostream&               log )
+                task::Stash&                stash )
         :   m_environment         ( environment         ),
             m_projectTree         ( projectTree         ),
             m_config              ( config              ),
             m_strCompilationFlags ( strCompilationFlags ),
             m_stash               ( stash ),
-            m_log                 ( log ),
             m_parserChanged       ( false )
     {
         
@@ -67,7 +66,7 @@ class BaseTask : public task::Task
 {
 public:
     BaseTask( const BuildState& buildState, const RawPtrSet& dependencies )
-        :   task::Task( buildState.m_log, dependencies ), 
+        :   task::Task( dependencies ), 
             m_environment           ( buildState.m_environment              ),
             m_projectTree           ( buildState.m_projectTree              ),
             m_config                ( buildState.m_config                   ),
@@ -101,7 +100,7 @@ public:
         :   BaseTask( buildState, {} )
     {
     }
-    virtual void run();
+    virtual void run( task::Progress& taskProgress );
 };
 
 class Task_ParserSessionCopy : public BaseTask
@@ -113,7 +112,7 @@ public:
             m_component( component )
     {
     }
-    virtual void run();
+    virtual void run( task::Progress& taskProgress );
 };
 
 class Task_MainIncludePCH : public BaseTask
@@ -123,7 +122,7 @@ public:
         :   BaseTask( buildState, { pDependency } )
     {
     }
-    virtual void run();
+    virtual void run( task::Progress& taskProgress );
 };
 
 class Task_MainInterfacePCH : public BaseTask
@@ -134,7 +133,7 @@ public:
     {
     }
     
-    virtual void run();
+    virtual void run( task::Progress& taskProgress );
 };
 
 class Task_InterfaceSession : public BaseTask
@@ -146,7 +145,7 @@ public:
         m_dependencies.insert( pDependency );
     }
     
-    virtual void run();
+    virtual void run( task::Progress& taskProgress );
 };
 
 class Task_MainGenericsPCH : public BaseTask
@@ -157,7 +156,7 @@ public:
     {
     }
     
-    virtual void run();
+    virtual void run( task::Progress& taskProgress );
 };
 
 class Task_ComponentIncludePCH : public BaseTask
@@ -170,7 +169,7 @@ public:
     {
     }
     
-    virtual void run();
+    virtual void run( task::Progress& taskProgress );
 };
 
 class Task_ComponentInterfacePCH : public BaseTask
@@ -187,7 +186,7 @@ public:
     {
     }
     
-    virtual void run();
+    virtual void run( task::Progress& taskProgress );
 };
 
 class Task_ComponentGenericsPCH : public BaseTask
@@ -204,7 +203,7 @@ public:
     {
     }
     
-    virtual void run();
+    virtual void run( task::Progress& taskProgress );
 };
 
 class Task_OperationsHeader : public BaseTask
@@ -217,7 +216,7 @@ public:
     {
     }
     
-    virtual void run();
+    virtual void run( task::Progress& taskProgress );
 };
 
 class Task_OperationsPublicPCH : public BaseTask
@@ -230,7 +229,7 @@ public:
     {
     }
     
-    virtual void run();
+    virtual void run( task::Progress& taskProgress );
 };
 
 class Task_OperationsPrivatePCH : public BaseTask
@@ -249,7 +248,7 @@ public:
     {
     }
     
-    virtual void run();
+    virtual void run( task::Progress& taskProgress );
 };
 
 
@@ -261,7 +260,7 @@ public:
     {
     }
     
-    virtual void run();
+    virtual void run( task::Progress& taskProgress );
 };
 
 }
